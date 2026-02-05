@@ -5,6 +5,7 @@ import com.paymentteamproject.domain.product.entity.Product;
 import com.paymentteamproject.domain.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -14,6 +15,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
+    @Transactional(readOnly = true)
     public List<GetProductResponse> getAllProducts() {
         List<Product> productList = productRepository.findAll();
         return productList.stream()
