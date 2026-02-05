@@ -20,18 +20,18 @@ public class MasterMembership extends BaseEntity {
     @Column(name = "membership", nullable = false, length = 30)
     private Membership membership;
 
-    @Column(name = "ratio", nullable = false, precision = 10, scale = 4)
-    private BigDecimal ratio;
+    @Column(name = "ratio", nullable = false)
+    private double ratio;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    public MasterMembership(Membership membership, BigDecimal ratio) {
+    public MasterMembership(Membership membership, double ratio) {
         this.membership = membership;
         this.ratio = ratio;
     }
 
-    public void changeRatio(BigDecimal ratio) {
+    public void changeRatio(double ratio) {
         this.ratio = ratio;
     }
 
