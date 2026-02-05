@@ -1,4 +1,4 @@
-package com.paymentteamproject.domain.webhook;
+package com.paymentteamproject.domain.webhook.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
 import jakarta.persistence.*;

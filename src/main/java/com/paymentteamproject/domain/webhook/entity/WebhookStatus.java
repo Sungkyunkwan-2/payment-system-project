@@ -1,4 +1,4 @@
-package com.paymentteamproject.domain.webhook;
+package com.paymentteamproject.domain.webhook.entity;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
