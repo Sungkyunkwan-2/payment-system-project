@@ -1,6 +1,7 @@
 package com.paymentteamproject.domain.payment.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
+import com.paymentteamproject.domain.order.entity.Orders;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
