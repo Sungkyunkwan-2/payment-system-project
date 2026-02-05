@@ -1,6 +1,7 @@
 package com.paymentteamproject.domain.pointTransactions.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
+import com.paymentteamproject.domain.order.entity.Orders;
 import com.paymentteamproject.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -25,7 +26,7 @@ public class PointTransaction extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "order_id", nullable = false)
-    private Order order;
+    private Orders order;
 
     @Column(nullable = false)
     private double points;
@@ -42,7 +43,7 @@ public class PointTransaction extends BaseEntity {
 
     private LocalDateTime deletedAt;
 
-    public PointTransaction(User user, Order order, double points, TransactionType type, LocalDateTime expiresAt){
+    public PointTransaction(User user, Orders order, double points, TransactionType type, LocalDateTime expiresAt){
         this.user = user;
         this.order = order;
         this.points = points;
