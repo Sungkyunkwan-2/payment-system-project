@@ -2,7 +2,6 @@ package com.paymentteamproject.domain.refund.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
 import com.paymentteamproject.domain.payment.entity.Payment;
-import com.paymentteamproject.domain.refund.enums.RefundStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
