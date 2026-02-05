@@ -1,6 +1,6 @@
 package com.paymentteamproject.domain.masterMembership.entity;
 
-public enum Membership {
+public enum MembershipStatus {
     BRONZE,
     SILVER,
     GOLD,
