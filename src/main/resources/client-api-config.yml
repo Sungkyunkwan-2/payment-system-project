@@ -28,8 +28,8 @@ api:
     # 인증 (Authentication)
     # ========================================
     login:
-      url:
-      method:
+      url: /api/auth/login
+      method: post
       description: 사용자 로그인
       request:
         fields:
@@ -124,7 +124,7 @@ api:
     # ========================================
     list-products:
       url: /products
-      method: GET
+      method: get
       description: 상품 목록 조회
       response:
         body:
