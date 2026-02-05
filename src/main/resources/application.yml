@@ -1,1 +1,26 @@
-spring.application.name=payment-team-project
+spring:
+  application:
+    name: payment-team-project
+
+  profiles:
+    active: local
+
+  config:
+    import: optional:classpath:client-api-config.yml
+
+    thymeleaf:
+      cache: false
+      prefix: classpath:/templates/
+      suffix: .html
+      mode: HTML
+      encoding: UTF-8
+
+    security:
+      user:
+        name: demo
+        password: demo123
+
+  server:
+    port: 8080
+    servlet:
+      context-path: /
