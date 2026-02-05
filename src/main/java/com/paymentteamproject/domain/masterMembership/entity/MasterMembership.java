@@ -1,4 +1,4 @@
-package com.paymentteamproject.domain.masterMembership.Entity;
+package com.paymentteamproject.domain.masterMembership.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
 import jakarta.persistence.*;
