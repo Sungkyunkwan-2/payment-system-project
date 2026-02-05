@@ -1,7 +1,6 @@
 package com.paymentteamproject.domain.pointTransactions.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
-import com.paymentteamproject.domain.pointTransactions.enums.TransactionType;
 import com.paymentteamproject.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -40,9 +39,6 @@ public class PointTransaction extends BaseEntity {
 
     @Column(nullable = false)
     private boolean validity;
-
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
 
     private LocalDateTime deletedAt;
 

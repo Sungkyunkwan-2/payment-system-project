@@ -33,9 +33,6 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private double pointBalance;
 
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
-
     private LocalDateTime deletedAt;
 
     public User(String username, String phone, String email, String password, double pointBalance){
