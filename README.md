@@ -299,7 +299,7 @@ Response 200 OK
 ```json
 {
   "timestamp": "",
-  "status": ,
+  "status":"",
   "error": "",
   "message": "",
   "path": ""
