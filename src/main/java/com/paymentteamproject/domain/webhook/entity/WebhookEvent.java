@@ -47,8 +47,13 @@ public class WebhookEvent extends BaseEntity {
         this.status = WebhookStatus.RECEIVED;
         this.receivedAt = LocalDateTime.now();
     }
+
     public void completeProcess() {
         this.status = WebhookStatus.PROCESSED;
         this.processedAt = LocalDateTime.now();
+    }
+
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
     }
 }
