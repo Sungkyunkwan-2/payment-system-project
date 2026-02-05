@@ -17,7 +17,7 @@ public class MasterMembership extends BaseEntity {
     @Id
     @Enumerated(EnumType.STRING)
     @Column(name = "membership", nullable = false, length = 30)
-    private Membership membership;
+    private MembershipStatus membership;
 
     @Column(name = "ratio", nullable = false)
     private double ratio;
@@ -25,7 +25,7 @@ public class MasterMembership extends BaseEntity {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    public MasterMembership(Membership membership, double ratio) {
+    public MasterMembership(MembershipStatus membership, double ratio) {
         this.membership = membership;
         this.ratio = ratio;
     }

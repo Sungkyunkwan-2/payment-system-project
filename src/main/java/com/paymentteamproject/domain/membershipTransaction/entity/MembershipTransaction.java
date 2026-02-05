@@ -1,4 +1,4 @@
-package com.paymentteamproject.domain.membershipTransaction;
+package com.paymentteamproject.domain.membershipTransaction.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
 import com.paymentteamproject.domain.masterMembership.entity.MasterMembership;
