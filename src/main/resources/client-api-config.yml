@@ -58,7 +58,7 @@ api:
               description: 로그인한 사용자 이메일
 
     register:
-      url:
+      url: /api/auth/register
       method:
       description: 회원가입
       request:

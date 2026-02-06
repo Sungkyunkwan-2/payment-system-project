@@ -1,6 +1,11 @@
 package com.paymentteamproject.common.controller;
 
+import com.paymentteamproject.common.dtos.ApiResponse;
+import com.paymentteamproject.common.dtos.RegisterRequest;
+import com.paymentteamproject.common.dtos.RegisterResponse;
+import com.paymentteamproject.domain.user.service.UserService;
 import com.paymentteamproject.security.JwtTokenProvider;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +29,7 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
+    private final UserService userService;
 
     /**
      * 로그인 API
@@ -44,6 +50,14 @@ public class AuthController {
      *   "email": "user@example.com"
      * }
      */
+    @PostMapping("/register")
+    public ResponseEntity<ApiResponse<RegisterResponse>> register(@Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.ok().body(
+                ApiResponse.success(
+                        HttpStatus.CREATED, "회원가입에 성공했습니다.", userService.save(request)
+                )
+        );
+    }
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, String> request) {
         String email = request.get("email");
