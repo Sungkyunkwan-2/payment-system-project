@@ -1,6 +1,7 @@
 package com.paymentteamproject.domain.payment.service;
 
 import com.paymentteamproject.domain.order.entity.Orders;
+import com.paymentteamproject.domain.order.repository.OrderRepository;
 import com.paymentteamproject.domain.payment.dtos.StartPaymentRequest;
 import com.paymentteamproject.domain.payment.dtos.StartPaymentResponse;
 import com.paymentteamproject.domain.payment.entity.Payment;
