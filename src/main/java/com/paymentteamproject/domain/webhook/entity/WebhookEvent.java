@@ -53,6 +53,11 @@ public class WebhookEvent extends BaseEntity {
         this.processedAt = LocalDateTime.now();
     }
 
+    public void fail() {
+        this.status = WebhookStatus.FAILED;
+        this.processedAt = LocalDateTime.now();
+    }
+
     public void softDelete() {
         this.deletedAt = LocalDateTime.now();
     }
