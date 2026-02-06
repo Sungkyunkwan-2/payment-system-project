@@ -1,0 +1,107 @@
+package com.paymentteamproject.domain.order.service;
+
+import com.paymentteamproject.domain.order.dto.CreateOrderRequest;
+import com.paymentteamproject.domain.order.dto.CreateOrderResponse;
+import com.paymentteamproject.domain.order.dto.OrderItemRequest;
+import com.paymentteamproject.domain.order.entity.OrderStatus;
+import com.paymentteamproject.domain.order.entity.Orders;
+import com.paymentteamproject.domain.order.repository.OrderRepository;
+import com.paymentteamproject.domain.orderProduct.entity.OrderProduct;
+import com.paymentteamproject.domain.orderProduct.repository.OrderProductRepository;
+import com.paymentteamproject.domain.product.entity.Product;
+import com.paymentteamproject.domain.product.repository.ProductRepository;
+import com.paymentteamproject.domain.user.entity.User;
+
+import com.paymentteamproject.domain.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+@Service
+@RequiredArgsConstructor
+public class OrderService {
+    private final OrderRepository orderRepository;
+    private final OrderProductRepository orderProductRepository;
+    private final ProductRepository productRepository;
+    private final UserRepository userRepository;
+
+
+    @Transactional
+    public CreateOrderResponse createOrder(Long userId, CreateOrderRequest request) {
+        // 주문 상품 목록 검증
+        if (request.getItems() == null || request.getItems().isEmpty()) {
+            throw new IllegalArgumentException("주문 상품이 비어있습니다.");
+        }
+
+        // 사용자 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        Long orderNumber = generateOrderNumber();
+
+        // 총액 계산 및 상품 검증
+        double totalAmount = 0.0;
+        for (OrderItemRequest item : request.getItems()) {
+            Product product = productRepository.findById(item.getProductId())
+                    .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다. ID: " + item.getProductId()));
+
+            // 재고 확인
+            if (product.getStock() < item.getQuantity()) {
+                throw new IllegalArgumentException(
+                        String.format("재고가 부족합니다. 상품: %s, 요청 수량: %d, 재고: %d",
+                                product.getName(), item.getQuantity(), product.getStock())
+                );
+            }
+
+            totalAmount += product.getPrice() * item.getQuantity();
+        }
+
+        // 주문 생성
+        Orders order = Orders.builder()
+                .user(user)
+                .orderNumber(orderNumber)
+                .totalPrice(totalAmount)
+                .usedPoint(0.0)
+                .status(OrderStatus.PAYMENT_PENDING)
+                .build();
+
+        Orders savedOrder = orderRepository.save(order);
+
+        // 주문 상품 생성 및 재고 차감
+        for (OrderItemRequest item : request.getItems()) {
+            Product product = productRepository.findById(item.getProductId())
+                    .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
+
+            // 주문 상품 생성
+            OrderProduct orderProduct = OrderProduct.builder()
+                    .order(savedOrder)
+                    .productId(product.getId())
+                    .productName(product.getName())
+                    .price(product.getPrice())
+                    .currency("KRW") //통화는 원화로 고정
+                    .quantity(item.getQuantity())
+                    .build();
+
+            orderProductRepository.save(orderProduct);
+
+            // 재고 차감
+            product.decreaseStock(item.getQuantity());
+        }
+
+        return new CreateOrderResponse(
+                savedOrder.getId(),
+                savedOrder.getTotalPrice(),
+                savedOrder.getOrderNumber()
+        );
+    }
+
+    // 주문번호 생성 (ORD + yyyyMMddHHmmss)
+    private Long generateOrderNumber() {
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        return Long.parseLong("1" + timestamp); // 1을 prefix로 추가하여 Long 범위 내에서 유니크한 번호 생성
+    }
+}

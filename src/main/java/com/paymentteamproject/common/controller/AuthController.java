@@ -1,11 +1,17 @@
 package com.paymentteamproject.common.controller;
 
+import com.paymentteamproject.common.dtos.ApiResponse;
+import com.paymentteamproject.common.dtos.auth.LoginRequest;
+import com.paymentteamproject.common.dtos.auth.RegisterRequest;
+import com.paymentteamproject.common.dtos.auth.RegisterResponse;
+import com.paymentteamproject.common.service.AuthService;
+import com.paymentteamproject.domain.user.service.UserService;
 import com.paymentteamproject.security.JwtTokenProvider;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +30,8 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
+    private final UserService userService;
+    private final AuthService authService;
 
     /**
      * 로그인 API
@@ -44,30 +52,27 @@ public class AuthController {
      *   "email": "user@example.com"
      * }
      */
+    @PostMapping("/register")
+    public ResponseEntity<ApiResponse<RegisterResponse>> register(@Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.ok().body(
+                ApiResponse.success(
+                        HttpStatus.CREATED, "회원가입에 성공했습니다.", userService.save(request)
+                )
+        );
+    }
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, String> request) {
-        String email = request.get("email");
-        String password = request.get("password");
+    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest request) {
 
         Map<String, Object> response = new HashMap<>();
 
         try {
-            // 1. 인증 시도
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(email, password)
-            );
-
-            // 2. JWT 토큰 생성
-            String token = jwtTokenProvider.createToken(email);
-
-            // 3. 응답
+            String token = authService.login(request);
             response.put("success", true);
-            response.put("email", email);
+            response.put("email", request.getEmail());
 
             return ResponseEntity.ok()
                     .header("Authorization", "Bearer " + token)
                     .body(response);
-
         } catch (AuthenticationException e) {
             // 인증 실패
             response.put("success", false);
