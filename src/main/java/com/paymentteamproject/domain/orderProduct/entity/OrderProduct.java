@@ -4,6 +4,7 @@ import com.paymentteamproject.common.entity.BaseEntity;
 import com.paymentteamproject.domain.order.entity.Orders;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -29,7 +30,7 @@ public class OrderProduct  extends BaseEntity {
     private String productName;
 
     @Column(nullable = false)
-    private Long price;
+    private double price;
 
     @Column(nullable = false)
     private String currency;
@@ -38,4 +39,14 @@ public class OrderProduct  extends BaseEntity {
     private Long quantity;
 
     private LocalDateTime deletedAt;
+
+    @Builder
+    public OrderProduct(Orders order, Long productId, String productName, double price, String currency, Long quantity) {
+        this.order = order;
+        this.productId = productId;
+        this.productName = productName;
+        this.price = price;
+        this.currency = currency;
+        this.quantity = quantity;
+    }
 }

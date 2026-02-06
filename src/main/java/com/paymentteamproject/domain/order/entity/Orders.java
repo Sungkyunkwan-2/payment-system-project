@@ -4,6 +4,7 @@ import com.paymentteamproject.common.entity.BaseEntity;
 import com.paymentteamproject.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -35,4 +36,13 @@ public class Orders extends BaseEntity {
     private OrderStatus status;
 
     private LocalDateTime deletedAt;
+
+    @Builder
+    public Orders(User user, Long orderNumber, double totalPrice, double usedPoint, OrderStatus status) {
+        this.user = user;
+        this.orderNumber = orderNumber;
+        this.totalPrice = totalPrice;
+        this.usedPoint = usedPoint;
+        this.status = status;
+    }
 }
