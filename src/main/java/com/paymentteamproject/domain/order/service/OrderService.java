@@ -1,8 +1,7 @@
 package com.paymentteamproject.domain.order.service;
 
-import com.paymentteamproject.common.exception.InvalidRequestException;
-import com.paymentteamproject.common.exception.InsufficientStockException;
-import com.paymentteamproject.common.exception.ResourceNotFoundException;
+import com.paymentteamproject.domain.order.exception.OrderEmptyException;
+import com.paymentteamproject.domain.product.exception.InsufficientStockException;
 import com.paymentteamproject.domain.order.dto.CreateOrderRequest;
 import com.paymentteamproject.domain.order.dto.CreateOrderResponse;
 import com.paymentteamproject.domain.order.dto.OrderItemRequest;
@@ -12,9 +11,11 @@ import com.paymentteamproject.domain.order.repository.OrderRepository;
 import com.paymentteamproject.domain.orderProduct.entity.OrderProduct;
 import com.paymentteamproject.domain.orderProduct.repository.OrderProductRepository;
 import com.paymentteamproject.domain.product.entity.Product;
+import com.paymentteamproject.domain.product.exception.ProductNotFoundException;
 import com.paymentteamproject.domain.product.repository.ProductRepository;
 import com.paymentteamproject.domain.user.entity.User;
 
+import com.paymentteamproject.domain.user.exception.UserNotFoundException;
 import com.paymentteamproject.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -34,18 +35,18 @@ public class OrderService {
     public CreateOrderResponse createOrder(Long userId, CreateOrderRequest request) {
         // 주문 상품 목록 검증
         if (request.getItems() == null || request.getItems().isEmpty()) {
-            throw new InvalidRequestException("주문 상품이 비어있습니다.");
+            throw new OrderEmptyException("주문 상품이 비어있습니다.");
         }
 
         // 사용자 조회
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
 
         // 총액 계산 및 상품 검증
         double totalAmount = 0.0;
         for (OrderItemRequest item : request.getItems()) {
             Product product = productRepository.findById(item.getProductId())
-                    .orElseThrow(() -> new ResourceNotFoundException("상품을 찾을 수 없습니다. ID: " + item.getProductId()));
+                    .orElseThrow(() -> new ProductNotFoundException("상품을 찾을 수 없습니다. ID: " + item.getProductId()));
 
             // 재고 확인
             if (product.getStock() < item.getQuantity()) {
@@ -71,7 +72,7 @@ public class OrderService {
         // 주문 상품 생성 및 재고 차감
         for (OrderItemRequest item : request.getItems()) {
             Product product = productRepository.findById(item.getProductId())
-                    .orElseThrow(() -> new ResourceNotFoundException("상품을 찾을 수 없습니다."));
+                    .orElseThrow(() -> new ProductNotFoundException("상품을 찾을 수 없습니다."));
 
             // 주문 상품 생성
             OrderProduct orderProduct = OrderProduct.builder()

@@ -1,6 +1,6 @@
 package com.paymentteamproject.domain.orderProduct.service;
 
-import com.paymentteamproject.common.exception.ForbiddenException;
+import com.paymentteamproject.domain.order.exception.OrderAccessException;
 import com.paymentteamproject.domain.order.entity.Orders;
 import com.paymentteamproject.domain.order.repository.OrderRepository;
 import com.paymentteamproject.domain.orderProduct.dto.getAllOrderProductResponse;
@@ -163,7 +163,7 @@ class OrderProductServiceTest {
         assertThatThrownBy(() ->
                 orderProductService.getOneOrderProducts(userId, orderId)
         )
-                .isInstanceOf(ForbiddenException.class)
+                .isInstanceOf(OrderAccessException.class)
                 .hasMessage("본인의 주문만 조회할 수 있습니다.");
 
         verify(userRepository).findById(userId);

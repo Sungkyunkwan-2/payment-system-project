@@ -1,5 +1,6 @@
-package com.paymentteamproject.common.exception;
+package com.paymentteamproject.domain.product.exception;
 
+import com.paymentteamproject.common.exception.BusinessException;
 import org.springframework.http.HttpStatus;
 
 public class InsufficientStockException extends BusinessException {

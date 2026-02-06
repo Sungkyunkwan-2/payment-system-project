@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ApiResponse<Void>> handleBusinessException(
+    public ResponseEntity<ApiResponse<String>> handleBusinessException(
             BusinessException e
     ) {
         return ResponseEntity
@@ -17,7 +17,7 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(
                         e.getStatus(),
                         e.getMessage(),
-                        null
+                        e.getClass().getSimpleName()
                 ));
     }
 }
