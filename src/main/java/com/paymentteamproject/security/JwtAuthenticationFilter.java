@@ -1,5 +1,8 @@
 package com.paymentteamproject.security;
 
+import com.paymentteamproject.domain.user.entity.User;
+import com.paymentteamproject.domain.user.exception.UserNotFoundException;
+import com.paymentteamproject.domain.user.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,9 +29,11 @@ import java.util.Collections;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final UserRepository userRepository;
 
-    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
+    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, UserRepository userRepository) {
         this.jwtTokenProvider = jwtTokenProvider;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -48,10 +53,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String email = jwtTokenProvider.getEmail(token);
 
                 // 4. 인증 객체 생성
+                User user = userRepository.findByEmail(email)
+                        .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다: " + email));
+
+                //TODO: @AuthenticationPrincipal User user 형식 지원 가능하도록 principal을 user 객체로 변경
                 UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
-                            email,
-                        null,
+                            user,
+                        email,
                         Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
                     );
 
