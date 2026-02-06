@@ -2,7 +2,6 @@ package com.paymentteamproject.common.controller;
 
 import com.paymentteamproject.common.dtos.ApiResponse;
 import com.paymentteamproject.common.dtos.auth.LoginRequest;
-import com.paymentteamproject.common.dtos.auth.LoginResponse;
 import com.paymentteamproject.common.dtos.auth.RegisterRequest;
 import com.paymentteamproject.common.dtos.auth.RegisterResponse;
 import com.paymentteamproject.common.service.AuthService;
@@ -13,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
@@ -63,18 +61,18 @@ public class AuthController {
         );
     }
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
-        String email = request.getEmail();
-        String password = request.getPassword();
+    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest request) {
 
         Map<String, Object> response = new HashMap<>();
 
         try {
+            String token = authService.login(request);
+            response.put("success", true);
+            response.put("email", request.getEmail());
 
             return ResponseEntity.ok()
                     .header("Authorization", "Bearer " + token)
-                    .body(authService.login(request));
-
+                    .body(response);
         } catch (AuthenticationException e) {
             // 인증 실패
             response.put("success", false);
