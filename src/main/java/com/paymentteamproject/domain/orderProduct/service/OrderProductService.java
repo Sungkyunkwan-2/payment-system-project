@@ -47,6 +47,7 @@ public class OrderProductService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public getOneOrderProductResponse getOneOrderProducts(Long userId, Long orderId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));

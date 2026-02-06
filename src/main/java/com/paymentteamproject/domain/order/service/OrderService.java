@@ -1,6 +1,6 @@
 package com.paymentteamproject.domain.order.service;
 
-import com.paymentteamproject.domain.order.exception.OrderEmptyException;
+import com.paymentteamproject.domain.orderProduct.exception.OrderProductEmptyException;
 import com.paymentteamproject.domain.product.exception.InsufficientStockException;
 import com.paymentteamproject.domain.order.dto.CreateOrderRequest;
 import com.paymentteamproject.domain.order.dto.CreateOrderResponse;
@@ -35,7 +35,7 @@ public class OrderService {
     public CreateOrderResponse createOrder(Long userId, CreateOrderRequest request) {
         // 주문 상품 목록 검증
         if (request.getItems() == null || request.getItems().isEmpty()) {
-            throw new OrderEmptyException("주문 상품이 비어있습니다.");
+            throw new OrderProductEmptyException("주문 상품이 비어있습니다.");
         }
 
         // 사용자 조회
