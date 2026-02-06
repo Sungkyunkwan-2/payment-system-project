@@ -2,6 +2,7 @@ package com.paymentteamproject.domain.membershipTransaction.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
 import com.paymentteamproject.domain.masterMembership.entity.MasterMembership;
+import com.paymentteamproject.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
