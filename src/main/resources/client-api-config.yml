@@ -59,7 +59,7 @@ api:
 
     register:
       url: /api/auth/register
-      method:
+      method: POST
       description: 회원가입
       request:
         fields:

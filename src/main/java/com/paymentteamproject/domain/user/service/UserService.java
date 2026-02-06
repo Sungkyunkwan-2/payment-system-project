@@ -22,18 +22,18 @@ public class UserService {
         boolean duplicate = userRepository.existsByEmail(request.getEmail());
         if(duplicate) throw new DuplicateEmailException();
         // db에 저장
-        User savedUser = new User(
-                request.getUsername(),
+        User user = new User(
+                request.getName(),
                 request.getPhone(),
                 request.getEmail(),
                 request.getPassword(),
                 0
         );
-        userRepository.save(savedUser);
+        User savedUser = userRepository.save(user);
         // 반환
         return new RegisterResponse(
-                request.getUsername(),
-                request.getEmail()
+                savedUser.getUsername(),
+                savedUser.getEmail()
         );
     }
 }
