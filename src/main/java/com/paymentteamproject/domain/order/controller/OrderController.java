@@ -1,5 +1,6 @@
 package com.paymentteamproject.domain.order.controller;
 
+import com.paymentteamproject.common.dtos.ApiResponse;
 import com.paymentteamproject.domain.order.dto.CreateOrderRequest;
 import com.paymentteamproject.domain.order.dto.CreateOrderResponse;
 import com.paymentteamproject.domain.order.service.OrderService;
@@ -19,10 +20,14 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/orders")
-    public ResponseEntity<CreateOrderResponse> createOrder(
+    public ResponseEntity<ApiResponse<CreateOrderResponse>> createOrder(
             @AuthenticationPrincipal User user,
             @Valid @RequestBody CreateOrderRequest request
     ){
-        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrder(user.getId(), request));
+        return ResponseEntity.ok().body(
+                ApiResponse.success(
+                        HttpStatus.CREATED, "주문 생성에 성공했습니다.", orderService.createOrder(user.getId(), request)
+                )
+        );
     }
 }
