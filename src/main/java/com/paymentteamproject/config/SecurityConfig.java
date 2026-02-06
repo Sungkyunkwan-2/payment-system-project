@@ -89,16 +89,16 @@ public class SecurityConfig {
     /**
      * Admin 계정 (InMemory - 데모용)
      */
-    @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
-        UserDetails admin = User.builder()
-                .username("admin@test.com")
-                .password(passwordEncoder.encode("admin"))
-                .roles("USER", "ADMIN")
-                .build();
-
-        return new InMemoryUserDetailsManager(admin);
-    }
+//    @Bean
+//    public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
+//        UserDetails admin = User.builder()
+//                .username("admin@test.com")
+//                .password(passwordEncoder.encode("admin"))
+//                .roles("USER", "ADMIN")
+//                .build();
+//
+//        return new InMemoryUserDetailsManager(admin);
+//    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) {

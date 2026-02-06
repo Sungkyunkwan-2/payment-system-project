@@ -8,7 +8,7 @@ public class LoginResponse {
     private final String email;
 
 
-    public LoginResponse(String name, String email) {
+    public LoginResponse(String name, String email, String token) {
         this.name = name;
         this.email = email;
     }
