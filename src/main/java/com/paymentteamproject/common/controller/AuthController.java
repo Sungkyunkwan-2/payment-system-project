@@ -1,8 +1,11 @@
 package com.paymentteamproject.common.controller;
 
 import com.paymentteamproject.common.dtos.ApiResponse;
-import com.paymentteamproject.common.dtos.RegisterRequest;
-import com.paymentteamproject.common.dtos.RegisterResponse;
+import com.paymentteamproject.common.dtos.auth.LoginRequest;
+import com.paymentteamproject.common.dtos.auth.LoginResponse;
+import com.paymentteamproject.common.dtos.auth.RegisterRequest;
+import com.paymentteamproject.common.dtos.auth.RegisterResponse;
+import com.paymentteamproject.common.service.AuthService;
 import com.paymentteamproject.domain.user.service.UserService;
 import com.paymentteamproject.security.JwtTokenProvider;
 import jakarta.validation.Valid;
@@ -30,6 +33,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserService userService;
+    private final AuthService authService;
 
     /**
      * 로그인 API
@@ -59,28 +63,17 @@ public class AuthController {
         );
     }
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, String> request) {
-        String email = request.get("email");
-        String password = request.get("password");
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+        String email = request.getEmail();
+        String password = request.getPassword();
 
         Map<String, Object> response = new HashMap<>();
 
         try {
-            // 1. 인증 시도
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(email, password)
-            );
-
-            // 2. JWT 토큰 생성
-            String token = jwtTokenProvider.createToken(email);
-
-            // 3. 응답
-            response.put("success", true);
-            response.put("email", email);
 
             return ResponseEntity.ok()
                     .header("Authorization", "Bearer " + token)
-                    .body(response);
+                    .body(authService.login(request));
 
         } catch (AuthenticationException e) {
             // 인증 실패
