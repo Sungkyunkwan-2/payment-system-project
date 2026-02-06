@@ -32,6 +32,9 @@ public class OrderProduct  extends BaseEntity {
     private Long price;
 
     @Column(nullable = false)
+    private String currency;
+
+    @Column(nullable = false)
     private Long quantity;
 
     private LocalDateTime deletedAt;
