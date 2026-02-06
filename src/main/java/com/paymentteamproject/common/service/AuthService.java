@@ -2,14 +2,12 @@ package com.paymentteamproject.common.service;
 
 import com.paymentteamproject.common.dtos.auth.LoginRequest;
 import com.paymentteamproject.security.JwtTokenProvider;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @Service
 @RequiredArgsConstructor
