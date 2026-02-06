@@ -1,0 +1,39 @@
+package com.paymentteamproject.domain.payment.service;
+
+import com.paymentteamproject.domain.order.entity.Orders;
+import com.paymentteamproject.domain.payment.dtos.StartPaymentRequest;
+import com.paymentteamproject.domain.payment.dtos.StartPaymentResponse;
+import com.paymentteamproject.domain.payment.entity.Payment;
+import com.paymentteamproject.domain.payment.repository.PaymentRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class PaymentService {
+    private final PaymentRepository paymentRepository;
+    private final OrderRepository orderRepository;
+
+    // 결제 시작
+    @Transactional
+    public StartPaymentResponse start(StartPaymentRequest request) {
+
+        Orders order = orderRepository.findById(request.getOrderId()).orElseThrow(
+                // TODO 주문 예외 협업
+                () -> new IllegalArgumentException("존재하지 않는 주문입니다"));
+
+        // TODO payedAt 결제창 후? or initPayment 생성 시 (후자의 경우 createdAt과의 차별점?)
+        Payment payment = new Payment(
+                order,
+                request.getTotalAmount());
+        // TODO request.getPointsToUse 포인트 미구현으로 누락
+
+        Payment savedPayment = paymentRepository.save(payment);
+
+        return new StartPaymentResponse(
+                savedPayment.getPaymentId(),
+                savedPayment.getStatus(),
+                savedPayment.getCreatedAt());
+    }
+}

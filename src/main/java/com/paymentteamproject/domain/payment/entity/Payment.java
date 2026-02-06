@@ -36,4 +36,10 @@ public class Payment extends BaseEntity {
     private LocalDateTime refundedAt;
 
     private LocalDateTime deletedAt;
+
+    public Payment(Orders order, double price) {
+       this.order = order;
+       this.paymentId = "PAY" + id + System.currentTimeMillis();
+       this.price = price;
+    }
 }
