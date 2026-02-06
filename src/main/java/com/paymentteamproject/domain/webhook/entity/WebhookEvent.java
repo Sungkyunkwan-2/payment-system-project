@@ -49,21 +49,21 @@ public class WebhookEvent extends BaseEntity {
         this.status = WebhookStatus.RECEIVED;
         this.receivedAt = LocalDateTime.now();
 
-        log.info("요청시각: {}", receivedAt);
+        log.info("요청시각: {} 상태: {}", receivedAt, status);
     }
 
     public void completeProcess() {
         this.status = WebhookStatus.PROCESSED;
         this.processedAt = LocalDateTime.now();
 
-        log.info("처리완료 시각: {}", processedAt);
+        log.info("처리완료 시각: {}, 상태: {}", processedAt, status);
     }
 
     public void fail() {
         this.status = WebhookStatus.FAILED;
         this.processedAt = LocalDateTime.now();
 
-        log.info("처리실패 시각: {}", processedAt);
+        log.info("처리실패 시각: {} 상태: {}", processedAt, status);
     }
 
     public void softDelete() {
