@@ -1,5 +1,7 @@
 package com.paymentteamproject.domain.orderProduct.service;
 
+import com.paymentteamproject.common.exception.ForbiddenException;
+import com.paymentteamproject.common.exception.ResourceNotFoundException;
 import com.paymentteamproject.domain.order.entity.Orders;
 import com.paymentteamproject.domain.order.repository.OrderRepository;
 import com.paymentteamproject.domain.orderProduct.dto.getAllOrderProductResponse;
@@ -9,7 +11,6 @@ import com.paymentteamproject.domain.orderProduct.repository.OrderProductReposit
 import com.paymentteamproject.domain.user.entity.User;
 import com.paymentteamproject.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +27,7 @@ public class OrderProductService {
     public List<getAllOrderProductResponse> getAllOrderProducts(Long userId) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다."));
 
         List<OrderProduct> orderProducts =
                 orderProductRepository.findAllByOrder_User_Id(userId);
@@ -47,13 +48,13 @@ public class OrderProductService {
 
     public getOneOrderProductResponse getOneOrderProducts(Long userId, Long orderId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다."));
 
         Orders order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("주문을 찾을 수 없습니다."));
 
         if (!order.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("본인의 주문만 조회할 수 있습니다.");
+            throw new ForbiddenException("본인의 주문만 조회할 수 있습니다.");
         }
 
         List<OrderProduct> orderProducts = orderProductRepository.findAllByOrder_Id(orderId);

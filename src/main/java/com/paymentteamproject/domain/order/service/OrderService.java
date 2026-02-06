@@ -1,5 +1,8 @@
 package com.paymentteamproject.domain.order.service;
 
+import com.paymentteamproject.common.exception.InvalidRequestException;
+import com.paymentteamproject.common.exception.InsufficientStockException;
+import com.paymentteamproject.common.exception.ResourceNotFoundException;
 import com.paymentteamproject.domain.order.dto.CreateOrderRequest;
 import com.paymentteamproject.domain.order.dto.CreateOrderResponse;
 import com.paymentteamproject.domain.order.dto.OrderItemRequest;
@@ -18,9 +21,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -34,22 +34,22 @@ public class OrderService {
     public CreateOrderResponse createOrder(Long userId, CreateOrderRequest request) {
         // 주문 상품 목록 검증
         if (request.getItems() == null || request.getItems().isEmpty()) {
-            throw new IllegalArgumentException("주문 상품이 비어있습니다.");
+            throw new InvalidRequestException("주문 상품이 비어있습니다.");
         }
 
         // 사용자 조회
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다."));
 
         // 총액 계산 및 상품 검증
         double totalAmount = 0.0;
         for (OrderItemRequest item : request.getItems()) {
             Product product = productRepository.findById(item.getProductId())
-                    .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다. ID: " + item.getProductId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("상품을 찾을 수 없습니다. ID: " + item.getProductId()));
 
             // 재고 확인
             if (product.getStock() < item.getQuantity()) {
-                throw new IllegalArgumentException(
+                throw new InsufficientStockException(
                         String.format("재고가 부족합니다. 상품: %s, 요청 수량: %d, 재고: %d",
                                 product.getName(), item.getQuantity(), product.getStock())
                 );
@@ -71,7 +71,7 @@ public class OrderService {
         // 주문 상품 생성 및 재고 차감
         for (OrderItemRequest item : request.getItems()) {
             Product product = productRepository.findById(item.getProductId())
-                    .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
+                    .orElseThrow(() -> new ResourceNotFoundException("상품을 찾을 수 없습니다."));
 
             // 주문 상품 생성
             OrderProduct orderProduct = OrderProduct.builder()
