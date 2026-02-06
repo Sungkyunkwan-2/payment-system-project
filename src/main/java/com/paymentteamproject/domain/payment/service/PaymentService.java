@@ -2,6 +2,7 @@ package com.paymentteamproject.domain.payment.service;
 
 import com.paymentteamproject.domain.order.entity.Orders;
 import com.paymentteamproject.domain.order.repository.OrderRepository;
+import com.paymentteamproject.domain.payment.dtos.ConfirmPaymentResponse;
 import com.paymentteamproject.domain.payment.dtos.StartPaymentRequest;
 import com.paymentteamproject.domain.payment.dtos.StartPaymentResponse;
 import com.paymentteamproject.domain.payment.entity.Payment;
@@ -36,5 +37,12 @@ public class PaymentService {
                 savedPayment.getPaymentId(),
                 savedPayment.getStatus(),
                 savedPayment.getCreatedAt());
+    }
+
+    // 결제 확인
+    @Transactional
+    public ConfirmPaymentResponse confirm(String paymentId) {
+
+        
     }
 }
