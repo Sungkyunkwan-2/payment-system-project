@@ -41,8 +41,6 @@ public class OrderService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        Long orderNumber = generateOrderNumber();
-
         // 총액 계산 및 상품 검증
         double totalAmount = 0.0;
         for (OrderItemRequest item : request.getItems()) {
@@ -63,7 +61,6 @@ public class OrderService {
         // 주문 생성
         Orders order = Orders.builder()
                 .user(user)
-                .orderNumber(orderNumber)
                 .totalPrice(totalAmount)
                 .usedPoint(0.0)
                 .status(OrderStatus.PAYMENT_PENDING)
@@ -97,11 +94,5 @@ public class OrderService {
                 savedOrder.getTotalPrice(),
                 savedOrder.getOrderNumber()
         );
-    }
-
-    // 주문번호 생성 (ORD + yyyyMMddHHmmss)
-    private Long generateOrderNumber() {
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-        return Long.parseLong("1" + timestamp); // 1을 prefix로 추가하여 Long 범위 내에서 유니크한 번호 생성
     }
 }
