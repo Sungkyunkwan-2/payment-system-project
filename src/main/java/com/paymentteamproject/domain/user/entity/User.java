@@ -3,6 +3,7 @@ package com.paymentteamproject.domain.user.entity;
 import com.paymentteamproject.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -35,7 +36,9 @@ public class User extends BaseEntity {
 
     private LocalDateTime deletedAt;
 
-    public User(String username, String phone, String email, String password, double pointBalance){
+    @Builder
+    public User(String username, String phone, String email,
+                String password, double pointBalance){
 
         this.username = username;
 
