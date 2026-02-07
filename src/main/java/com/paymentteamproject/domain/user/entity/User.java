@@ -1,6 +1,7 @@
 package com.paymentteamproject.domain.user.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
+import com.paymentteamproject.domain.user.consts.UserRole;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -18,6 +19,10 @@ public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
 
     @Column(nullable = false)
     private String username;
@@ -50,6 +55,9 @@ public class User extends BaseEntity {
 
         //가입 시 관리자 임의로 포인트 지급 가능(가입 이벤트 등)
         this.pointBalance = pointBalance;
+
+        // 생성 시 기본 권한은 USER
+        this.role = UserRole.USER;
     }
 
     public void softDelete(){
