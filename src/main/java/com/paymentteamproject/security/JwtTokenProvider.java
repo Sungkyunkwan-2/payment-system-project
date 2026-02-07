@@ -21,8 +21,8 @@ public class JwtTokenProvider {
     private final long tokenValidityInMilliseconds;
 
     public JwtTokenProvider(
-        @Value("${jwt.secret:commercehub-secret-key-for-demo-please-change-this-in-production-environment}") String secret,
-        @Value("${jwt.token-validity-in-seconds:86400}") long tokenValidityInSeconds
+            @Value("${jwt.secret:commercehub-secret-key-for-demo-please-change-this-in-production-environment}") String secret,
+            @Value("${jwt.token-validity-in-seconds:86400}") long tokenValidityInSeconds
     ) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.tokenValidityInMilliseconds = tokenValidityInSeconds * 1000;
@@ -30,22 +30,24 @@ public class JwtTokenProvider {
 
     /**
      * JWT 토큰 생성
-     *
+     * <p>
      * TODO: 개선 사항
      * - 사용자 역할(Role) 정보 추가
      * - 추가 Claims 정보 (이름, 이메일 등)
      * - Refresh Token 발급 로직
      */
-    public String createToken(String email) {
+    public String createToken(String email, String name, String role) {
         Date now = new Date();
         Date validity = new Date(now.getTime() + tokenValidityInMilliseconds);
 
         return Jwts.builder()
-            .subject(email)
-            .issuedAt(now)
-            .expiration(validity)
-            .signWith(secretKey)
-            .compact();
+                .subject(email)
+                .claim("role", role)
+                .claim("name", name)
+                .issuedAt(now)
+                .expiration(validity)
+                .signWith(secretKey)
+                .compact();
     }
 
     /**
@@ -53,17 +55,17 @@ public class JwtTokenProvider {
      */
     public String getEmail(String token) {
         Claims claims = Jwts.parser()
-            .verifyWith(secretKey)
-            .build()
-            .parseSignedClaims(token)
-            .getPayload();
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
 
         return claims.getSubject();
     }
 
     /**
      * JWT 토큰 유효성 검증
-     *
+     * <p>
      * TODO: 개선 사항
      * - 토큰 블랙리스트 체크 (로그아웃된 토큰)
      * - 토큰 갱신 로직
@@ -72,9 +74,9 @@ public class JwtTokenProvider {
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token);
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token);
             return true;
         } catch (Exception e) {
             // TODO: 구체적인 예외 처리 구현

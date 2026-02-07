@@ -28,6 +28,14 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
+        return user.getEmail();
+    }
+
+    public String getRoleAuthority() {
+        return user.getRole().getAuthority();
+    }
+
+    public String getName() {
         return user.getUsername();
     }
 }
