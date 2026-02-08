@@ -2,8 +2,10 @@ package com.paymentteamproject.domain.product.service;
 
 import com.paymentteamproject.domain.product.dtos.GetProductResponse;
 import com.paymentteamproject.domain.product.entity.Product;
+import com.paymentteamproject.domain.product.exception.ProductNotFoundException;
 import com.paymentteamproject.domain.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,5 +32,21 @@ public class ProductService {
                         p.getCreatedAt()
                 ))
                 .toList();
+    }
+
+    public GetProductResponse getProduct(Long productId) {
+        Product product = productRepository.findById(productId).orElseThrow(
+                () -> new ProductNotFoundException("상품이 존재하지 않습니다.")
+        );
+        return new GetProductResponse(
+                product.getId(),
+                product.getName(),
+                product.getPrice(),
+                product.getStock(),
+                product.getContent(),
+                product.getStatus(),
+                product.getCategory(),
+                product.getCreatedAt()
+        );
     }
 }
