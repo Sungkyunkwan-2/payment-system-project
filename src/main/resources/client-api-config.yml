@@ -126,7 +126,6 @@ api:
       url: /products/{productId}
       pathParams:
         name: productId
-        type: number
         description: 상품의 고유 식별자
       method: GET
       description: 개별 상품 정보 조회
@@ -134,8 +133,7 @@ api:
         body:
           fields:
             - name: id
-              type: integer
-              format: int64
+              type: int64
               required: true
               description: 상품 ID
             - name: name
@@ -143,8 +141,7 @@ api:
               required: true
               description: 상품 이름
             - name: price
-              type: number # JSON/API 표준 타입
-              format: double
+              type: double
               required: true
               description: 상품 가격
             - name: content
@@ -160,18 +157,15 @@ api:
               required: true
               description: 상품 카테고리
             - name: stock
-              type: integer
-              format: int64
+              type: int64
               required: true
               description: 상품 재고
             - name: createdAt
-              type: string
-              format: date-time
+              type: date-time
               required: true
               description: 상품 생성일
             - name: deletedAt
-              type: string
-              format: date-time
+              type: date-time
               required: false
               description: 상품 삭제일
     list-products:
