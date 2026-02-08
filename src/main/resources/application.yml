@@ -39,7 +39,7 @@ server:
 portone:
   api:
     base-url: https://api.portone.io
-    secret: ${PORTONE_API_SECRET:your-api-secret}
+    secret: ${PORTONE_API_SECRET:b0mJj8nRf2imCadTnQ2yaoFrljvaQuSwZ9WvWu26fQNCdsRwG5BhnNKDdwMsFGEKwkYfIDHLeTMKjxtI}
   store:
     id: ${PORTONE_STORE_ID:your-store-id}
   channel:
