@@ -38,11 +38,14 @@ public class PaymentService {
     }
 
     // 결제 확인
-    @Transactional
-    public ConfirmPaymentResponse confirm(String paymentId) {
-
-        Payment payment = paymentRepository.findByPaymentId(paymentId).orElseThrow(
-                () -> new IllegalArgumentException("존재하지 않는 결제입니다."));
-
-    }
+//    @Transactional
+//    public ConfirmPaymentResponse confirm(String paymentId) {
+//
+//        Payment payment = paymentRepository.findByPaymentId(paymentId).orElseThrow(
+//                () -> new IllegalArgumentException("존재하지 않는 결제입니다."));
+//
+//        // TODO PortOne API 결제 조회 값 불러오기
+//        // 멱등성 검증, 결제 상태 = PAID, 결제 금액 = 주문 금액
+//
+//    }
 }
