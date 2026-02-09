@@ -19,8 +19,12 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping("/products")
-    public ResponseEntity<List<GetProductResponse>> getAllProducts(){
-        return ResponseEntity.status(HttpStatus.OK).body(productService.getAllProducts());
+    public ResponseEntity<ApiResponse<List<GetProductResponse>>> getAllProducts(){
+        return ResponseEntity.ok().body(
+         ApiResponse.success(
+                 HttpStatus.OK, "상품 목록 조회에 성공했습니다.", productService.getAllProducts()
+         )
+        );
     }
 
     @GetMapping("/products/{productId}")
