@@ -47,21 +47,31 @@ public class PaymentService {
         Payment payment = paymentRepository.findByPaymentId(paymentId).orElseThrow(
                 () -> new IllegalArgumentException("존재하지 않는 결제입니다."));
 
-        // TODO PortOne API 결제 조회 값 불러오기
+        // PortOne API 결제 조회 값 불러오기
         PortOnePaymentResponse response = restClient.get()
                 .uri("payments/{paymentId}", paymentId)
                 .retrieve()
                 .body(PortOnePaymentResponse.class);
 
-        if(response != null && response.getStatus().equals("PAID")) {
-            double amount = response.getAmount();
-            if(amount == payment.getPrice()) {
-                // TODO 재고 차감 & 상태 변경
-                return new ConfirmPaymentResponse(
-                        payment.getOrder().getOrderNumber(),
-                        payment.getStatus());
-            }
+        if(response == null) throw new IllegalArgumentException("존재하지 않는 결제입니다.");
+
+        if(!response.getStatus().equals("PAID")) {
+            Payment fail = payment.fail();
+            Payment savedFail = paymentRepository.save(fail);
+
+            return new ConfirmPaymentResponse(
+                    savedFail.getOrder().getOrderNumber(),
+                    savedFail.getStatus());
         }
+
+        int amount = response.getAmount().getTotal();
+        if(amount == payment.getPrice()) {
+            // TODO 재고 차감 & 상태 변경
+            return new ConfirmPaymentResponse(
+                    payment.getOrder().getOrderNumber(),
+                    payment.getStatus());
+        }
+
         return new ConfirmPaymentResponse(
                 payment.getOrder().getOrderNumber(),
                 payment.getStatus());

@@ -52,4 +52,9 @@ public class Payment extends BaseEntity {
                 price
         );
     }
+
+    public Payment fail() {
+        return new Payment(
+                this.order, this.paymentId, PaymentStatus.FAILURE, this.price);
+    }
 }
