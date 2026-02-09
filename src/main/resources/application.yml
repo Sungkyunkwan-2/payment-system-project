@@ -39,14 +39,14 @@ server:
 portone:
   api:
     base-url: https://api.portone.io
-    secret: ${PORTONE_API_SECRET:b0mJj8nRf2imCadTnQ2yaoFrljvaQuSwZ9WvWu26fQNCdsRwG5BhnNKDdwMsFGEKwkYfIDHLeTMKjxtI}
+    secret: ${PORTONE_API_SECRET:your-secret-key}
   store:
     id: ${PORTONE_STORE_ID:your-store-id}
   channel:
     kg-inicis: ${PORTONE_CHANNEL_KG:your-kg-inicis-channel-key}
     toss: ${PORTONE_CHANNEL_TOSS:your-toss-channel-key}
   webhook:
-    secret: sdafhjdsifj89031j901f123
+    secret: whsec_ph0eD2RN/EO8bKg+gFDWwYlzZSQFACLbTx78/OR7eRo=
 # JWT Configuration
 jwt:
   secret: ${JWT_SECRET:commercehub-secret-key-for-demo-please-change-this-in-production-environment}

@@ -39,6 +39,10 @@ public class WebHookRequest {
         @JsonProperty("storeId")
         private String storeId;
 
+        @NotNull(message = "amount는 필수 값입니다.")
+        @JsonProperty("amount")
+        private double amount;
+
         @NotNull(message = "status는 필수 값입니다")
         @JsonProperty("status")
         private PaymentWebhookPaymentStatus status;
