@@ -94,6 +94,7 @@ async function makeApiRequest(endpointKey, options = {}) {
             };
         }
 
+        // ✅ 수정 후: 래퍼 객체면 data 필드를 꺼내고, success도 함께 넘겨주기
         if (data && data.data !== undefined) {
             const unwrapped = data.data;
 

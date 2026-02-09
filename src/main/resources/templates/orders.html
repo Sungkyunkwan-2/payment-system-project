@@ -237,12 +237,19 @@
                 });
 
                 // YML 스키마 기반 자동 검증
-                /*
                 if (!validateApiResponse('list-orders', result)) {
                     throw new Error('API 응답 형식이 올바르지 않습니다.');
-                }*/
+                }
 
-                orders = result.data;
+                // 중복 제거: orderId 기준으로 고유한 주문만 남김
+                const rawOrders = result || [];
+                const uniqueOrdersMap = new Map();
+                rawOrders.forEach(order => {
+                    if (!uniqueOrdersMap.has(order.orderId)) {
+                        uniqueOrdersMap.set(order.orderId, order);
+                    }
+                });
+                orders = Array.from(uniqueOrdersMap.values());
                 loadingEl.style.display = 'none';
 
                 if (orders.length === 0) {
