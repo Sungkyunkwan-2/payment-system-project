@@ -2,14 +2,17 @@ package com.paymentteamproject.domain.auth.controller;
 
 import com.paymentteamproject.common.dtos.ApiResponse;
 import com.paymentteamproject.domain.auth.dto.*;
+import com.paymentteamproject.domain.auth.exception.TokenException;
 import com.paymentteamproject.domain.auth.service.AuthService;
 import com.paymentteamproject.domain.auth.util.CookieUtil;
 import com.paymentteamproject.domain.user.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -72,6 +75,34 @@ public class AuthController {
                 );
     }
 
+    /**
+     * 토큰 재발급 API
+     * POST /api/auth/refresh
+     */
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(HttpServletRequest request, HttpServletResponse response) {
+        // 1. 쿠키에서 리프레시 토큰 추출
+        String refreshToken = CookieUtil.getCookie(request, REFRESH_TOKEN_COOKIE_NAME)
+                .orElseThrow(() -> new TokenException("리프레시 토큰이 쿠키에 존재하지 않습니다."));
+
+        // 2. 서비스 로직 호출 (새 토큰 세트 생성)
+        TokenDto tokens = authService.refresh(refreshToken);
+
+        // 3. 새로운 Refresh Token을 쿠키에 업데이트
+        CookieUtil.addCookie(
+                response,
+                REFRESH_TOKEN_COOKIE_NAME,
+                tokens.refreshToken(),
+                REFRESH_TOKEN_COOKIE_MAX_AGE,
+                cookieSecure
+        );
+
+        // 4. 새로운 Access Token을 헤더에 담아 응답
+        return ResponseEntity.ok()
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokens.accessToken())
+                .header("Access-Control-Expose-Headers", "Authorization")
+                .body(Map.of("success", true, "message", "토큰 재발급 성공"));
+    }
 
     /**
      * 현재 로그인한 사용자 정보 조회 API

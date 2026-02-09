@@ -3,6 +3,7 @@ package com.paymentteamproject.domain.auth.service;
 import com.paymentteamproject.domain.auth.dto.LoginRequest;
 import com.paymentteamproject.domain.auth.dto.TokenDto;
 import com.paymentteamproject.domain.auth.entity.RefreshToken;
+import com.paymentteamproject.domain.user.entity.User;
 import com.paymentteamproject.domain.user.repository.UserRepository;
 import com.paymentteamproject.security.CustomUserDetails;
 import com.paymentteamproject.security.JwtTokenProvider;
@@ -63,5 +64,27 @@ public class AuthService {
             throw e;
         }
 
+    }
+
+    @Transactional
+    public TokenDto refresh(String refreshToken) {
+        // 1. 리프레시 토큰 검증 (DB 조회 및 만료 확인)
+        // 이전에 구현한 refreshTokenService.verifyRefreshToken을 활용합니다.
+        RefreshToken tokenEntity = refreshTokenService.verifyRefreshToken(refreshToken);
+
+        // 2. 유저 정보 추출
+        User user = tokenEntity.getUser();
+
+        // 3. 새로운 Access Token 생성
+        String newAccessToken = jwtTokenProvider.createToken(
+                user.getEmail(),
+                user.getUsername(),
+                user.getRole().getAuthority() // 유저 엔티티의 권한 필드명에 맞춰 수정하세요
+        );
+
+        // 4. (선택) Refresh Token Rotation: 리프레시 토큰도 새로 발급하여 보안 강화
+        RefreshToken rotatedToken = refreshTokenService.rotateRefreshToken(refreshToken);
+
+        return new TokenDto(newAccessToken, rotatedToken.getToken());
     }
 }

@@ -52,8 +52,6 @@ public class CookieUtil {
      * @return 쿠키 값 (Optional)
      */
     public static Optional<String> getCookie(HttpServletRequest request, String name) {
-        CookieUtil.request = request;
-        CookieUtil.name = name;
         Cookie[] cookies = request.getCookies();
 
         if (cookies == null) {

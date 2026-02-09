@@ -10,12 +10,28 @@
  *   - method: HTTP 메서드 (생략 시 YAML 설정에서 자동으로 가져옴)
  * @returns {Promise<Object>} 응답 데이터 (returnHeaders가 true면 { data, headers })
  */
+// 토큰을 가져오는 함수
+function getToken() {
+    return localStorage.getItem('authToken');
+}
+
+// 토큰을 저장하는 함수
+function setToken(token) {
+    localStorage.setItem('authToken', token);
+}
+
+// 토큰을 삭제하는 함수 (기존 removeToken 대체용)
+function removeToken() {
+    localStorage.removeItem('authToken');
+}
+
 async function makeApiRequest(endpointKey, options = {}) {
     const {
         body = null,
         params = {},
         pathParams = {},
-        returnHeaders = false
+        returnHeaders = false,
+        isRetry = false // 무한 루프 방지용 플래그
     } = options;
 
     try {
@@ -47,9 +63,9 @@ async function makeApiRequest(endpointKey, options = {}) {
         // Make request
         const fetchOptions = {
             method,
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            headers: {'Content-Type': 'application/json'},
+            // 쿠키 (Refresh Token)를 주고받기 위한 필수 설정
+            credentials: 'include'
         };
 
         // JWT 토큰이 있으면 Authorization 헤더 추가
@@ -62,14 +78,44 @@ async function makeApiRequest(endpointKey, options = {}) {
             fetchOptions.body = JSON.stringify(body);
         }
 
-        const response = await fetch(url, fetchOptions);
+        let response = await fetch(url, fetchOptions);
 
-        // 401 Unauthorized 응답 시 로그인 페이지로 이동 (쿠키 삭제)
-        if (response.status === 401) {
-            if (typeof removeToken === 'function') removeToken();
-            window.location.href = '/pages/login';
-            return;
+        // 401 Unauthorized 발생 시 리프레시 로직 시작
+        if (response.status === 401 && !isRetry) {
+            console.log("엑세스 토큰 만료 감지. 재발급을 시도합니다.")
+
+            // 갱신 API 호출
+            const refreshResponse = await fetch('/api/auth/refresh', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                credentials: 'include' // 쿠키 전송
+            })
+
+            if (refreshResponse.ok) {
+                // 1. 백엔드가 보낸 새 액세스 토큰을 헤더에서 추출
+                const newAuthHeader = refreshResponse.headers.get('Authorization');
+
+                if (newAuthHeader && newAuthHeader.startsWith('Bearer ')) {
+                    const newToken = newAuthHeader.substring(7);
+
+                    // ✅ 1. 방금 만든 함수로 새 토큰 저장
+                    setToken(newToken);
+
+                    console.log("✅ 새 액세스 토큰 저장 완료. 원래 요청 재시도 중...");
+
+                    // ✅ 2. 중요: 재시도할 때 options에 새 토큰을 명시적으로 넣어버리기
+                    // 이렇게 하면 getToken()이 혹시 실패하더라도 안전합니다.
+                    return await makeApiRequest(endpointKey, { ...options, isRetry: true });
+                }
+            } else {
+                // 리프레시 토큰도 만료된 경우
+                console.error("프레시 토큰이 만료되었거나 유효하지 않습니다.");
+                if (typeof removeToken === 'function') removeToken();
+                window.location.href = '/pages/login';
+                return;
+            }
         }
+
         const text = await response.text();
         const data = text ? JSON.parse(text) : {
             error: '응답 본문 없음',
