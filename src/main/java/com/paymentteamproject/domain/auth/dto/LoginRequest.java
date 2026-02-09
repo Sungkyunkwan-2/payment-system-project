@@ -1,4 +1,4 @@
-package com.paymentteamproject.common.dtos.auth;
+package com.paymentteamproject.domain.auth.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

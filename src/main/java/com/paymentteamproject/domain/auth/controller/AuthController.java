@@ -1,10 +1,10 @@
-package com.paymentteamproject.common.controller;
+package com.paymentteamproject.domain.auth.controller;
 
 import com.paymentteamproject.common.dtos.ApiResponse;
-import com.paymentteamproject.common.dtos.auth.LoginRequest;
-import com.paymentteamproject.common.dtos.auth.RegisterRequest;
-import com.paymentteamproject.common.dtos.auth.RegisterResponse;
-import com.paymentteamproject.common.service.AuthService;
+import com.paymentteamproject.domain.auth.dto.LoginRequest;
+import com.paymentteamproject.domain.auth.dto.RegisterRequest;
+import com.paymentteamproject.domain.auth.dto.RegisterResponse;
+import com.paymentteamproject.domain.auth.service.AuthService;
 import com.paymentteamproject.domain.user.service.UserService;
 import com.paymentteamproject.security.JwtTokenProvider;
 import jakarta.validation.Valid;

@@ -1,6 +1,6 @@
-package com.paymentteamproject.common.service;
+package com.paymentteamproject.domain.auth.service;
 
-import com.paymentteamproject.common.dtos.auth.LoginRequest;
+import com.paymentteamproject.domain.auth.dto.LoginRequest;
 import com.paymentteamproject.security.CustomUserDetails;
 import com.paymentteamproject.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;

@@ -1,7 +1,7 @@
 package com.paymentteamproject.domain.user.service;
 
-import com.paymentteamproject.common.dtos.auth.RegisterRequest;
-import com.paymentteamproject.common.dtos.auth.RegisterResponse;
+import com.paymentteamproject.domain.auth.dto.RegisterRequest;
+import com.paymentteamproject.domain.auth.dto.RegisterResponse;
 import com.paymentteamproject.domain.user.entity.User;
 import com.paymentteamproject.domain.user.exceptions.DuplicateEmailException;
 import com.paymentteamproject.domain.user.repository.UserRepository;
