@@ -62,5 +62,8 @@ public class PaymentService {
                         payment.getStatus());
             }
         }
+        return new ConfirmPaymentResponse(
+                payment.getOrder().getOrderNumber(),
+                payment.getStatus());
     }
 }
