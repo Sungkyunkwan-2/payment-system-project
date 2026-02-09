@@ -1,18 +1,17 @@
 package com.paymentteamproject.domain.auth.controller;
 
 import com.paymentteamproject.common.dtos.ApiResponse;
-import com.paymentteamproject.domain.auth.dto.LoginRequest;
-import com.paymentteamproject.domain.auth.dto.RegisterRequest;
-import com.paymentteamproject.domain.auth.dto.RegisterResponse;
+import com.paymentteamproject.domain.auth.dto.*;
 import com.paymentteamproject.domain.auth.service.AuthService;
+import com.paymentteamproject.domain.auth.util.CookieUtil;
 import com.paymentteamproject.domain.user.service.UserService;
-import com.paymentteamproject.security.JwtTokenProvider;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -23,15 +22,20 @@ import java.util.Map;
  * 인증 관련 API 컨트롤러
  * 구현할 API 엔드포인트 템플릿
  */
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtTokenProvider jwtTokenProvider;
     private final UserService userService;
     private final AuthService authService;
+
+    @Value("${cookie.secure:false}")
+    private boolean cookieSecure;
+
+    private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
+    private static final int REFRESH_TOKEN_COOKIE_MAX_AGE = 7 * 24 * 60 * 60; // 7일
 
     /**
      * 로그인 API
@@ -61,25 +65,30 @@ public class AuthController {
         );
     }
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(
+            @Valid @RequestBody LoginRequest request,
+            HttpServletResponse response) {
+        // 비즈니스 로직 처리 (Service에 위임)
+        TokenDto tokens = authService.login(request);
 
-        Map<String, Object> response = new HashMap<>();
+        // Refresh Token 쿠키 설정 (CookieUtil 사용)
+        CookieUtil.addCookie(
+                response,
+                REFRESH_TOKEN_COOKIE_NAME,
+                tokens.refreshToken(),
+                REFRESH_TOKEN_COOKIE_MAX_AGE,
+                cookieSecure
+        );
 
-        try {
-            String token = authService.login(request);
-            response.put("success", true);
-            response.put("email", request.getEmail());
-
-            return ResponseEntity.ok()
-                    .header("Authorization", "Bearer " + token)
-                    .body(response);
-        } catch (AuthenticationException e) {
-            // 인증 실패
-            response.put("success", false);
-            response.put("message", "이메일 또는 비밀번호가 올바르지 않습니다.");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-        }
+        // Access Token 응답
+        return ResponseEntity.ok(
+                AuthResponse.builder()
+                        .accessToken(tokens.accessToken())
+                        .tokenType("Bearer")
+                        .build()
+        );
     }
+
 
     /**
      * 현재 로그인한 사용자 정보 조회 API
