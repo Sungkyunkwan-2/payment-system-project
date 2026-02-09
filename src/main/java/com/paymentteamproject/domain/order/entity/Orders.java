@@ -56,4 +56,8 @@ public class Orders extends BaseEntity {
             this.orderNumber = Long.parseLong("1" + timestamp);
         }
     }
+
+    public void completedOrder(OrderStatus status) {
+        this.status = status;
+    }
 }
