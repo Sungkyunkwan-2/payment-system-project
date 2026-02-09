@@ -88,8 +88,8 @@ api:
               description: 에러 메시지 (실패 시)
 
     get-current-user:
-      url:
-      method:
+      url: /api/auth/me
+      method: GET
       description: 현재 로그인한 사용자 정보 조회
       response:
         body:
@@ -122,6 +122,52 @@ api:
     # ========================================
     # 상품 & 주문 (Product & Order)
     # ========================================
+    product-info:
+      url: /products/{productId}
+      pathParams:
+        name: productId
+        description: 상품의 고유 식별자
+      method: GET
+      description: 개별 상품 정보 조회
+      response:
+        body:
+          fields:
+            - name: id
+              type: int64
+              required: true
+              description: 상품 ID
+            - name: name
+              type: string
+              required: true
+              description: 상품 이름
+            - name: price
+              type: double
+              required: true
+              description: 상품 가격
+            - name: content
+              type: string
+              required: true
+              description: 상품 정보
+            - name: status
+              type: string
+              required: true
+              description: 상품 상태
+            - name: category
+              type: string
+              required: true
+              description: 상품 카테고리
+            - name: stock
+              type: int64
+              required: true
+              description: 상품 재고
+            - name: createdAt
+              type: date-time
+              required: true
+              description: 상품 생성일
+            - name: deletedAt
+              type: date-time
+              required: false
+              description: 상품 삭제일
     list-products:
       url: /products
       method: get

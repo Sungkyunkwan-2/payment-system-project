@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Getter
 @Entity
@@ -44,5 +45,15 @@ public class Orders extends BaseEntity {
         this.totalPrice = totalPrice;
         this.usedPoint = usedPoint;
         this.status = status;
+    }
+
+    //주문 생성 시 주문 번호 자동 생성
+    @PrePersist
+    private void generateOrderNumber() {
+        if (this.orderNumber == null) {
+            String timestamp = LocalDateTime.now()
+                    .format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            this.orderNumber = Long.parseLong("1" + timestamp);
+        }
     }
 }

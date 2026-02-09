@@ -1,5 +1,6 @@
 package com.paymentteamproject.domain.order.controller;
 
+import com.paymentteamproject.common.dtos.ApiResponse;
 import com.paymentteamproject.domain.order.dto.CreateOrderRequest;
 import com.paymentteamproject.domain.order.dto.CreateOrderResponse;
 import com.paymentteamproject.domain.order.service.OrderService;
@@ -11,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -20,10 +20,14 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/orders")
-    public ResponseEntity<CreateOrderResponse> createOrder(
+    public ResponseEntity<ApiResponse<CreateOrderResponse>> createOrder(
             @AuthenticationPrincipal User user,
             @Valid @RequestBody CreateOrderRequest request
     ){
-        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrder(user.getId(), request));
+        return ResponseEntity.ok().body(
+                ApiResponse.success(
+                        HttpStatus.CREATED, "주문 생성에 성공했습니다.", orderService.createOrder(user.getId(), request)
+                )
+        );
     }
 }
