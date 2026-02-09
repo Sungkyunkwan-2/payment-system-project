@@ -67,4 +67,12 @@ public class Payment extends BaseEntity {
         return new Payment(
                 this.order, this.paymentId, PaymentStatus.FAILURE, this.price);
     }
+
+    public void markRefunded() {
+        if (this.status != PaymentStatus.SUCCESS) {
+            throw new IllegalStateException("결제 성공 상태만 환불할 수 있습니다.");
+        }
+        this.status = PaymentStatus.REFUND;
+        this.refundedAt = LocalDateTime.now();
+    }
 }

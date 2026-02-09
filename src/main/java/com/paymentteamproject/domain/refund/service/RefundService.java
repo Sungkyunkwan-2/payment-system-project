@@ -71,8 +71,8 @@ public class RefundService {
         if (cancelSuccess) {
             refund.markSuccess(LocalDateTime.now());
 
-            // TODO: payment.markRefunded();
-            // TODO: payment.getOrder().markRefunded();
+            payment.markRefunded();
+            payment.getOrder().markRefunded();
             // TODO: 포인트 복구 / 적립 취소 / 멤버십 재계산
 
             return toResponse(refund);
@@ -104,7 +104,7 @@ public class RefundService {
 
         try {
             PortOneCancelResponse response = portOneRestClient.post()
-                    .uri("/payments/{paymentId}", portOnePaymentId)
+                    .uri("/payments/{paymentId}/cancel", portOnePaymentId)
                     .body(new PortOneCancelRequest(reason))
                     .retrieve()
                     .body(PortOneCancelResponse.class);
