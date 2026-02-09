@@ -28,7 +28,7 @@ public class WebhookEventService {
     private final WebhookEventRepository webhookEventRepository;
     private final PortOneClient portOneClient;
     private final PaymentRepository paymentRepository;
-
+    private final OrderService orderService;
 
     @Transactional
     public void processWebhook(String webhookId, @Valid WebHookRequest request) {
@@ -63,16 +63,75 @@ public class WebhookEventService {
 
         double portOneAmount = portOnePayment.getAmount().getTotal();
         double orderAmount = order.getTotalPrice();
-        double epsilon = 0.0001;
+
         if(!(portOneAmount == orderAmount)){
             throw  new IllegalStateException("결제 금액 불일치");
         }
 
-
+        processPaymentStatus(portOnePayment.getStatus(), payment, order);
 
         webhookEvent.completeProcess();
     }
 
+    private void processPaymentStatus(
+            PaymentWebhookPaymentStatus webhookStatus, Payment payment, Orders order) {
+        switch (webhookStatus) {
+            case PAID -> {
+                // 결제 완료 처리
+                payment.updateStatus(PaymentStatus.SUCCESS);
+                payment.updatePayedAt(LocalDateTime.now());
+
+                // 주문 완료 처리
+                order.updateStatus(OrderStatus.ORDER_COMPLETED);
+
+                // 재고 차감 및 주문 확정
+                orderService.processOrderCompletion(order);
+
+                log.info("[WEBHOOK] 결제 완료 처리 성공 - paymentId: {}, orderId: {}",
+                        payment.getPaymentId(), order.getId());
+            }
+
+            case FAILED -> {
+                // 결제 실패 처리
+                payment.updateStatus(PaymentStatus.FAILURE);
+
+                // 주문 취소 처리
+                order.updateStatus(OrderStatus.ORDER_CANCELED);
+
+                log.info("[WEBHOOK] 결제 실패 처리 완료 - paymentId: {}, orderId: {}",
+                        payment.getPaymentId(), order.getId());
+            }
+
+            case CANCELLED, PARTIAL_CANCELLED -> {
+                // 환불 처리
+                payment.updateStatus(PaymentStatus.REFUND);
+                payment.updateRefundedAt(LocalDateTime.now());
+
+                // 주문 취소 처리
+                order.updateStatus(OrderStatus.ORDER_CANCELED);
+
+                // 재고 복구
+                orderService.processOrderCancellation(order);
+
+                log.info("[WEBHOOK] 환불 처리 완료 - paymentId: {}, orderId: {}, refundType: {}",
+                        payment.getPaymentId(), order.getId(), webhookStatus);
+            }
+
+            case READY, VIRTUAL_ACCOUNT_ISSUED, PAY_PENDING -> {
+                // 결제 대기 상태 - 상태만 업데이트
+                payment.updateStatus(PaymentStatus.PENDING);
+                order.updateStatus(OrderStatus.PAYMENT_PENDING);
+
+                log.info("[WEBHOOK] 결제 대기 상태 업데이트 - paymentId: {}, orderId: {}, status: {}",
+                        payment.getPaymentId(), order.getId(), webhookStatus);
+            }
+
+            default -> {
+                log.warn("[WEBHOOK] 처리되지 않은 결제 상태 - status: {}", webhookStatus);
+                throw new IllegalArgumentException("지원하지 않는 결제 상태입니다: " + webhookStatus);
+            }
+        }
+    }
 }
 
 

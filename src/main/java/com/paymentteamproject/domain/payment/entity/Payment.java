@@ -31,7 +31,7 @@ public class Payment extends BaseEntity {
     @Column(nullable = false)
     private double price;
 
-    private LocalDateTime payedAt;
+    private LocalDateTime paidAt;
 
     private LocalDateTime refundedAt;
 
@@ -62,4 +62,58 @@ public class Payment extends BaseEntity {
         return new Payment(
                 this.order, this.paymentId, PaymentStatus.FAILURE, this.price);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public void updateStatus(PaymentStatus newStatus) {
+        validateStatusTransition(newStatus);
+        this.status = newStatus;
+    }
+
+    public void updatePayedAt(LocalDateTime paidAt) {
+        this.paidAt = paidAt;
+    }
+
+    public void updateRefundedAt(LocalDateTime refundedAt) {
+        this.refundedAt = refundedAt;
+    }
+
+    private void validateStatusTransition(PaymentStatus newStatus) {
+        // 이미 환불된 결제는 다른 상태로 변경 불가
+        if (this.status == PaymentStatus.REFUND) {
+            throw new IllegalStateException(
+                    String.format("환불된 결제는 상태를 변경할 수 없습니다. (현재: %s, 변경 시도: %s)",
+                            this.status, newStatus)
+            );
+        }
+
+        if (this.status == PaymentStatus.SUCCESS && newStatus == PaymentStatus.FAILURE) {
+            throw new IllegalStateException(
+                    String.format("성공한 결제를 실패로 변경할 수 없습니다. (현재: %s, 변경 시도: %s)",
+                            this.status, newStatus)
+            );
+        }
+    }
+
+
 }
