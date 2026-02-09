@@ -1,5 +1,6 @@
 package com.paymentteamproject.domain.product.controller;
 
+import com.paymentteamproject.common.dtos.ApiResponse;
 import com.paymentteamproject.domain.product.dtos.GetProductResponse;
 import com.paymentteamproject.domain.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -18,12 +19,20 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping("/products")
-    public ResponseEntity<List<GetProductResponse>> getAllProducts(){
-        return ResponseEntity.status(HttpStatus.OK).body(productService.getAllProducts());
+    public ResponseEntity<ApiResponse<List<GetProductResponse>>> getAllProducts(){
+        return ResponseEntity.ok().body(
+         ApiResponse.success(
+                 HttpStatus.OK, "상품 목록 조회에 성공했습니다.", productService.getAllProducts()
+         )
+        );
     }
 
     @GetMapping("/products/{productId}")
-    public ResponseEntity<GetProductResponse> getProduct(@PathVariable Long productId){
-        return ResponseEntity.status(HttpStatus.OK).body(productService.getProduct(productId));
+    public ResponseEntity<ApiResponse<GetProductResponse>> getProduct(@PathVariable Long productId){
+        return ResponseEntity.ok().body(
+                ApiResponse.success(
+                        HttpStatus.OK, "상품 조회에 성공했습니다.", productService.getProduct(productId)
+                )
+        );
     }
 }
