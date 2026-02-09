@@ -8,12 +8,11 @@ import com.paymentteamproject.domain.user.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
@@ -65,7 +64,7 @@ public class AuthController {
         );
     }
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(
+    public ResponseEntity<ApiResponse<String>> login(
             @Valid @RequestBody LoginRequest request,
             HttpServletResponse response) {
         // 비즈니스 로직 처리 (Service에 위임)
@@ -80,13 +79,16 @@ public class AuthController {
                 cookieSecure
         );
 
-        // Access Token 응답
-        return ResponseEntity.ok(
-                AuthResponse.builder()
-                        .accessToken(tokens.accessToken())
-                        .tokenType("Bearer")
-                        .build()
-        );
+        // 응답 메시지 구성 (Access Token은 헤더에 담아 응답)
+
+        // 4. Access Token을 헤더에 담아 응답
+        return ResponseEntity.ok()
+                .header("Authorization", "Bearer " + tokens.accessToken())
+                // CORS 환경에서 프론트엔드가 Authorization 헤더에 접근할 수 있도록 노출
+                .header("Access-Control-Expose-Headers", "Authorization")
+                .body(ApiResponse.success(
+                        HttpStatus.OK, "로그인에 성공했습니다", request.getEmail())
+                );
     }
 
 
