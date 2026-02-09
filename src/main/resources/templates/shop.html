@@ -167,25 +167,40 @@
             }
 
             productList.innerHTML = products.map(product => {
+                // 재고 상태 표시
                 const stockStatus = product.stock > 0
                     ? `<span style="color: var(--success);">재고: ${product.stock}개</span>`
                     : `<span style="color: var(--error);">품절</span>`;
 
+                // 상품 상태 표시
+                const statusMap = {
+                    'ONSALE': { text: '판매중', color: 'var(--success)' },
+                    'SOLDOUT': { text: '품절', color: 'var(--error)' },
+                    'DISCONTINUED': { text: '단종', color: 'var(--text-secondary)' }
+                };
+                const statusInfo = statusMap[product.status] || { text: product.status, color: 'var(--text-secondary)' };
+                const productStatus = `<span style="color: ${statusInfo.color}; font-weight: 600;">${statusInfo.text}</span>`;
+
+                // 구매 가능 여부 확인 (판매중, 단종 상태에서 재고가 있을 때만)
+                const isAvailable = (product.status === 'ONSALE' || product.status === 'DISCONTINUED') && product.stock > 0;
+
                 return `
-                    <div class="product-card">
-                        <div class="card-header">${product.name}</div>
-                        <div class="price">₩${product.price.toLocaleString()}</div>
-                        <div style="margin: 0.5rem 0; font-size: 0.9rem;">${stockStatus}</div>
-                        <div class="quantity-control">
-                            <button class="quantity-btn" onclick="updateQuantity(${product.id}, -1)"
-                                ${product.stock === 0 ? 'disabled' : ''}>-</button>
-                            <input type="number" class="quantity-input" id="qty-${product.id}"
-                                value="0" min="0" max="${product.stock}" readonly>
-                            <button class="quantity-btn" onclick="updateQuantity(${product.id}, 1)"
-                                ${product.stock === 0 ? 'disabled' : ''}>+</button>
-                        </div>
-                    </div>
-                `;
+                   <div class="product-card">
+                       <div class="card-header">${product.name}</div>
+                       <div class="price">₩${product.price.toLocaleString()}</div>
+                       <div style="margin: 0.5rem 0; font-size: 0.9rem;">
+                           ${productStatus} | ${stockStatus}
+                       </div>
+                       <div class="quantity-control">
+                           <button class="quantity-btn" onclick="updateQuantity(${product.id}, -1)"
+                               ${!isAvailable ? 'disabled' : ''}>-</button>
+                           <input type="number" class="quantity-input" id="qty-${product.id}"
+                               value="0" min="0" max="${product.stock}" readonly>
+                           <button class="quantity-btn" onclick="updateQuantity(${product.id}, 1)"
+                               ${!isAvailable ? 'disabled' : ''}>+</button>
+                       </div>
+                   </div>
+            `;
             }).join('');
         }
 
