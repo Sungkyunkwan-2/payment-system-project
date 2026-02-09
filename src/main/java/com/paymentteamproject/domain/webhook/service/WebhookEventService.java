@@ -1,7 +1,16 @@
 package com.paymentteamproject.domain.webhook.service;
 
+import com.paymentteamproject.domain.order.entity.OrderStatus;
+import com.paymentteamproject.domain.order.entity.Orders;
+import com.paymentteamproject.domain.order.repository.OrderRepository;
 import com.paymentteamproject.domain.order.service.OrderService;
+import com.paymentteamproject.domain.orderProduct.entity.OrderProduct;
+import com.paymentteamproject.domain.payment.entity.Payment;
+import com.paymentteamproject.domain.payment.entity.PaymentStatus;
+import com.paymentteamproject.domain.payment.repository.PaymentRepository;
+import com.paymentteamproject.domain.webhook.dto.GetPaymentResponse;
 import com.paymentteamproject.domain.webhook.dto.WebHookRequest;
+import com.paymentteamproject.domain.webhook.entity.PaymentWebhookPaymentStatus;
 import com.paymentteamproject.domain.webhook.entity.WebhookEvent;
 import com.paymentteamproject.domain.webhook.repository.WebhookEventRepository;
 import jakarta.validation.Valid;
@@ -10,12 +19,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class WebhookEventService {
     private final WebhookEventRepository webhookEventRepository;
-    private final OrderService orderService;
+    private final PortOneClient portOneClient;
+    private final PaymentRepository paymentRepository;
+
 
     @Transactional
     public void processWebhook(String webhookId, @Valid WebHookRequest request) {
@@ -34,19 +47,34 @@ public class WebhookEventService {
         );
         webhookEventRepository.save(webhookEvent);
 
-        try{
-            webhookEvent.completeProcess();
-            log.info("Webhook 처리 완료 - webhookId: {}, paymentId: {}",
-                    webhookId, request.getData().getPaymentId());
+        String paymentId = request.getData().getPaymentId();
+        GetPaymentResponse portOnePayment = portOneClient.getPayment(paymentId);
 
-        } catch (Exception e) {
+        if (!portOnePayment.getStatus().equals(request.getData().getStatus())){
             webhookEvent.fail();
-            log.error("Webhook 처리 중 오류 발생 - webhookId: {}, paymentId: {}",
-                    webhookId, request.getData().getPaymentId(), e);
-            throw new IllegalStateException("Webhook 처리 실패", e);
+            throw new IllegalStateException("상태가 일치하지 않습니다.");
         }
+
+        Payment payment = paymentRepository.findByPaymentId(paymentId)
+                .orElseThrow(() -> new IllegalArgumentException("결제 정보를 찾을 수 없습니다."));
+
+
+        Orders order = payment.getOrder();
+
+        double portOneAmount = portOnePayment.getAmount().getTotal();
+        double orderAmount = order.getTotalPrice();
+        double epsilon = 0.0001;
+        if(!(portOneAmount == orderAmount)){
+            throw  new IllegalStateException("결제 금액 불일치");
+        }
+
+
+
+        webhookEvent.completeProcess();
     }
+
 }
+
 
 
 

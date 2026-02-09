@@ -304,7 +304,7 @@
                     </td>
                     <td style="padding: 0.75rem; text-align: center;">
                         ${order.status === 'PENDING' ?
-                            `<button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem;" onclick="payOrder('${order.orderId}', ${finalAmount})">
+                            `<button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem;" onclick="payOrder(${order.orderId}, ${finalAmount})">
                                 💳 결제하기
                             </button>` :
                             `<span style="color: var(--text-secondary); font-size: 0.875rem;">-</span>`
@@ -324,7 +324,7 @@
             }
 
             // 해당 주문 찾기
-            const order = orders.find(o => o.orderId === orderId);
+            const order = orders.find(o => o.orderId == orderId);
             if (!order) {
                 showNotification('⚠️ 주문을 찾을 수 없습니다', 'error');
                 return;

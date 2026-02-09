@@ -39,12 +39,12 @@ server:
 portone:
   api:
     base-url: https://api.portone.io
-    secret: ${PORTONE_API_SECRET:your-secret-key}
+    secret: PgATOHhDMlBjzdg8fPlrFKh95LXLLjnmrRLFF7ZVgwICbtxAfCJhR4KTEou1X2wimwk41b7Cg09NlTnw
   store:
-    id: ${PORTONE_STORE_ID:your-store-id}
+    id: store-c9c1e7ef-b40f-4e2d-b06f-01cf338e09fa
   channel:
-    kg-inicis: ${PORTONE_CHANNEL_KG:your-kg-inicis-channel-key}
-    toss: ${PORTONE_CHANNEL_TOSS:your-toss-channel-key}
+    kg-inicis: channel-key-0359cbfa-1b19-4d21-ad22-f5652d984a92
+    toss: channel-key-fce9da67-4cf8-4e5d-9ed9-36508b63ada4
   webhook:
     secret: whsec_ph0eD2RN/EO8bKg+gFDWwYlzZSQFACLbTx78/OR7eRo=
 # JWT Configuration
