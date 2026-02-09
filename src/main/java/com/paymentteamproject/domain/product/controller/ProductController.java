@@ -1,5 +1,6 @@
 package com.paymentteamproject.domain.product.controller;
 
+import com.paymentteamproject.common.dtos.ApiResponse;
 import com.paymentteamproject.domain.product.dtos.GetProductResponse;
 import com.paymentteamproject.domain.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,11 @@ public class ProductController {
     }
 
     @GetMapping("/products/{productId}")
-    public ResponseEntity<GetProductResponse> getProduct(@PathVariable Long productId){
-        return ResponseEntity.status(HttpStatus.OK).body(productService.getProduct(productId));
+    public ResponseEntity<ApiResponse<GetProductResponse>> getProduct(@PathVariable Long productId){
+        return ResponseEntity.ok().body(
+                ApiResponse.success(
+                        HttpStatus.OK, "상품 조회에 성공했습니다.", productService.getProduct(productId)
+                )
+        );
     }
 }
