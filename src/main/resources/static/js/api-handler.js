@@ -10,20 +10,20 @@
  *   - method: HTTP 메서드 (생략 시 YAML 설정에서 자동으로 가져옴)
  * @returns {Promise<Object>} 응답 데이터 (returnHeaders가 true면 { data, headers })
  */
-// 토큰을 가져오는 함수
-function getToken() {
-    return localStorage.getItem('authToken');
-}
-
-// 토큰을 저장하는 함수
-function setToken(token) {
-    localStorage.setItem('authToken', token);
-}
-
-// 토큰을 삭제하는 함수 (기존 removeToken 대체용)
-function removeToken() {
-    localStorage.removeItem('authToken');
-}
+// // 토큰을 가져오는 함수
+// function getToken() {
+//     return localStorage.getItem('authToken');
+// }
+//
+// // 토큰을 저장하는 함수
+// function setToken(token) {
+//     localStorage.setItem('authToken', token);
+// }
+//
+// // 토큰을 삭제하는 함수 (기존 removeToken 대체용)
+// function removeToken() {
+//     localStorage.removeItem('authToken');
+// }
 
 async function makeApiRequest(endpointKey, options = {}) {
     const {
@@ -99,12 +99,11 @@ async function makeApiRequest(endpointKey, options = {}) {
                     const newToken = newAuthHeader.substring(7);
 
                     // ✅ 1. 방금 만든 함수로 새 토큰 저장
-                    setToken(newToken);
+                    saveToken(newToken);
 
                     console.log("✅ 새 액세스 토큰 저장 완료. 원래 요청 재시도 중...");
 
                     // ✅ 2. 중요: 재시도할 때 options에 새 토큰을 명시적으로 넣어버리기
-                    // 이렇게 하면 getToken()이 혹시 실패하더라도 안전합니다.
                     return await makeApiRequest(endpointKey, { ...options, isRetry: true });
                 }
             } else {

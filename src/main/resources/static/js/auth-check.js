@@ -8,6 +8,7 @@
  * JWT 토큰이 없으면 로그인 페이지로 리다이렉트
  */
 function checkAuthentication() {
+    console.log('Token:', getToken())
     // 쿠키에서 토큰 확인
     const token = typeof getToken === 'function' ? getToken() : null;
     const currentPath = window.location.pathname;
