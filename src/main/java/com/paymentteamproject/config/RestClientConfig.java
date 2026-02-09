@@ -16,6 +16,7 @@ public class RestClientConfig {
     public RestClient portOneRestClient() {
         return RestClient.builder()
                 .baseUrl(properties.getApi().getBaseUrl())
+                .defaultHeader("Authorization", "PortOne " + properties.getApi().getSecret().trim())
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
     }

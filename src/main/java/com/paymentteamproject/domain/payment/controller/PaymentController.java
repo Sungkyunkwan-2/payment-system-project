@@ -24,7 +24,7 @@ public class PaymentController {
     }
 
     // 결제 확인
-    @PutMapping("/payments/{paymentId}")
+    @GetMapping("/payments/{paymentId}")
     public ResponseEntity<ApiResponse<ConfirmPaymentResponse>> confirmPayment(
             @PathVariable String paymentId) {
         return ResponseEntity.status(HttpStatus.OK).body(

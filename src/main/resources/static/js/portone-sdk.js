@@ -55,7 +55,7 @@ async function openPortOnePayment(paymentData) {
         // }
 
         // 서버에서 생성한 paymentId 사용
-        const serverPaymentId = createPaymentResult.data.paymentId;
+        const serverPaymentId = createPaymentResult.paymentId;
         console.log('서버에서 생성한 결제 ID:', serverPaymentId);
 
         // 2단계: PortOne 결제창 열기
@@ -100,7 +100,7 @@ async function openPortOnePayment(paymentData) {
         } else {
             // 결제 성공
             displaySuccess({
-                paymentId: response.data.paymentId,
+                paymentId: response.paymentId,
                 txId: response.txId,
                 message: '결제창 완료. 서버에서 검증하세요.'
             });
@@ -149,17 +149,17 @@ async function openPortOnePaymentWithPoints(paymentData) {
             }
         });
 
-        // 서버 응답 검증
-        // if (!validateApiResponse('create-payment', createPaymentResult)) {
-        //     throw new Error('결제 시작 요청 응답 형식이 올바르지 않습니다.');
-        // }
-        //
-        // if (!createPaymentResult.success) {
-        //     throw new Error('결제 시작 요청 실패');
-        // }
+         //서버 응답 검증
+         if (!validateApiResponse('create-payment', createPaymentResult)) {
+             throw new Error('결제 시작 요청 응답 형식이 올바르지 않습니다.');
+         }
+
+         if (!createPaymentResult.success) {
+             throw new Error('결제 시작 요청 실패');
+         }
 
         // 서버에서 생성한 paymentId 사용
-        const serverPaymentId = createPaymentResult.data.paymentId;
+        const serverPaymentId = createPaymentResult.paymentId;
         console.log('서버에서 생성한 결제 ID:', serverPaymentId);
 
         // 포인트 차감 후 최종 금액 계산
@@ -208,7 +208,7 @@ async function openPortOnePaymentWithPoints(paymentData) {
         } else {
             // 결제 성공
             displaySuccess({
-                paymentId: response.data.paymentId,
+                paymentId: response.paymentId,
                 txId: response.txId,
                 pointsUsed: pointsToUse,
                 message: '결제창 완료 (포인트 차감). 서버에서 검증하세요.'

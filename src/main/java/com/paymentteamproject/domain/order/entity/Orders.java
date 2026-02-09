@@ -57,6 +57,10 @@ public class Orders extends BaseEntity {
         }
     }
 
+    public void completedOrder(OrderStatus status) {
+        this.status = status;
+    }
+
 
 
 
