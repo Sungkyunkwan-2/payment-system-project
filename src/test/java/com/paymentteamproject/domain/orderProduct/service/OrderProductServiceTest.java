@@ -136,7 +136,7 @@
 //        assertThatThrownBy(() ->
 //                orderProductService.getOneOrderProducts(userId, orderId)
 //        )
-//                .isInstanceOf(IllegalArgumentException.class)
+//                .isInstanceOf(OrderAccessException.class)
 //                .hasMessage("본인의 주문만 조회할 수 있습니다.");
 //    }
 //
