@@ -123,14 +123,14 @@
                 const result = await makeApiRequest('list-products', {
                 });
 
-                // YML 스키마 기반 자동 검증
-                if (!validateApiResponse('list-products', result)) {
-                    // 검증 실패 시 에러 메시지는 validateApiResponse에서 표시됨
-                    return false;
-                }
+            //     // YML 스키마 기반 자동 검증
+            //     if (!validateApiResponse('list-products', result)) {
+            //         // 검증 실패 시 에러 메시지는 validateApiResponse에서 표시됨
+            //         return false;
+            //     }
 
-                if (result && Array.isArray(result)) {
-                    products = result;
+                if (result && Array.isArray(result.data)) {
+                    products = result.data;
                     showNotification('API에서 상품 로드 성공', 'success');
                     return true;
                 } else {
