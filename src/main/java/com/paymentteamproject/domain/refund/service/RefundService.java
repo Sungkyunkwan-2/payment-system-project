@@ -3,6 +3,8 @@ package com.paymentteamproject.domain.refund.service;
 import com.paymentteamproject.domain.payment.entity.Payment;
 import com.paymentteamproject.domain.payment.entity.PaymentStatus;
 import com.paymentteamproject.domain.payment.repository.PaymentRepository;
+import com.paymentteamproject.domain.refund.dtos.PortOneCancelRequest;
+import com.paymentteamproject.domain.refund.dtos.PortOneCancelResponse;
 import com.paymentteamproject.domain.refund.dtos.RefundCreateRequest;
 import com.paymentteamproject.domain.refund.dtos.RefundCreateResponse;
 import com.paymentteamproject.domain.refund.entity.Refund;
@@ -12,6 +14,8 @@ import com.paymentteamproject.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientResponseException;
 
 import java.time.LocalDateTime;
 
@@ -22,6 +26,9 @@ public class RefundService {
     private final RefundRepository refundRepository;
     private final PaymentRepository paymentRepository;
     private final UserRepository userRepository;
+
+    // RestClientConfig에서 만든 Bean
+    private final RestClient portOneRestClient;
 
     @Transactional
     public RefundCreateResponse requestRefund(Long paymentId, String email, RefundCreateRequest request) {
@@ -57,8 +64,8 @@ public class RefundService {
         Refund refund = new Refund(payment, amount, request.getReason());
         refundRepository.save(refund);
 
-        // PortOne 취소 호출 (지금은 Stub)
-        boolean cancelSuccess = cancelPortOne(payment);
+        // PortOne 취소 호출 (실제 연동)
+        boolean cancelSuccess = cancelPortOne(payment, request.getReason());
 
         // 결과 반영
         if (cancelSuccess) {
@@ -91,8 +98,21 @@ public class RefundService {
         return payment.getStatus() == PaymentStatus.SUCCESS;
     }
 
-    private boolean cancelPortOne(Payment payment) {
-        // TODO: PortOne 결제 취소 API 연동
-        return true;
+    private boolean cancelPortOne(Payment payment, String reason) {
+        // PortOne 결제 취소는 "PortOne paymentId" (String) 로 호출해야 함
+        String portOnePaymentId = payment.getPaymentId();
+
+        try {
+            PortOneCancelResponse response = portOneRestClient.post()
+                    .uri("/payments/{paymentId}", portOnePaymentId)
+                    .body(new PortOneCancelRequest(reason))
+                    .retrieve()
+                    .body(PortOneCancelResponse.class);
+
+            // response가 null인 경우도 방어
+            return response != null;
+        } catch (RestClientResponseException e) {
+            return false;
+        }
     }
 }
