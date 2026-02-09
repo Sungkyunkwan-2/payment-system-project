@@ -2,16 +2,17 @@ package com.paymentteamproject.domain.webhook.service;
 
 import com.paymentteamproject.domain.order.entity.OrderStatus;
 import com.paymentteamproject.domain.order.entity.Orders;
-import com.paymentteamproject.domain.order.repository.OrderRepository;
 import com.paymentteamproject.domain.order.service.OrderService;
-import com.paymentteamproject.domain.orderProduct.entity.OrderProduct;
 import com.paymentteamproject.domain.payment.entity.Payment;
 import com.paymentteamproject.domain.payment.entity.PaymentStatus;
+import com.paymentteamproject.domain.payment.exception.PaymentNotFoundException;
 import com.paymentteamproject.domain.payment.repository.PaymentRepository;
 import com.paymentteamproject.domain.webhook.dto.GetPaymentResponse;
 import com.paymentteamproject.domain.webhook.dto.WebHookRequest;
 import com.paymentteamproject.domain.webhook.entity.PaymentWebhookPaymentStatus;
 import com.paymentteamproject.domain.webhook.entity.WebhookEvent;
+import com.paymentteamproject.domain.webhook.exception.PaymentAmountMismatchException;
+import com.paymentteamproject.domain.webhook.exception.PaymentStatusNotAllowedException;
 import com.paymentteamproject.domain.webhook.repository.WebhookEventRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -39,25 +40,24 @@ public class WebhookEventService {
             return;
         }
 
+        //portone 결제조회
+        String paymentId = request.getData().getPaymentId();
+        GetPaymentResponse portOnePayment = portOneClient.getPayment(paymentId);
+
+        Payment payment = paymentRepository.findByPaymentId(paymentId)
+                .orElseThrow(() -> new PaymentNotFoundException("결제 정보를 찾을 수 없습니다."));
+
         //이벤트 기록
         WebhookEvent webhookEvent = new WebhookEvent(
                 webhookId,
                 request.getData().getPaymentId(),
-                request.getData().getStatus()
+                portOnePayment.getStatus()
         );
+
         webhookEventRepository.save(webhookEvent);
 
-        String paymentId = request.getData().getPaymentId();
-        GetPaymentResponse portOnePayment = portOneClient.getPayment(paymentId);
-
-        if (!portOnePayment.getStatus().equals(request.getData().getStatus())){
-            webhookEvent.fail();
-            throw new IllegalStateException("상태가 일치하지 않습니다.");
-        }
-
-        Payment payment = paymentRepository.findByPaymentId(paymentId)
-                .orElseThrow(() -> new IllegalArgumentException("결제 정보를 찾을 수 없습니다."));
-
+        if (payment.getStatus() == PaymentStatus.SUCCESS)
+            return;
 
         Orders order = payment.getOrder();
 
@@ -65,12 +65,13 @@ public class WebhookEventService {
         double orderAmount = order.getTotalPrice();
 
         if(!(portOneAmount == orderAmount)){
-            throw  new IllegalStateException("결제 금액 불일치");
+            throw  new PaymentAmountMismatchException("결제 금액 불일치");
         }
 
         processPaymentStatus(portOnePayment.getStatus(), payment, order);
 
         webhookEvent.completeProcess();
+
     }
 
     private void processPaymentStatus(
@@ -83,9 +84,6 @@ public class WebhookEventService {
 
                 // 주문 완료 처리
                 order.updateStatus(OrderStatus.ORDER_COMPLETED);
-
-                // 재고 차감 및 주문 확정
-                orderService.processOrderCompletion(order);
 
                 log.info("[WEBHOOK] 결제 완료 처리 성공 - paymentId: {}, orderId: {}",
                         payment.getPaymentId(), order.getId());
@@ -128,7 +126,7 @@ public class WebhookEventService {
 
             default -> {
                 log.warn("[WEBHOOK] 처리되지 않은 결제 상태 - status: {}", webhookStatus);
-                throw new IllegalArgumentException("지원하지 않는 결제 상태입니다: " + webhookStatus);
+                throw new PaymentStatusNotAllowedException("지원하지 않는 결제 상태입니다: " + webhookStatus);
             }
         }
     }

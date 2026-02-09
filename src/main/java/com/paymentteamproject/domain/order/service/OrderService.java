@@ -99,57 +99,6 @@ public class OrderService {
         );
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    @Transactional
-    public void processOrderCompletion(Orders order) {
-
-        // 주문 상품 목록 조회
-        List<OrderProduct> orderProducts = orderProductRepository.findByOrder(order);
-
-        if (orderProducts.isEmpty()) {
-            throw new IllegalStateException("주문 상품이 존재하지 않습니다.");
-        }
-
-        // 각 상품의 재고 차감
-        for (OrderProduct orderProduct : orderProducts) {
-            Long productId = orderProduct.getProductId();
-            Long quantity = orderProduct.getQuantity();
-
-            // Product 조회
-            Product product = productRepository.findByIdAndDeletedAtIsNull(productId)
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            String.format("상품을 찾을 수 없습니다. productId: %d", productId)));
-
-            product.decreaseStock(quantity);
-        }
-    }
-
     @Transactional
     public void processOrderCancellation(Orders order) {
 
@@ -170,7 +119,7 @@ public class OrderService {
                     .orElseThrow(() -> new IllegalArgumentException(
                             String.format("상품을 찾을 수 없습니다. productId: %d", productId)));
 
-            // 재고 복구 (Product 엔티티의 increaseStock 메서드 사용)
+            // 재고 복구
             product.increaseStock(quantity);
         }
     }

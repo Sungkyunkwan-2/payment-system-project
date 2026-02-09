@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.nio.charset.StandardCharsets;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -28,6 +30,7 @@ public class WebhookEventController {
             @RequestHeader("webhook-timestamp") String webhookTimestamp,
             @RequestHeader("webhook-signature") String webhookSignature
     ) {
+        String rawJson = new String(rawBody, StandardCharsets.UTF_8); log.info("[PORTONE_WEBHOOK] Raw JSON: {}", rawJson);
         boolean verified = verifier.verify(
                 rawBody,
                 webhookId,
