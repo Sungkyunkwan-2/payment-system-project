@@ -1,6 +1,7 @@
 package com.paymentteamproject.common.service;
 
 import com.paymentteamproject.common.dtos.auth.LoginRequest;
+import com.paymentteamproject.security.CustomUserDetails;
 import com.paymentteamproject.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,15 +20,24 @@ public class AuthService {
     public String login(LoginRequest request) throws AuthenticationException {
 
         // 1. 이메일/비밀번호 검증
-            Authentication auth = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getEmail(),
-                            request.getPassword()
-                    )
-            );
+        Authentication auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
+        // 토큰 생성을 위해 인증된 사용자 정보 추출
+        if (auth.getPrincipal() == null) {
+            throw new IllegalStateException("Authentication principal is null");
+        }
 
-            // 2. 인증 성공 시 JWT 토큰 생성
-            return jwtTokenProvider.createToken(auth.getName());
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
 
+        // 2. 인증 성공 시 JWT 토큰 생성
+        return jwtTokenProvider.createToken(
+                userDetails.getUsername(), // email
+                userDetails.getName(), // username
+                userDetails.getRoleAuthority() // role
+        );
     }
 }

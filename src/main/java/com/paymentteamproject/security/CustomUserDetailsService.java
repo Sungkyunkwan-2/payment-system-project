@@ -22,10 +22,6 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new IllegalStateException("사용자를 찾을 수 없습니다."));
 
         // Spring Security에서 사용하는 UserDetails 객체로 변환
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getEmail())
-                .password(user.getPassword())
-                .authorities("ROLE_USER")
-                .build();
+        return new CustomUserDetails(user);
     }
 }
