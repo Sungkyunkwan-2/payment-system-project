@@ -3,6 +3,7 @@ package com.paymentteamproject.domain.payment.service;
 import com.paymentteamproject.domain.order.entity.Orders;
 import com.paymentteamproject.domain.order.repository.OrderRepository;
 import com.paymentteamproject.domain.payment.dtos.ConfirmPaymentResponse;
+import com.paymentteamproject.domain.payment.dtos.PortOnePaymentResponse;
 import com.paymentteamproject.domain.payment.dtos.StartPaymentRequest;
 import com.paymentteamproject.domain.payment.dtos.StartPaymentResponse;
 import com.paymentteamproject.domain.payment.entity.Payment;
@@ -10,12 +11,14 @@ import com.paymentteamproject.domain.payment.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClient;
 
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
+    private final RestClient restClient;
 
         // 결제 시작
     @Transactional
@@ -38,14 +41,26 @@ public class PaymentService {
     }
 
     // 결제 확인
-//    @Transactional
-//    public ConfirmPaymentResponse confirm(String paymentId) {
-//
-//        Payment payment = paymentRepository.findByPaymentId(paymentId).orElseThrow(
-//                () -> new IllegalArgumentException("존재하지 않는 결제입니다."));
-//
-//        // TODO PortOne API 결제 조회 값 불러오기
-//        // 멱등성 검증, 결제 상태 = PAID, 결제 금액 = 주문 금액
-//
-//    }
+    @Transactional
+    public ConfirmPaymentResponse confirm(String paymentId) {
+
+        Payment payment = paymentRepository.findByPaymentId(paymentId).orElseThrow(
+                () -> new IllegalArgumentException("존재하지 않는 결제입니다."));
+
+        // TODO PortOne API 결제 조회 값 불러오기
+        PortOnePaymentResponse response = restClient.get()
+                .uri("payments/{paymentId}", paymentId)
+                .retrieve()
+                .body(PortOnePaymentResponse.class);
+
+        if(response != null && response.getStatus().equals("PAID")) {
+            double amount = response.getAmount();
+            if(amount == payment.getPrice()) {
+                // TODO 재고 차감 & 상태 변경
+                return new ConfirmPaymentResponse(
+                        payment.getOrder().getOrderNumber(),
+                        payment.getStatus());
+            }
+        }
+    }
 }

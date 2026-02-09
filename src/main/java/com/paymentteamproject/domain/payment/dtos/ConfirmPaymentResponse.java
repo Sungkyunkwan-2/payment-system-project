@@ -5,10 +5,10 @@ import lombok.Getter;
 
 @Getter
 public class ConfirmPaymentResponse {
-    private final String orderId;
+    private final Long orderId;
     private final PaymentStatus status;
 
-    public ConfirmPaymentResponse(String orderId, PaymentStatus status) {
+    public ConfirmPaymentResponse(Long orderId, PaymentStatus status) {
         this.orderId = orderId;
         this.status = status;
     }
