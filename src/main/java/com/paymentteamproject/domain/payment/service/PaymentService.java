@@ -55,7 +55,8 @@ public class PaymentService {
 
         if(response == null) throw new IllegalArgumentException("존재하지 않는 결제입니다.");
 
-        if(!response.getStatus().equals("PAID")) {
+        int amount = response.getAmount().getTotal();
+        if(!response.getStatus().equals("PAID") || amount != payment.getPrice()) {
             Payment fail = payment.fail();
             Payment savedFail = paymentRepository.save(fail);
 
@@ -64,16 +65,12 @@ public class PaymentService {
                     savedFail.getStatus());
         }
 
-        int amount = response.getAmount().getTotal();
-        if(amount == payment.getPrice()) {
-            // TODO 재고 차감 & 상태 변경
-            return new ConfirmPaymentResponse(
-                    payment.getOrder().getOrderNumber(),
-                    payment.getStatus());
-        }
+        Payment success = payment.success();
+        Payment savedSuccess = paymentRepository.save(success);
+        // TODO 재고 차감 및 주문 상태 변경
 
         return new ConfirmPaymentResponse(
-                payment.getOrder().getOrderNumber(),
-                payment.getStatus());
+                savedSuccess.getOrder().getOrderNumber(),
+                savedSuccess.getStatus());
     }
 }

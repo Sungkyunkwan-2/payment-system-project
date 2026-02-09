@@ -53,6 +53,11 @@ public class Payment extends BaseEntity {
         );
     }
 
+    public Payment success() {
+        return new Payment(
+                this.order, this.paymentId, PaymentStatus.SUCCESS, this.price);
+    }
+
     public Payment fail() {
         return new Payment(
                 this.order, this.paymentId, PaymentStatus.FAILURE, this.price);

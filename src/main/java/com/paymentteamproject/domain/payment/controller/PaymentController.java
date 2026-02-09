@@ -24,10 +24,10 @@ public class PaymentController {
     }
 
     // 결제 확인
-//    @PutMapping("/payments/{paymentId}")
-//    public ResponseEntity<ApiResponse<ConfirmPaymentResponse>> confirmPayment(
-//            @PathVariable String paymentId) {
-//        return ResponseEntity.status(HttpStatus.OK).body(
-//                ApiResponse.success(HttpStatus.OK, "성공적으로 결제되었습니다", paymentService.confirm(paymentId)));
-//    }
+    @PutMapping("/payments/{paymentId}")
+    public ResponseEntity<ApiResponse<ConfirmPaymentResponse>> confirmPayment(
+            @PathVariable String paymentId) {
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(HttpStatus.OK, "성공적으로 결제되었습니다", paymentService.confirm(paymentId)));
+    }
 }
