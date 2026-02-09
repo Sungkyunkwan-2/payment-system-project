@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,11 +25,11 @@ public class OrderProductController {
     //내 주문 목록 조회
     @GetMapping("/orders")
     public ResponseEntity<ApiResponse<List<getAllOrderProductResponse>>> getAllOrderProducts(
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal UserDetails user
     ) {
         return ResponseEntity.ok().body(
                 ApiResponse.success(
-                        HttpStatus.OK, "주문 목록 조회에 성공했습니다.", orderProductService.getAllOrderProducts(user.getId())
+                        HttpStatus.OK, "주문 목록 조회에 성공했습니다.", orderProductService.getAllOrderProducts(user.getUsername())
                 )
         );
     }
@@ -36,13 +37,13 @@ public class OrderProductController {
     //내 주문 목록 단건 조회
     @GetMapping("/orders/{orderId}")
     public ResponseEntity<ApiResponse<getOneOrderProductResponse>> getOneOrderProducts(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal UserDetails user,
             @PathVariable Long orderId
 
     ) {
         return ResponseEntity.ok().body(
                 ApiResponse.success(
-                        HttpStatus.OK, "주문 단건 조회에 성공했습니다.", orderProductService.getOneOrderProducts(user.getId(), orderId)
+                        HttpStatus.OK, "주문 단건 조회에 성공했습니다.", orderProductService.getOneOrderProducts(user.getUsername(), orderId)
                 )
         );
     }

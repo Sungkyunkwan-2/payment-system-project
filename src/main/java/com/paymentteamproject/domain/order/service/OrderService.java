@@ -32,14 +32,14 @@ public class OrderService {
 
 
     @Transactional
-    public CreateOrderResponse createOrder(Long userId, CreateOrderRequest request) {
+    public CreateOrderResponse createOrder(String email, CreateOrderRequest request) {
         // 주문 상품 목록 검증
         if (request.getItems() == null || request.getItems().isEmpty()) {
             throw new OrderProductEmptyException("주문 상품이 비어있습니다.");
         }
 
         // 사용자 조회
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
 
         // 총액 계산 및 상품 검증
