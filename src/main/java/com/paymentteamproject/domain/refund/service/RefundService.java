@@ -1,11 +1,14 @@
 package com.paymentteamproject.domain.refund.service;
 
 import com.paymentteamproject.domain.payment.entity.Payment;
+import com.paymentteamproject.domain.payment.entity.PaymentStatus;
 import com.paymentteamproject.domain.payment.repository.PaymentRepository;
 import com.paymentteamproject.domain.refund.dtos.RefundCreateRequest;
 import com.paymentteamproject.domain.refund.dtos.RefundCreateResponse;
 import com.paymentteamproject.domain.refund.entity.Refund;
 import com.paymentteamproject.domain.refund.repository.RefundRepository;
+import com.paymentteamproject.domain.user.entity.User;
+import com.paymentteamproject.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,9 +21,15 @@ public class RefundService {
 
     private final RefundRepository refundRepository;
     private final PaymentRepository paymentRepository;
+    private final UserRepository userRepository;
 
     @Transactional
-    public RefundCreateResponse requestRefund(Long paymentId, Long userId, RefundCreateRequest request) {
+    public RefundCreateResponse requestRefund(Long paymentId, String email, RefundCreateRequest request) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        Long userId = user.getId();
 
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 결제를 찾을 수 없습니다."));
@@ -43,15 +52,15 @@ public class RefundService {
             throw new IllegalArgumentException("현재 상태에서는 환불이 불가능합니다.");
         }
 
+        // 환불 레코드 생성(영구 기록: 요청 사실부터 남김)
         double amount = payment.getPrice();
-
         Refund refund = new Refund(payment, amount, request.getReason());
         refundRepository.save(refund);
 
-        // 2) PortOne 취소 호출 (지금은 Stub)
+        // PortOne 취소 호출 (지금은 Stub)
         boolean cancelSuccess = cancelPortOne(payment);
 
-        // 3) 결과 반영
+        // 결과 반영
         if (cancelSuccess) {
             refund.markSuccess(LocalDateTime.now());
 
@@ -66,7 +75,6 @@ public class RefundService {
         throw new IllegalArgumentException("환불 처리 중 오류가 발생했습니다.");
     }
 
-    // DTO static 없이 매핑
     private RefundCreateResponse toResponse(Refund refund) {
         return new RefundCreateResponse(
                 refund.getId(),
@@ -79,9 +87,8 @@ public class RefundService {
     }
 
     private boolean isRefundable(Payment payment) {
-        // TODO: 팀 결제/주문 상태 enum에 맞게 정확히 구현
-
-        return true; // 임시
+        // 결제 성공건만 환불 가능, 이미 환불된 건은 불가
+        return payment.getStatus() == PaymentStatus.SUCCESS;
     }
 
     private boolean cancelPortOne(Payment payment) {

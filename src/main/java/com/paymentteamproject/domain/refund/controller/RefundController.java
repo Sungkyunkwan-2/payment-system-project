@@ -7,6 +7,9 @@ import com.paymentteamproject.domain.refund.service.RefundService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,15 +22,22 @@ public class RefundController {
     private final RefundService refundService;
 
     @PostMapping("/refunds/{paymentId}")
-    public ApiResponse<RefundCreateResponse> requestRefund(
+    public ResponseEntity<ApiResponse<RefundCreateResponse>> requestRefund(
+            @AuthenticationPrincipal UserDetails user,
             @PathVariable Long paymentId,
             @Valid @RequestBody RefundCreateRequest request
-            // @AuthenticationPrincipal(expression = "id") Long userId
+
     ) {
-        Long userId = 1L; // 임시
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ApiResponse.error(HttpStatus.UNAUTHORIZED, "인증이 필요합니다.", null)
+            );
+        }
 
-        RefundCreateResponse response = refundService.requestRefund(paymentId, userId, request);
+        String email = user.getUsername();
 
-        return ApiResponse.success(HttpStatus.OK, "요청 접수", response);
+        RefundCreateResponse response = refundService.requestRefund(paymentId, email, request);
+
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "요청 접수", response));
     }
 }
