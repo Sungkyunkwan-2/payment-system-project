@@ -25,13 +25,13 @@ public class OrderProductService {
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
-    public List<getAllOrderProductResponse> getAllOrderProducts(Long userId) {
+    public List<getAllOrderProductResponse> getAllOrderProducts(String email) {
 
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
 
         List<OrderProduct> orderProducts =
-                orderProductRepository.findAllByOrder_User_Id(userId);
+                orderProductRepository.findAllByOrderUserEmail(email);
         return orderProducts.stream()
                 .map(orderProduct -> new getAllOrderProductResponse(
                         orderProduct.getOrder().getOrderNumber(),
@@ -48,18 +48,18 @@ public class OrderProductService {
     }
 
     @Transactional(readOnly = true)
-    public getOneOrderProductResponse getOneOrderProducts(Long userId, Long orderId) {
-        User user = userRepository.findById(userId)
+    public getOneOrderProductResponse getOneOrderProducts(String email, Long orderId) {
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
 
         Orders order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException("주문을 찾을 수 없습니다."));
 
-        if (!order.getUser().getId().equals(userId)) {
+        if (!order.getUser().getEmail().equals(email)) {
             throw new OrderAccessException("본인의 주문만 조회할 수 있습니다.");
         }
 
-        List<OrderProduct> orderProducts = orderProductRepository.findAllByOrder_Id(orderId);
+        List<OrderProduct> orderProducts = orderProductRepository.findAllByOrderId(orderId);
 
         OrderProduct orderProduct = orderProducts.get(0);
 
