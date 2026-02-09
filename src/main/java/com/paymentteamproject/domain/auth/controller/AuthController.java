@@ -36,25 +36,6 @@ public class AuthController {
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
     private static final int REFRESH_TOKEN_COOKIE_MAX_AGE = 7 * 24 * 60 * 60; // 7일
 
-    /**
-     * 로그인 API
-     * POST /api/auth/login
-     *
-     * 요청 본문:
-     * {
-     *   "email": "user@example.com",
-     *   "password": "password123"
-     * }
-     *
-     * 응답 헤더:
-     * Authorization: Bearer eyJhbGc...
-     *
-     * 응답 본문:
-     * {
-     *   "success": true,
-     *   "email": "user@example.com"
-     * }
-     */
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<RegisterResponse>> register(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.ok().body(

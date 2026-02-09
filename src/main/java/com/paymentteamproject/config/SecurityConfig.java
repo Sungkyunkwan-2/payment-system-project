@@ -1,6 +1,8 @@
 package com.paymentteamproject.config;
 
+import com.paymentteamproject.security.JwtAuthenticationEntryPoint;
 import com.paymentteamproject.security.JwtAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -32,19 +34,24 @@ import static org.springframework.boot.security.autoconfigure.web.servlet.PathRe
  */
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-    }
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // 2. CORS 설정 연결 (이걸 안 하면 아래 작성한 corsConfigurationSource가 작동 안 함)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 // CSRF 비활성화 (JWT 사용 시 불필요)
                 .csrf(AbstractHttpConfigurer::disable)
+
+                // ✅ 3. 예외 처리 핸들러 등록 (403 대신 401을 뱉게 하는 핵심)
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                )
 
                 // Session 사용 안 함 (Stateless)
                 .sessionManagement(session -> session
@@ -64,7 +71,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()
 
                         // 4) 인증 API
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register").permitAll()
+                        // 리프레시 토큰 재발급 API 엔드포인트도 추가
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register", "/api/auth/refresh").permitAll()
 
                         // 5) 그 외 API는 인증 필요
                         .requestMatchers("/api/**").authenticated()
