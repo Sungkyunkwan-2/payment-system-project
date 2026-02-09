@@ -17,7 +17,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
 
-    // 결제 시작
+        // 결제 시작
     @Transactional
     public StartPaymentResponse start(StartPaymentRequest request) {
 
@@ -26,9 +26,7 @@ public class PaymentService {
                 () -> new IllegalArgumentException("존재하지 않는 주문입니다"));
 
         // TODO payedAt 결제창 후? or initPayment 생성 시 (후자의 경우 createdAt과의 차별점?)
-        Payment payment = new Payment(
-                order,
-                request.getTotalAmount());
+        Payment payment = Payment.start(order, request.getTotalAmount());
         // TODO request.getPointsToUse 포인트 미구현으로 누락
 
         Payment savedPayment = paymentRepository.save(payment);
@@ -43,6 +41,8 @@ public class PaymentService {
     @Transactional
     public ConfirmPaymentResponse confirm(String paymentId) {
 
-        
+        Payment payment = paymentRepository.findByPaymentId(paymentId).orElseThrow(
+                () -> new IllegalArgumentException("존재하지 않는 결제입니다."));
+
     }
 }
