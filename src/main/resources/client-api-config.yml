@@ -207,7 +207,7 @@ api:
         body:
           fields:
             - name: orderId
-              type: string
+              type: number
               required: true
               description: 생성된 주문 ID
               usage: 주문 페이지 리다이렉트에 사용
@@ -216,7 +216,7 @@ api:
               required: false
               description: 서버에서 계산된 총 금액
             - name: orderNumber
-              type: string
+              type: number
               required: false
               description: 생성된 주문 번호
 

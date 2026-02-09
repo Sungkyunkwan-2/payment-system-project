@@ -94,6 +94,19 @@ async function makeApiRequest(endpointKey, options = {}) {
             };
         }
 
+        // ✅ 수정 후: 래퍼 객체면 data 필드를 꺼내고, success도 함께 넘겨주기
+        if (data && data.data !== undefined) {
+            const unwrapped = data.data;
+
+            // 객체 응답이면 래퍼의 success를 병합 (배열이면 건너뜀)
+            if (unwrapped && typeof unwrapped === 'object' && !Array.isArray(unwrapped)) {
+                if (unwrapped.success === undefined && data.success !== undefined) {
+                    unwrapped.success = data.success;
+                }
+            }
+
+            return unwrapped;
+        }
         return data;
     } catch (error) {
         displayError({
