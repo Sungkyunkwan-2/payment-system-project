@@ -304,7 +304,7 @@ api:
 
     confirm-payment:
       url: /payments/{paymentId}
-      method:
+      method: get
       description: 결제 확정 (PortOne 결제 검증 및 주문 상태 업데이트)
       pathParams:
         - name: paymentId

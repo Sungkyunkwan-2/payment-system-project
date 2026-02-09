@@ -1,12 +1,17 @@
 package com.paymentteamproject.domain.payment.service;
 
 import com.paymentteamproject.domain.order.entity.Orders;
+import com.paymentteamproject.domain.order.exception.OrderNotFoundException;
 import com.paymentteamproject.domain.order.repository.OrderRepository;
 import com.paymentteamproject.domain.payment.dtos.ConfirmPaymentResponse;
 import com.paymentteamproject.domain.payment.dtos.PortOnePaymentResponse;
 import com.paymentteamproject.domain.payment.dtos.StartPaymentRequest;
 import com.paymentteamproject.domain.payment.dtos.StartPaymentResponse;
 import com.paymentteamproject.domain.payment.entity.Payment;
+import com.paymentteamproject.domain.payment.entity.PaymentStatus;
+import com.paymentteamproject.domain.payment.exception.DuplicatePaymentConfirmException;
+import com.paymentteamproject.domain.payment.exception.PaymentCompensationException;
+import com.paymentteamproject.domain.payment.exception.PaymentNotFoundException;
 import com.paymentteamproject.domain.payment.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,10 +30,8 @@ public class PaymentService {
     public StartPaymentResponse start(StartPaymentRequest request) {
 
         Orders order = orderRepository.findById(request.getOrderId()).orElseThrow(
-                // TODO 주문 예외 협업
-                () -> new IllegalArgumentException("존재하지 않는 주문입니다"));
+                () -> new OrderNotFoundException("존재하지 않는 주문입니다"));
 
-        // TODO payedAt 결제창 후? or initPayment 생성 시 (후자의 경우 createdAt과의 차별점?)
         Payment payment = Payment.start(order, request.getTotalAmount());
         // TODO request.getPointsToUse 포인트 미구현으로 누락
 
@@ -45,7 +48,11 @@ public class PaymentService {
     public ConfirmPaymentResponse confirm(String paymentId) {
 
         Payment payment = paymentRepository.findByPaymentId(paymentId).orElseThrow(
-                () -> new IllegalArgumentException("존재하지 않는 결제입니다."));
+                () -> new PaymentNotFoundException("존재하지 않는 결제입니다."));
+
+        if(!payment.getStatus().equals(PaymentStatus.PENDING)) {
+            throw new DuplicatePaymentConfirmException("이미 처리 중이거나 완료된 결제입니다.");
+        }
 
         // PortOne API 결제 조회 값 불러오기
         PortOnePaymentResponse response = restClient.get()
@@ -53,7 +60,7 @@ public class PaymentService {
                 .retrieve()
                 .body(PortOnePaymentResponse.class);
 
-        if(response == null) throw new IllegalArgumentException("존재하지 않는 결제입니다.");
+        if(response == null) throw new PaymentNotFoundException("존재하지 않는 결제입니다.");
 
         int amount = response.getAmount().getTotal();
         if(!response.getStatus().equals("PAID") || amount != payment.getPrice()) {
@@ -65,12 +72,17 @@ public class PaymentService {
                     savedFail.getStatus());
         }
 
-        Payment success = payment.success();
-        Payment savedSuccess = paymentRepository.save(success);
-        // TODO 재고 차감 및 주문 상태 변경
+        try {
+            Payment success = payment.success();
+            Payment savedSuccess = paymentRepository.save(success);
 
-        return new ConfirmPaymentResponse(
-                savedSuccess.getOrder().getOrderNumber(),
-                savedSuccess.getStatus());
+            return new ConfirmPaymentResponse(
+                    savedSuccess.getOrder().getOrderNumber(),
+                    savedSuccess.getStatus());
+        } catch (Exception e) {
+            // TODO 결제 취소 메서드 호출
+
+            throw new PaymentCompensationException("결제 승인 처리 중 내부 오류로 인해 결제 취소되었습니다.");
+        }
     }
 }
