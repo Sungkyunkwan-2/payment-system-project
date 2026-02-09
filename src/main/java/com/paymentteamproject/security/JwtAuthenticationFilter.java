@@ -1,21 +1,18 @@
 package com.paymentteamproject.security;
 
-import com.paymentteamproject.domain.user.entity.User;
-import com.paymentteamproject.domain.user.exception.UserNotFoundException;
-import com.paymentteamproject.domain.user.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
 
 /**
  * JWT 토큰 인증 필터
@@ -26,14 +23,18 @@ import java.util.Collections;
  * - 예외 처리 개선
  */
 @Component
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final UserRepository userRepository;
+    private final CustomUserDetailsService userDetailsService;
 
-    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, UserRepository userRepository) {
+    public JwtAuthenticationFilter (
+            JwtTokenProvider jwtTokenProvider,
+            CustomUserDetailsService userDetailsService
+    ) {
         this.jwtTokenProvider = jwtTokenProvider;
-        this.userRepository = userRepository;
+        this.userDetailsService = userDetailsService;
     }
 
     @Override
@@ -52,25 +53,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // 3. 토큰에서 사용자 정보 추출
                 String email = jwtTokenProvider.getEmail(token);
 
-                // 4. 인증 객체 생성
-                User user = userRepository.findByEmail(email)
-                        .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다: " + email));
+                //4. UserDetails 조회 추가
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
-                //TODO: @AuthenticationPrincipal User user 형식 지원 가능하도록 principal을 user 객체로 변경
+                // 5. 인증 객체 생성
                 UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
-                            user,
-                        email,
-                        Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+                            userDetails,
+                        null,
+                            userDetails.getAuthorities() //권한도 UserDetails에서 가져옴
                     );
 
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                authentication.setDetails(
+                        new WebAuthenticationDetailsSource().buildDetails(request)
+                );
 
-                // 5. SecurityContext에 인증 정보 설정
+                // 6. SecurityContext에 인증 정보 설정
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (Exception e) {
-            logger.error("JWT 인증 실패", e);
+            log.error("JWT 인증 실패", e);
             // TODO: 구현 - 적절한 에러 응답
         }
 
