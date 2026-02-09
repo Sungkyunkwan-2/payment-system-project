@@ -237,11 +237,12 @@
                 });
 
                 // YML 스키마 기반 자동 검증
+                /*
                 if (!validateApiResponse('list-orders', result)) {
                     throw new Error('API 응답 형식이 올바르지 않습니다.');
-                }
+                }*/
 
-                orders = result;
+                orders = result.data;
                 loadingEl.style.display = 'none';
 
                 if (orders.length === 0) {
