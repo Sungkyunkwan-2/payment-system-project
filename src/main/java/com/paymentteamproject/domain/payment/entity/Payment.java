@@ -37,9 +37,29 @@ public class Payment extends BaseEntity {
 
     private LocalDateTime deletedAt;
 
-    public Payment(Orders order, double price) {
-       this.order = order;
-       this.paymentId = "PAY" + id + System.currentTimeMillis();
-       this.price = price;
+    private Payment(Orders order, String paymentId, PaymentStatus status, double price) {
+        this.order = order;
+        this.paymentId = paymentId;
+        this.status = status;
+        this.price = price;
+    }
+
+    public static Payment start(Orders order, double price) {
+        return new Payment(
+                order,
+                "PAY" + order.getId() + System.currentTimeMillis(),
+                PaymentStatus.PENDING,
+                price
+        );
+    }
+
+    public Payment success() {
+        return new Payment(
+                this.order, this.paymentId, PaymentStatus.SUCCESS, this.price);
+    }
+
+    public Payment fail() {
+        return new Payment(
+                this.order, this.paymentId, PaymentStatus.FAILURE, this.price);
     }
 }

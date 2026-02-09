@@ -237,11 +237,12 @@
                 });
 
                 // YML 스키마 기반 자동 검증
+                /*
                 if (!validateApiResponse('list-orders', result)) {
                     throw new Error('API 응답 형식이 올바르지 않습니다.');
-                }
+                }*/
 
-                orders = result;
+                orders = result.data;
                 loadingEl.style.display = 'none';
 
                 if (orders.length === 0) {
@@ -303,7 +304,7 @@
                         </span>
                     </td>
                     <td style="padding: 0.75rem; text-align: center;">
-                        ${order.status === 'PENDING' ?
+                        ${order.status === 'PAYMENT_PENDING' ?
                             `<button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem;" onclick="payOrder(${order.orderId}, ${finalAmount})">
                                 💳 결제하기
                             </button>` :

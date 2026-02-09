@@ -249,7 +249,7 @@
             }
 
             // PENDING 상태의 주문만 필터링
-            const pendingOrders = orders.filter(order => order.status === 'PENDING');
+            const pendingOrders = orders.filter(order => order.status === 'PAYMENT_PENDING');
 
             if (pendingOrders.length === 0) {
                 container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">결제 대기 중인 주문이 없습니다</p>';
@@ -257,7 +257,7 @@
             }
 
             const ordersHtml = pendingOrders.map(order => {
-                const statusClass = order.status === 'PENDING' ? 'warning' :
+                const statusClass = order.status === 'PAYMENT_PENDING' ? 'warning' :
                                   order.status === 'PAID' ? 'success' : 'secondary';
 
                 return `
