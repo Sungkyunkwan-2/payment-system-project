@@ -25,12 +25,12 @@ public class RefundService {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 결제를 찾을 수 없습니다."));
 
-        // 소유권 검증(팀 Security 구조에 맞춰 적용)
-        // Long ownerId = payment.getOrder().getUser().getId();
-        // if (!ownerId.equals(userId)) throw new RefundBadRequestException("해당 결제에 대한 환불 권한이 없습니다.");
+        // 소유권 검증
+        Long ownerId = payment.getOrder().getUser().getId();
+        if (!ownerId.equals(userId)) throw new IllegalArgumentException("해당 결제에 대한 환불 권한이 없습니다.");
 
         // 멱등성: 이미 refunds 레코드가 있으면 "상태 변경 없이" 그대로 반환(성공/요청중)
-        Refund existing = refundRepository.findByPaymentId(paymentId);
+        Refund existing = refundRepository.findByPayment_Id(paymentId);
         if (existing != null) {
             if (existing.isSuccess() || existing.isRequesting()) {
                 return toResponse(existing);

@@ -18,7 +18,7 @@ public class RefundController {
 
     private final RefundService refundService;
 
-    @PostMapping("/refunds")
+    @PostMapping("/refunds/{paymentId}")
     public ApiResponse<RefundCreateResponse> requestRefund(
             @PathVariable Long paymentId,
             @Valid @RequestBody RefundCreateRequest request
