@@ -50,7 +50,8 @@ public class PointTransaction extends BaseEntity {
         this.order = order;
         this.points = points;
         this.type = type;
-        this.expiresAt = expiresAt;
+        //TODO: 만료 시간 테스트로 3분으로 해놓음 - 수정 필요
+        this.expiresAt = (expiresAt != null) ? expiresAt : LocalDateTime.now().plusMinutes(3);
         this.validity = true;
     }
 
