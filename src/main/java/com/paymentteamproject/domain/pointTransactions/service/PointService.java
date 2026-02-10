@@ -1,6 +1,6 @@
 package com.paymentteamproject.domain.pointTransactions.service;
 
-import com.paymentteamproject.domain.masterMembership.exception.MembershipNotFountException;
+import com.paymentteamproject.domain.masterMembership.exception.MembershipNotFoundException;
 import com.paymentteamproject.domain.membershipTransaction.entity.MembershipTransaction;
 import com.paymentteamproject.domain.membershipTransaction.repository.MembershipTransactionRepository;
 import com.paymentteamproject.domain.order.entity.Orders;
@@ -31,7 +31,7 @@ public class PointService {
         // 2. 적립 비율 결정 (멤버십 없으면 예외, 있으면 멤버십 비율)
         double ratio = 0.0;
         if (activeMembership == null) {
-            throw  new MembershipNotFountException("멤버십이 존재하지 않습니다.");
+            throw  new MembershipNotFoundException("멤버십이 존재하지 않습니다.");
         }
         ratio = activeMembership.getMasterMembership().getRatio();
 
