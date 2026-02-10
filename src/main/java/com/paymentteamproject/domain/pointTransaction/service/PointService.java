@@ -52,6 +52,7 @@ public class PointService {
             // 5. 사용자 포인트 잔액 업데이트
             user.addPoints(earnedPoints);
             userRepository.save(user);
+            //TODO 이걸 결제로 옮겨야 함
 
             return savedTransaction;
         }
