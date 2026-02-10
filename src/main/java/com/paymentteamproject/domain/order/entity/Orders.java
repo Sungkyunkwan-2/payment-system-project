@@ -61,7 +61,6 @@ public class Orders extends BaseEntity {
     public void completedOrder() {
         this.status = OrderStatus.ORDER_COMPLETED;
     }
-
     public void markRefunded() {
         // 환불 가능한 주문 상태만 허용하고 싶으면 체크
         if (this.status != OrderStatus.ORDER_COMPLETED) {
