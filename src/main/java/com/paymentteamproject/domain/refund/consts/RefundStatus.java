@@ -1,4 +1,4 @@
-package com.paymentteamproject.domain.refund.entity;
+package com.paymentteamproject.domain.refund.consts;
 
 public enum RefundStatus {
     // 요청, 성공, 실패

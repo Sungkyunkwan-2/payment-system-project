@@ -2,6 +2,7 @@ package com.paymentteamproject.domain.refund.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
 import com.paymentteamproject.domain.payment.entity.Payment;
+import com.paymentteamproject.domain.refund.consts.RefundStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -41,7 +42,6 @@ public class Refund extends BaseEntity {
         this.amount = amount;
         this.reason = reason;
         this.status = RefundStatus.REQUEST;
-        this.refundedAt = null;
         this.deletedAt = null;
     }
 

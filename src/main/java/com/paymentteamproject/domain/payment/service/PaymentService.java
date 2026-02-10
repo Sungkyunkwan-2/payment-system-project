@@ -3,18 +3,16 @@ package com.paymentteamproject.domain.payment.service;
 import com.paymentteamproject.domain.order.entity.Orders;
 import com.paymentteamproject.domain.order.exception.OrderNotFoundException;
 import com.paymentteamproject.domain.order.repository.OrderRepository;
-import com.paymentteamproject.domain.payment.dtos.ConfirmPaymentResponse;
-import com.paymentteamproject.domain.payment.dtos.PortOnePaymentResponse;
-import com.paymentteamproject.domain.payment.dtos.StartPaymentRequest;
-import com.paymentteamproject.domain.payment.dtos.StartPaymentResponse;
+import com.paymentteamproject.domain.payment.dto.ConfirmPaymentResponse;
+import com.paymentteamproject.domain.payment.dto.PortOnePaymentResponse;
+import com.paymentteamproject.domain.payment.dto.StartPaymentRequest;
+import com.paymentteamproject.domain.payment.dto.StartPaymentResponse;
 import com.paymentteamproject.domain.payment.entity.Payment;
-import com.paymentteamproject.domain.payment.entity.PaymentStatus;
+import com.paymentteamproject.domain.payment.consts.PaymentStatus;
 import com.paymentteamproject.domain.payment.exception.DuplicatePaymentConfirmException;
 import com.paymentteamproject.domain.payment.exception.PaymentCompensationException;
 import com.paymentteamproject.domain.payment.exception.PaymentNotFoundException;
 import com.paymentteamproject.domain.payment.repository.PaymentRepository;
-import com.paymentteamproject.domain.refund.dtos.RefundCreateRequest;
-import com.paymentteamproject.domain.refund.service.RefundService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,9 +24,8 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
     private final RestClient restClient;
-    private final RefundService refundService;
 
-    // 결제 시작
+        // 결제 시작
     @Transactional
     public StartPaymentResponse start(StartPaymentRequest request) {
 
@@ -83,8 +80,7 @@ public class PaymentService {
                     savedSuccess.getOrder().getOrderNumber(),
                     savedSuccess.getStatus());
         } catch (Exception e) {
-            refundService.requestRefund(
-                    payment.getPaymentId(), payment.getOrder().getUser().getEmail(), new RefundCreateRequest());
+            // TODO 결제 취소 메서드 호출
 
             throw new PaymentCompensationException("결제 승인 처리 중 내부 오류로 인해 결제 취소되었습니다.");
         }

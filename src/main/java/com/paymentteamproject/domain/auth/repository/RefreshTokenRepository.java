@@ -18,11 +18,6 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
     Optional<RefreshToken> findByToken(String token);
 
     /**
-     * 사용자 ID로 조회
-     */
-    Optional<RefreshToken> findByUser(User user);
-
-    /**
      * 사용자 ID로 삭제
      * 영속성 컨텍스트와의 정합성 문제, 예상치 못한 Select 쿼리 방지를 위해 벌크 삭제 쿼리 명시
      */

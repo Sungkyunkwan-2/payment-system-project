@@ -1,4 +1,4 @@
-package com.paymentteamproject.domain.webhook.entity;
+package com.paymentteamproject.domain.webhook.consts;
 
 public enum PaymentWebhookPaymentStatus {
     READY,

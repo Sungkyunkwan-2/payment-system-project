@@ -51,7 +51,7 @@ public class AuthService {
                     userDetails.getRoleAuthority() // role
             );
 
-            // 3. Refesh Token 생성 및 DB 저장 (이메일만 사용)
+            // 3. Refresh Token 생성 및 DB 저장 (이메일만 사용)
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getUsername());
 
             log.info("로그인 성공: {}", userDetails.getUsername());

@@ -1,7 +1,7 @@
-package com.paymentteamproject.domain.product.dtos;
+package com.paymentteamproject.domain.product.dto;
 
-import com.paymentteamproject.domain.product.entity.ProductCategory;
-import com.paymentteamproject.domain.product.entity.ProductStatus;
+import com.paymentteamproject.domain.product.consts.ProductCategory;
+import com.paymentteamproject.domain.product.consts.ProductStatus;
 import lombok.Getter;
 
 import java.time.LocalDateTime;

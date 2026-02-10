@@ -1,13 +1,11 @@
 package com.paymentteamproject.domain.refund.service;
 
-import com.paymentteamproject.domain.order.entity.Orders;
-import com.paymentteamproject.domain.order.repository.OrderRepository;
 import com.paymentteamproject.domain.payment.entity.Payment;
-import com.paymentteamproject.domain.payment.entity.PaymentStatus;
+import com.paymentteamproject.domain.payment.consts.PaymentStatus;
 import com.paymentteamproject.domain.payment.repository.PaymentRepository;
-import com.paymentteamproject.domain.refund.dtos.PortOneCancelRequest;
-import com.paymentteamproject.domain.refund.dtos.RefundCreateRequest;
-import com.paymentteamproject.domain.refund.dtos.RefundCreateResponse;
+import com.paymentteamproject.domain.refund.dto.PortOneCancelRequest;
+import com.paymentteamproject.domain.refund.dto.RefundCreateRequest;
+import com.paymentteamproject.domain.refund.dto.RefundCreateResponse;
 import com.paymentteamproject.domain.refund.entity.Refund;
 import com.paymentteamproject.domain.refund.exception.RefundForbiddenException;
 import com.paymentteamproject.domain.refund.exception.RefundInvalidStateException;
@@ -46,12 +44,10 @@ public class RefundService {
 
         Long userId = user.getId();
 
-        Payment latestPayment = findLatestPayment(paymentId);
-        if (latestPayment.getStatus() != PaymentStatus.SUCCESS) {
+        Payment payment = findLatestPayment(paymentId);
+        if (payment.getStatus() != PaymentStatus.SUCCESS) {
             throw new RefundInvalidStateException("결제 성공 상태만 환불할 수 있습니다.");
         }
-
-        Payment payment = findLatestSuccessPayment(paymentId);
 
         // 소유권 검증
         Long ownerId = payment.getOrder().getUser().getId();
@@ -129,21 +125,6 @@ public class RefundService {
                         Payment.class
                 )
                 .setParameter("paymentId", paymentId)
-                .setMaxResults(1)
-                .getResultStream()
-                .findFirst()
-                .orElseThrow(() -> new RefundNotFoundException("해당 결제를 찾을 수 없습니다."));
-    }
-
-    private Payment findLatestSuccessPayment(String paymentId) {
-        return em.createQuery(
-                        "select p from Payment p " +
-                                "where p.paymentId = :paymentId and p.status = :status " +
-                                "order by p.id desc",
-                        Payment.class
-                )
-                .setParameter("paymentId", paymentId)
-                .setParameter("status", PaymentStatus.SUCCESS)
                 .setMaxResults(1)
                 .getResultStream()
                 .findFirst()

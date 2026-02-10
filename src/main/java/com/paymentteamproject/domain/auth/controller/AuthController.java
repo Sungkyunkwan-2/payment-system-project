@@ -1,6 +1,6 @@
 package com.paymentteamproject.domain.auth.controller;
 
-import com.paymentteamproject.common.dtos.ApiResponse;
+import com.paymentteamproject.common.dto.ApiResponse;
 import com.paymentteamproject.domain.auth.dto.*;
 import com.paymentteamproject.domain.auth.exception.TokenException;
 import com.paymentteamproject.domain.auth.service.AuthService;

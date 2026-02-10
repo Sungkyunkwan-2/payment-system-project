@@ -1,4 +1,4 @@
-package com.paymentteamproject.domain.refund.dtos;
+package com.paymentteamproject.domain.refund.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
