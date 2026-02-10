@@ -9,12 +9,16 @@ import com.paymentteamproject.domain.refund.dtos.PortOneCancelRequest;
 import com.paymentteamproject.domain.refund.dtos.RefundCreateRequest;
 import com.paymentteamproject.domain.refund.dtos.RefundCreateResponse;
 import com.paymentteamproject.domain.refund.entity.Refund;
+import com.paymentteamproject.domain.refund.exception.RefundForbiddenException;
+import com.paymentteamproject.domain.refund.exception.RefundInvalidStateException;
+import com.paymentteamproject.domain.refund.exception.RefundNotFoundException;
 import com.paymentteamproject.domain.refund.repository.RefundRepository;
 import com.paymentteamproject.domain.user.entity.User;
 import com.paymentteamproject.domain.user.repository.UserRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
@@ -37,38 +41,40 @@ public class RefundService {
     public RefundCreateResponse requestRefund(String paymentId, String email, RefundCreateRequest request) {
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new RefundInvalidStateException("사용자를 찾을 수 없습니다."));
 
         Long userId = user.getId();
 
         Payment latestPayment = findLatestPayment(paymentId);
         if (latestPayment.getStatus() != PaymentStatus.SUCCESS) {
-            throw new IllegalArgumentException("결제 성공 상태만 환불할 수 있습니다.");
+            throw new RefundInvalidStateException("결제 성공 상태만 환불할 수 있습니다.");
         }
 
         Payment payment = findLatestSuccessPayment(paymentId);
 
         // 소유권 검증
         Long ownerId = payment.getOrder().getUser().getId();
-        if (!ownerId.equals(userId)) throw new IllegalArgumentException("해당 결제에 대한 환불 권한이 없습니다.");
+        if (!ownerId.equals(userId)) throw new RefundForbiddenException("해당 결제에 대한 환불 권한이 없습니다.");
 
         // 멱등성: 이미 refunds 레코드가 있으면 "상태 변경 없이" 그대로 반환(성공/요청중)
         Refund latestRefund = refundRepository.findTopByPayment_PaymentIdOrderByIdDesc(paymentId).orElse(null);
         if (latestRefund != null) {
-            if (latestRefund.isSuccess() || latestRefund.isRequesting()) {
-                return toResponse(latestRefund);
+            if (latestRefund.isSuccess()) {
+                throw new RefundInvalidStateException("이미 환불 완료된 결제입니다.", HttpStatus.CONFLICT);
+            }
+            if (latestRefund.isRequesting()) {
+                throw new RefundInvalidStateException("이미 환불 처리 중입니다.", HttpStatus.CONFLICT);
             }
         }
 
-        // 환불 레코드 생성(영구 기록: 요청 사실부터 남김)
+        // 환불 요청 이벤트 저장
         double amount = payment.getPrice();
         Refund requestEvent = new Refund(payment, amount, request.getReason());
         refundRepository.save(requestEvent);
 
-        // PortOne 취소 호출 (실제 연동)
+        // PortOne 취소 호출
         boolean cancelSuccess = cancelPortOne(payment, request.getReason());
 
-        // 결과 반영
         if (cancelSuccess) {
             Refund successEvent = requestEvent.success(LocalDateTime.now());
             refundRepository.save(successEvent);
@@ -125,7 +131,7 @@ public class RefundService {
                 .setMaxResults(1)
                 .getResultStream()
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("해당 결제를 찾을 수 없습니다."));
+                .orElseThrow(() -> new RefundNotFoundException("해당 결제를 찾을 수 없습니다."));
     }
 
     private Payment findLatestSuccessPayment(String paymentId) {
@@ -140,6 +146,6 @@ public class RefundService {
                 .setMaxResults(1)
                 .getResultStream()
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("결제 성공 건이 없어 환불할 수 없습니다."));
+                .orElseThrow(() -> new RefundNotFoundException("해당 결제를 찾을 수 없습니다."));
     }
 }

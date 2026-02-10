@@ -73,6 +73,7 @@ public class Payment extends BaseEntity {
             throw new IllegalStateException("결제 성공 상태만 환불할 수 있습니다.");
         }
         Payment refunded = new Payment(this.order, this.paymentId, PaymentStatus.REFUND, this.price);
+        refunded.paidAt = this.paidAt;
         refunded.refundedAt = LocalDateTime.now();
         return refunded;
     }
