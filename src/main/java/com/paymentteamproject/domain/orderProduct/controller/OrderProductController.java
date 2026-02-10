@@ -5,7 +5,6 @@ import com.paymentteamproject.common.dtos.ApiResponse;
 import com.paymentteamproject.domain.orderProduct.dto.getAllOrderProductResponse;
 import com.paymentteamproject.domain.orderProduct.dto.getOneOrderProductResponse;
 import com.paymentteamproject.domain.orderProduct.service.OrderProductService;
-import com.paymentteamproject.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
