@@ -69,26 +69,6 @@ public class Orders extends BaseEntity {
         this.status = OrderStatus.ORDER_CANCELED;
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     public void updateStatus(OrderStatus newStatus) {
         validateStatusTransition(newStatus);
         this.status = newStatus;
