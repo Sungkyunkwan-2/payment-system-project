@@ -35,4 +35,30 @@ public class Refund extends BaseEntity {
     private LocalDateTime refundedAt;
 
     private LocalDateTime deletedAt;
+
+    public Refund(Payment payment, double amount, String reason) {
+        this.payment = payment;
+        this.amount = amount;
+        this.reason = reason;
+        this.status = RefundStatus.REQUEST;
+        this.refundedAt = null;
+        this.deletedAt = null;
+    }
+
+    public void markSuccess(LocalDateTime refundedAt) {
+        this.status = RefundStatus.SUCCESS;
+        this.refundedAt = refundedAt;
+    }
+
+    public void markFailure() {
+        this.status = RefundStatus.FAILURE;
+    }
+
+    public boolean isSuccess() {
+        return this.status == RefundStatus.SUCCESS;
+    }
+
+    public boolean isRequesting() {
+        return this.status == RefundStatus.REQUEST;
+    }
 }

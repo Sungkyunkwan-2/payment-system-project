@@ -61,6 +61,12 @@ public class Orders extends BaseEntity {
         this.status = status;
     }
 
+    public void markRefunded() {
+        // 환불 가능한 주문 상태만 허용하고 싶으면 체크
+        if (this.status != OrderStatus.ORDER_COMPLETED) {
+            throw new IllegalStateException("주문 완료 상태만 환불할 수 있습니다.");
+        }
+        this.status = OrderStatus.ORDER_CANCELED;
 
 
 
