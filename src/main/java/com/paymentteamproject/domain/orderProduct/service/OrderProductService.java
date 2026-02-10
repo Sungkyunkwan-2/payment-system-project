@@ -8,6 +8,7 @@ import com.paymentteamproject.domain.orderProduct.dto.getAllOrderProductResponse
 import com.paymentteamproject.domain.orderProduct.dto.getOneOrderProductResponse;
 import com.paymentteamproject.domain.orderProduct.entity.OrderProduct;
 import com.paymentteamproject.domain.orderProduct.repository.OrderProductRepository;
+import com.paymentteamproject.domain.pointTransactions.repository.PointTransactionRepository;
 import com.paymentteamproject.domain.user.entity.User;
 import com.paymentteamproject.domain.user.exception.UserNotFoundException;
 import com.paymentteamproject.domain.user.repository.UserRepository;
@@ -23,6 +24,7 @@ public class OrderProductService {
     private final OrderProductRepository orderProductRepository;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
+    private final PointTransactionRepository pointTransactionRepository;
 
     @Transactional(readOnly = true)
     public List<getAllOrderProductResponse> getAllOrderProducts(String email) {
@@ -32,18 +34,26 @@ public class OrderProductService {
 
         List<OrderProduct> orderProducts =
                 orderProductRepository.findAllByOrderUserEmail(email);
+
+
         return orderProducts.stream()
-                .map(orderProduct -> new getAllOrderProductResponse(
-                        orderProduct.getOrder().getOrderNumber(),
-                        orderProduct.getOrder().getId(),
-                        orderProduct.getOrder().getTotalPrice(), //포인트 차감 전 총 주문금액
-                        orderProduct.getOrder().getUsedPoint(),  //유저가 사용할 포인트
-                        orderProduct.getOrder().getTotalPrice() - orderProduct.getOrder().getUsedPoint(),  //포인트 차감 후 총 주문금액
-                        orderProduct.getOrder().getUsedPoint(),  //TODO: 임의 테스트용 (적립되는 포인트)
-                        orderProduct.getCurrency(),
-                        orderProduct.getOrder().getStatus(),
-                        orderProduct.getCreatedAt()
-                ))
+                .map(orderProduct -> {
+                    Orders order = orderProduct.getOrder();
+                    // 해당 주문으로 적립된 포인트 조회
+                    Double earnedPoints = pointTransactionRepository.findEarnedPointsByOrderId(order.getId());
+
+                    return new getAllOrderProductResponse(
+                            order.getOrderNumber(),
+                            order.getId(),
+                            order.getTotalPrice(),
+                            order.getUsedPoint(),
+                            order.getTotalPrice() - order.getUsedPoint(),
+                            earnedPoints,  // 실제 적립된 포인트
+                            orderProduct.getCurrency(),
+                            order.getStatus(),
+                            orderProduct.getCreatedAt()
+                    );
+                })
                 .toList();
     }
 
@@ -63,13 +73,14 @@ public class OrderProductService {
 
         OrderProduct orderProduct = orderProducts.get(0);
 
+        Double earnedPoints = pointTransactionRepository.findEarnedPointsByOrderId(orderId);
         return new getOneOrderProductResponse(
                 order.getOrderNumber(),
                 order.getId(),
                 order.getTotalPrice(),
                 order.getUsedPoint(),
                 order.getTotalPrice() - order.getUsedPoint(),
-                order.getUsedPoint(), // 임시 적립 포인트
+                earnedPoints,
                 orderProduct.getCurrency(),
                 order.getStatus(),
                 order.getCreatedAt()
