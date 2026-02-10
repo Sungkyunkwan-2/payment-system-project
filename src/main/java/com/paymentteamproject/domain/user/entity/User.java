@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -37,6 +38,9 @@ public class User extends BaseEntity {
     private String password;
 
     @Column(nullable = false)
+    private BigDecimal totalSpend;
+
+    @Column(nullable = false)
     private double pointBalance;
 
     private LocalDateTime deletedAt;
@@ -53,8 +57,11 @@ public class User extends BaseEntity {
 
         this.password = password;
 
-        //가입 시 관리자 임의로 포인트 지급 가능(가입 이벤트 등)
+        // 가입 시 관리자 임의로 포인트 지급 가능(가입 이벤트 등)
         this.pointBalance = pointBalance;
+
+        // 가입 시 총 거래액 0으로 초기화
+        this.totalSpend = new BigDecimal(0);
 
         // 생성 시 기본 권한은 USER
         this.role = UserRole.USER;
