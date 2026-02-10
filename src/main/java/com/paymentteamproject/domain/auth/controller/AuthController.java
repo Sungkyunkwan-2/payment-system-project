@@ -17,7 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -73,6 +72,22 @@ public class AuthController {
                 .body(ApiResponse.success(
                         HttpStatus.OK, "로그인에 성공했습니다", request.getEmail())
                 );
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request, HttpServletResponse response) {
+        // 1. 브라우저 쿠키에서 토큰 꺼내기
+        String token = CookieUtil.getCookie(request, "refreshToken").orElse(null);
+        // 2. 비즈니스 로직(DB 삭제)은 AuthService에 위임
+        authService.logout(token);
+        // 3. 브라우저 쿠키 삭제
+        CookieUtil.deleteCookie(response, REFRESH_TOKEN_COOKIE_NAME, cookieSecure);
+
+        return ResponseEntity.ok().body(
+                ApiResponse.success(
+                        HttpStatus.OK, "로그아웃되었습니다", null
+                )
+        );
     }
 
     /**

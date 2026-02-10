@@ -14,9 +14,6 @@ import java.util.Optional;
 @Slf4j
 public class CookieUtil {
 
-    private static HttpServletRequest request;
-    private static String name;
-
     /**
      * HttpOnly 쿠키 생성 및 추가
      *
@@ -71,20 +68,8 @@ public class CookieUtil {
      * @param name 쿠키 이름
      * @param secure HTTPS 전용 여부
      */
-    public static void deleteCookie(
-            HttpServletResponse response,
-            String name,
-            boolean secure
-    ) {
-        Cookie cookie = new Cookie(name, null);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(secure);
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
-
-        response.addCookie(cookie);
-
-        log.debug("쿠키 삭제: name={}", name);
+    public static void deleteCookie(HttpServletResponse response, String name, boolean secure) {
+        addCookie(response, name, null, 0, secure); // 생성 로직 재활용
     }
 }
 
