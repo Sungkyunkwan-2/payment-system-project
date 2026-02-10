@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+
 
 @Service
 @RequiredArgsConstructor
@@ -29,14 +31,14 @@ public class PointService {
                 .orElse(null);
 
         // 2. 적립 비율 결정 (멤버십 없으면 예외, 있으면 멤버십 비율)
-        double ratio = 0.0;
+        BigDecimal ratio = BigDecimal.valueOf(0.0);
         if (activeMembership == null) {
             throw  new MembershipNotFoundException("멤버십이 존재하지 않습니다.");
         }
         ratio = activeMembership.getMasterMembership().getRatio();
 
         // 3. 적립 포인트 계산 (주문 금액 * 적립 비율)
-        double earnedPoints = order.getTotalPrice() * ratio;
+        BigDecimal earnedPoints = order.getTotalPrice() * ratio;
 
         // 4. 포인트가 0보다 클 때만 적립
         if (earnedPoints > 0) {
