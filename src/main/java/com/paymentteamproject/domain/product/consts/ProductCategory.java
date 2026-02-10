@@ -1,4 +1,4 @@
-package com.paymentteamproject.domain.product.entity;
+package com.paymentteamproject.domain.product.consts;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

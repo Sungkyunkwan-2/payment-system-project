@@ -1,7 +1,7 @@
 package com.paymentteamproject.domain.product.controller;
 
-import com.paymentteamproject.common.dtos.ApiResponse;
-import com.paymentteamproject.domain.product.dtos.GetProductResponse;
+import com.paymentteamproject.common.dto.ApiResponse;
+import com.paymentteamproject.domain.product.dto.GetProductResponse;
 import com.paymentteamproject.domain.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,8 +23,7 @@ public class ProductController {
         return ResponseEntity.ok().body(
          ApiResponse.success(
                  HttpStatus.OK, "상품 목록 조회에 성공했습니다.", productService.getAllProducts()
-         )
-        );
+         ));
     }
 
     @GetMapping("/products/{productId}")
@@ -32,7 +31,6 @@ public class ProductController {
         return ResponseEntity.ok().body(
                 ApiResponse.success(
                         HttpStatus.OK, "상품 조회에 성공했습니다.", productService.getProduct(productId)
-                )
-        );
+                ));
     }
 }

@@ -1,4 +1,4 @@
-package com.paymentteamproject.domain.order.entity;
+package com.paymentteamproject.domain.order.consts;
 
 public enum OrderStatus {
     PAYMENT_PENDING("PAYMENT_PENDING", "결제 대기"),

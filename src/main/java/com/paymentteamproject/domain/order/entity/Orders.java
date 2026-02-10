@@ -1,6 +1,7 @@
 package com.paymentteamproject.domain.order.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
+import com.paymentteamproject.domain.order.consts.OrderStatus;
 import com.paymentteamproject.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -57,8 +58,8 @@ public class Orders extends BaseEntity {
         }
     }
 
-    public void completedOrder(OrderStatus status) {
-        this.status = status;
+    public void completedOrder() {
+        this.status = OrderStatus.ORDER_COMPLETED;
     }
 
     public void markRefunded() {
@@ -67,26 +68,7 @@ public class Orders extends BaseEntity {
             throw new IllegalStateException("주문 완료 상태만 환불할 수 있습니다.");
         }
         this.status = OrderStatus.ORDER_CANCELED;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    }
 
     public void updateStatus(OrderStatus newStatus) {
         validateStatusTransition(newStatus);

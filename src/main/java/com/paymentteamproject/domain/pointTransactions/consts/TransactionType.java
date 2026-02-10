@@ -1,4 +1,4 @@
-package com.paymentteamproject.domain.pointTransactions.entity;
+package com.paymentteamproject.domain.pointTransactions.consts;
 
 public enum TransactionType {
     USED, //구매 시 포인트 사용

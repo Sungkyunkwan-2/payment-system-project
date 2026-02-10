@@ -1,11 +1,10 @@
 package com.paymentteamproject.domain.product.service;
 
-import com.paymentteamproject.domain.product.dtos.GetProductResponse;
+import com.paymentteamproject.domain.product.dto.GetProductResponse;
 import com.paymentteamproject.domain.product.entity.Product;
 import com.paymentteamproject.domain.product.exception.ProductNotFoundException;
 import com.paymentteamproject.domain.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

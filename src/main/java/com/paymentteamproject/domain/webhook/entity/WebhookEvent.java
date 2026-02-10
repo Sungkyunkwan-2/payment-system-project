@@ -1,6 +1,8 @@
 package com.paymentteamproject.domain.webhook.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
+import com.paymentteamproject.domain.webhook.consts.PaymentWebhookPaymentStatus;
+import com.paymentteamproject.domain.webhook.consts.WebhookStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

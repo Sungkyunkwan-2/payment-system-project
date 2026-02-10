@@ -3,14 +3,14 @@
 //import com.paymentteamproject.domain.order.dto.CreateOrderRequest;
 //import com.paymentteamproject.domain.order.dto.CreateOrderResponse;
 //import com.paymentteamproject.domain.order.dto.OrderItemRequest;
-//import com.paymentteamproject.domain.order.entity.OrderStatus;
+//import com.paymentteamproject.domain.order.consts.OrderStatus;
 //import com.paymentteamproject.domain.order.entity.Orders;
 //import com.paymentteamproject.domain.order.repository.OrderRepository;
 //import com.paymentteamproject.domain.orderProduct.entity.OrderProduct;
 //import com.paymentteamproject.domain.orderProduct.repository.OrderProductRepository;
 //import com.paymentteamproject.domain.product.entity.Product;
-//import com.paymentteamproject.domain.product.entity.ProductCategory;
-//import com.paymentteamproject.domain.product.entity.ProductStatus;
+//import com.paymentteamproject.domain.product.consts.ProductCategory;
+//import com.paymentteamproject.domain.product.consts.ProductStatus;
 //import com.paymentteamproject.domain.product.repository.ProductRepository;
 //import com.paymentteamproject.domain.user.entity.User;
 //import com.paymentteamproject.domain.user.repository.UserRepository;

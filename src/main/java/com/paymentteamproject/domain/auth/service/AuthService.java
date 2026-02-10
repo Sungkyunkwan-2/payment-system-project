@@ -25,7 +25,6 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenService refreshTokenService;
-    private final UserRepository userRepository;
 
     @Transactional
     public TokenDto login(LoginRequest request) throws AuthenticationException {
@@ -53,7 +52,7 @@ public class AuthService {
                     userDetails.getRoleAuthority() // role
             );
 
-            // 3. Refesh Token 생성 및 DB 저장 (이메일만 사용)
+            // 3. Refresh Token 생성 및 DB 저장 (이메일만 사용)
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getUsername());
 
             log.info("로그인 성공: {}", userDetails.getUsername());

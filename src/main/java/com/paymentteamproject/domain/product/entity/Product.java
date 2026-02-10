@@ -1,6 +1,8 @@
 package com.paymentteamproject.domain.product.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
+import com.paymentteamproject.domain.product.consts.ProductCategory;
+import com.paymentteamproject.domain.product.consts.ProductStatus;
 import com.paymentteamproject.domain.product.exception.InsufficientStockException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

@@ -1,4 +1,4 @@
-package com.paymentteamproject.domain.masterMembership.entity;
+package com.paymentteamproject.domain.masterMembership.consts;
 
 public enum MembershipStatus {
     BRONZE,

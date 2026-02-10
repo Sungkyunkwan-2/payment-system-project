@@ -1,12 +1,12 @@
 package com.paymentteamproject.domain.refund.service;
 
 import com.paymentteamproject.domain.payment.entity.Payment;
-import com.paymentteamproject.domain.payment.entity.PaymentStatus;
+import com.paymentteamproject.domain.payment.consts.PaymentStatus;
 import com.paymentteamproject.domain.payment.repository.PaymentRepository;
-import com.paymentteamproject.domain.refund.dtos.PortOneCancelRequest;
-import com.paymentteamproject.domain.refund.dtos.PortOneCancelResponse;
-import com.paymentteamproject.domain.refund.dtos.RefundCreateRequest;
-import com.paymentteamproject.domain.refund.dtos.RefundCreateResponse;
+import com.paymentteamproject.domain.refund.dto.PortOneCancelRequest;
+import com.paymentteamproject.domain.refund.dto.PortOneCancelResponse;
+import com.paymentteamproject.domain.refund.dto.RefundCreateRequest;
+import com.paymentteamproject.domain.refund.dto.RefundCreateResponse;
 import com.paymentteamproject.domain.refund.entity.Refund;
 import com.paymentteamproject.domain.refund.repository.RefundRepository;
 import com.paymentteamproject.domain.user.entity.User;

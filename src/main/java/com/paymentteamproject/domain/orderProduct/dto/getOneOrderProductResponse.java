@@ -1,6 +1,6 @@
 package com.paymentteamproject.domain.orderProduct.dto;
 
-import com.paymentteamproject.domain.order.entity.OrderStatus;
+import com.paymentteamproject.domain.order.consts.OrderStatus;
 import lombok.Getter;
 
 import java.time.LocalDateTime;

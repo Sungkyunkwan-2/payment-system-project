@@ -1,15 +1,15 @@
 package com.paymentteamproject.domain.webhook.service;
 
-import com.paymentteamproject.domain.order.entity.OrderStatus;
+import com.paymentteamproject.domain.order.consts.OrderStatus;
 import com.paymentteamproject.domain.order.entity.Orders;
 import com.paymentteamproject.domain.order.service.OrderService;
 import com.paymentteamproject.domain.payment.entity.Payment;
-import com.paymentteamproject.domain.payment.entity.PaymentStatus;
+import com.paymentteamproject.domain.payment.consts.PaymentStatus;
 import com.paymentteamproject.domain.payment.exception.PaymentNotFoundException;
 import com.paymentteamproject.domain.payment.repository.PaymentRepository;
 import com.paymentteamproject.domain.webhook.dto.GetPaymentResponse;
 import com.paymentteamproject.domain.webhook.dto.WebHookRequest;
-import com.paymentteamproject.domain.webhook.entity.PaymentWebhookPaymentStatus;
+import com.paymentteamproject.domain.webhook.consts.PaymentWebhookPaymentStatus;
 import com.paymentteamproject.domain.webhook.entity.WebhookEvent;
 import com.paymentteamproject.domain.webhook.exception.PaymentAmountMismatchException;
 import com.paymentteamproject.domain.webhook.exception.PaymentStatusNotAllowedException;
@@ -47,15 +47,6 @@ public class WebhookEventService {
         Payment payment = paymentRepository.findByPaymentId(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException("결제 정보를 찾을 수 없습니다."));
 
-        //이벤트 기록
-        WebhookEvent webhookEvent = new WebhookEvent(
-                webhookId,
-                request.getData().getPaymentId(),
-                portOnePayment.getStatus()
-        );
-
-        webhookEventRepository.save(webhookEvent);
-
         if (payment.getStatus() == PaymentStatus.SUCCESS)
             return;
 
@@ -67,6 +58,15 @@ public class WebhookEventService {
         if(!(portOneAmount == orderAmount)){
             throw  new PaymentAmountMismatchException("결제 금액 불일치");
         }
+
+        //이벤트 기록
+        WebhookEvent webhookEvent = new WebhookEvent(
+                webhookId,
+                request.getData().getPaymentId(),
+                portOnePayment.getStatus()
+        );
+
+        webhookEventRepository.save(webhookEvent);
 
         processPaymentStatus(portOnePayment.getStatus(), payment, order);
 

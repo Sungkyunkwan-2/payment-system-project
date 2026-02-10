@@ -1,15 +1,15 @@
 package com.paymentteamproject.domain.payment.service;
 
-import com.paymentteamproject.domain.order.entity.OrderStatus;
+import com.paymentteamproject.domain.order.consts.OrderStatus;
 import com.paymentteamproject.domain.order.entity.Orders;
 import com.paymentteamproject.domain.order.exception.OrderNotFoundException;
 import com.paymentteamproject.domain.order.repository.OrderRepository;
-import com.paymentteamproject.domain.payment.dtos.ConfirmPaymentResponse;
-import com.paymentteamproject.domain.payment.dtos.PortOnePaymentResponse;
-import com.paymentteamproject.domain.payment.dtos.StartPaymentRequest;
-import com.paymentteamproject.domain.payment.dtos.StartPaymentResponse;
+import com.paymentteamproject.domain.payment.dto.ConfirmPaymentResponse;
+import com.paymentteamproject.domain.payment.dto.PortOnePaymentResponse;
+import com.paymentteamproject.domain.payment.dto.StartPaymentRequest;
+import com.paymentteamproject.domain.payment.dto.StartPaymentResponse;
 import com.paymentteamproject.domain.payment.entity.Payment;
-import com.paymentteamproject.domain.payment.entity.PaymentStatus;
+import com.paymentteamproject.domain.payment.consts.PaymentStatus;
 import com.paymentteamproject.domain.payment.exeception.PaymentNotFoundException;
 import com.paymentteamproject.domain.payment.repository.PaymentRepository;
 import com.paymentteamproject.domain.user.entity.User;

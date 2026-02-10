@@ -1,6 +1,6 @@
 package com.paymentteamproject.domain.auth.controller;
 
-import com.paymentteamproject.common.dtos.ApiResponse;
+import com.paymentteamproject.common.dto.ApiResponse;
 import com.paymentteamproject.domain.auth.dto.*;
 import com.paymentteamproject.domain.auth.exception.TokenException;
 import com.paymentteamproject.domain.auth.service.AuthService;
@@ -17,7 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
-import java.util.HashMap;
 import java.util.Map;
 
 /**

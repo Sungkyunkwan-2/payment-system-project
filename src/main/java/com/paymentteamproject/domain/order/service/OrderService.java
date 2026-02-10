@@ -5,7 +5,7 @@ import com.paymentteamproject.domain.product.exception.InsufficientStockExceptio
 import com.paymentteamproject.domain.order.dto.CreateOrderRequest;
 import com.paymentteamproject.domain.order.dto.CreateOrderResponse;
 import com.paymentteamproject.domain.order.dto.OrderItemRequest;
-import com.paymentteamproject.domain.order.entity.OrderStatus;
+import com.paymentteamproject.domain.order.consts.OrderStatus;
 import com.paymentteamproject.domain.order.entity.Orders;
 import com.paymentteamproject.domain.order.repository.OrderRepository;
 import com.paymentteamproject.domain.orderProduct.entity.OrderProduct;
