@@ -63,4 +63,16 @@ public class User extends BaseEntity {
     public void softDelete(){
         this.deletedAt = LocalDateTime.now();
     }
+
+
+
+
+
+
+
+
+
+    public void addPoints(double earnedPoints) {
+        this.pointBalance += earnedPoints;
+    }
 }

@@ -1,4 +1,4 @@
-package com.paymentteamproject.domain.pointTransactions.entity;
+package com.paymentteamproject.domain.pointTransaction.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
 import com.paymentteamproject.domain.order.entity.Orders;
@@ -6,6 +6,7 @@ import com.paymentteamproject.domain.pointTransactions.consts.TransactionType;
 import com.paymentteamproject.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -34,7 +35,7 @@ public class PointTransaction extends BaseEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private TransactionType type; //enum 구현 전
+    private PointTransactionType type; //enum 구현 전
 
     @Column(nullable = false)
     private LocalDateTime expiresAt;
@@ -44,12 +45,14 @@ public class PointTransaction extends BaseEntity {
 
     private LocalDateTime deletedAt;
 
-    public PointTransaction(User user, Orders order, double points, TransactionType type, LocalDateTime expiresAt){
+    @Builder
+    public PointTransaction(User user, Orders order, double points, PointTransactionType type, LocalDateTime expiresAt){
         this.user = user;
         this.order = order;
         this.points = points;
         this.type = type;
-        this.expiresAt = expiresAt;
+        //TODO: 만료 시간 테스트로 3분으로 해놓음 - 수정 필요
+        this.expiresAt = (expiresAt != null) ? expiresAt : LocalDateTime.now().plusMinutes(3);
         this.validity = true;
     }
 
