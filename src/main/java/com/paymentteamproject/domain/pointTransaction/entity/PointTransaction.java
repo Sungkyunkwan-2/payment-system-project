@@ -55,6 +55,27 @@ public class PointTransaction extends BaseEntity {
         this.validity = true;
     }
 
+    //포인트가 만료되었는지 확인
+    public boolean isExpired() {
+        return LocalDateTime.now().isAfter(this.expiresAt);
+    }
+
+    //만료된 포인트 상태 변경
+    public void invalidate() {
+        this.validity = false;
+    }
+
+    //만료 이력 생성
+    public static PointTransaction createExpiredRecord(PointTransaction original) {
+        return PointTransaction.builder()
+                .user(original.getUser())
+                .order(original.getOrder())
+                .points(original.getPoints())
+                .type(PointTransactionType.EXPIRED)
+                .expiresAt(original.getExpiresAt()) // 원래 만료 시간 보존
+                .build();
+    }
+
     public void softDelete(){
         this.deletedAt = LocalDateTime.now();
     }
