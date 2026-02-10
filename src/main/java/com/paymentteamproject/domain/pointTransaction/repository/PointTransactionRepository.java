@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface PointTransactionRepository extends JpaRepository<PointTransaction, Long> {
@@ -26,4 +28,13 @@ public interface PointTransactionRepository extends JpaRepository<PointTransacti
         return findPointsByOrderIdAndType(orderId, PointTransactionType.ADDED)
                 .orElse(0.0);
     }
+
+
+    //만료 대상 포인트 조회 (ADDED 타입이면서 만료 시간이 지난 것)
+    @Query("SELECT pt FROM PointTransaction pt " +
+            "WHERE pt.type = 'ADDED' " +
+            "AND pt.validity = true " +
+            "AND pt.expiresAt < :now " +
+            "AND pt.deletedAt IS NULL")
+    List<PointTransaction> findExpiredPoints(@Param("now") LocalDateTime now);
 }
