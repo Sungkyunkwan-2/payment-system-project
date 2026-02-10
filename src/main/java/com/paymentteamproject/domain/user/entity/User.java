@@ -1,6 +1,7 @@
 package com.paymentteamproject.domain.user.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
+import com.paymentteamproject.domain.masterMembership.consts.MembershipStatus;
 import com.paymentteamproject.domain.user.consts.UserRole;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -41,6 +42,10 @@ public class User extends BaseEntity {
     private BigDecimal totalSpend;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private MembershipStatus membershipStatus;
+
+    @Column(nullable = false)
     private double pointBalance;
 
     private LocalDateTime deletedAt;
@@ -62,6 +67,9 @@ public class User extends BaseEntity {
 
         // 가입 시 총 거래액 0으로 초기화
         this.totalSpend = new BigDecimal(0);
+
+        // 가입 시 기본 등급 BRONZE
+        this.membershipStatus = MembershipStatus.BRONZE;
 
         // 생성 시 기본 권한은 USER
         this.role = UserRole.USER;
