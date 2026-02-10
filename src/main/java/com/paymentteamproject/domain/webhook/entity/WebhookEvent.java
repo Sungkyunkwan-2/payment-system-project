@@ -4,9 +4,11 @@ import com.paymentteamproject.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @Getter
 @Entity
 @Table(name = "webhook_events")
@@ -34,7 +36,7 @@ public class WebhookEvent extends BaseEntity {
     @Column(nullable = false)
     private LocalDateTime receivedAt;
 
-    @Column(nullable = false)
+    @Column
     private LocalDateTime processedAt;
 
     @Column
@@ -46,9 +48,25 @@ public class WebhookEvent extends BaseEntity {
         this.eventStatus = eventStatus;
         this.status = WebhookStatus.RECEIVED;
         this.receivedAt = LocalDateTime.now();
+
+        log.info("요청시각: {} 상태: {}", receivedAt, status);
     }
+
     public void completeProcess() {
         this.status = WebhookStatus.PROCESSED;
         this.processedAt = LocalDateTime.now();
+
+        log.info("처리완료 시각: {}, 상태: {}", processedAt, status);
+    }
+
+    public void fail() {
+        this.status = WebhookStatus.FAILED;
+        this.processedAt = LocalDateTime.now();
+
+        log.info("처리실패 시각: {} 상태: {}", processedAt, status);
+    }
+
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
     }
 }
