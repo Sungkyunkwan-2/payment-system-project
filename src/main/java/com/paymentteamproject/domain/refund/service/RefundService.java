@@ -1,5 +1,6 @@
 package com.paymentteamproject.domain.refund.service;
 
+import com.paymentteamproject.domain.order.service.OrderService;
 import com.paymentteamproject.domain.payment.entity.Payment;
 import com.paymentteamproject.domain.payment.consts.PaymentStatus;
 import com.paymentteamproject.domain.payment.repository.PaymentRepository;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -35,6 +37,7 @@ public class RefundService {
     private final UserRepository userRepository;
     private final RestClient portOneRestClient;
     private final EntityManager em;
+    private final OrderService orderService;
 
     @Transactional
     public RefundCreateResponse requestRefund(String paymentId, String email, RefundCreateRequest request) {
@@ -65,7 +68,7 @@ public class RefundService {
         }
 
         // 환불 요청 이벤트 저장
-        double amount = payment.getPrice();
+        BigDecimal amount = payment.getPrice();
         Refund requestEvent = new Refund(payment, amount, request.getReason());
         refundRepository.save(requestEvent);
 
@@ -77,6 +80,7 @@ public class RefundService {
             refundRepository.save(successEvent);
 
             payment.getOrder().markRefunded();
+            orderService.processOrderCancellation(payment.getOrder());
 
             Payment refundedPayment = payment.refund();
             paymentRepository.save(refundedPayment);
