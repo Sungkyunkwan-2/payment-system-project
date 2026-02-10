@@ -11,7 +11,7 @@ import com.paymentteamproject.domain.membershipTransaction.repository.Membership
 import com.paymentteamproject.domain.user.consts.UserRank;
 import com.paymentteamproject.domain.user.entity.User;
 import com.paymentteamproject.domain.user.exception.UserNotFoundException;
-import com.paymentteamproject.domain.user.exceptions.DuplicateEmailException;
+import com.paymentteamproject.domain.user.exception.DuplicateEmailException;
 import com.paymentteamproject.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;

@@ -1,4 +1,4 @@
-package com.paymentteamproject.domain.user.exceptions;
+package com.paymentteamproject.domain.user.exception;
 
 public class DuplicateEmailException extends RuntimeException {
     public DuplicateEmailException() {
