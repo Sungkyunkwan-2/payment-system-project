@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -40,14 +41,14 @@ public class OrderProductService {
                 .map(orderProduct -> {
                     Orders order = orderProduct.getOrder();
                     // 해당 주문으로 적립된 포인트 조회
-                    Double earnedPoints = pointTransactionRepository.findEarnedPointsByOrderId(order.getId());
+                    BigDecimal earnedPoints = pointTransactionRepository.findEarnedPointsByOrderId(order.getId());
 
                     return new getAllOrderProductResponse(
                             order.getOrderNumber(),
                             order.getId(),
                             order.getTotalPrice(),
                             order.getUsedPoint(),
-                            order.getTotalPrice() - order.getUsedPoint(),
+                            order.getTotalPrice().subtract(order.getUsedPoint()),
                             earnedPoints,  // 실제 적립된 포인트
                             orderProduct.getCurrency(),
                             order.getStatus(),
@@ -73,13 +74,13 @@ public class OrderProductService {
 
         OrderProduct orderProduct = orderProducts.get(0);
 
-        Double earnedPoints = pointTransactionRepository.findEarnedPointsByOrderId(orderId);
+        BigDecimal earnedPoints = pointTransactionRepository.findEarnedPointsByOrderId(orderId);
         return new getOneOrderProductResponse(
                 order.getOrderNumber(),
                 order.getId(),
                 order.getTotalPrice(),
                 order.getUsedPoint(),
-                order.getTotalPrice() - order.getUsedPoint(),
+                order.getTotalPrice().subtract(order.getUsedPoint()),
                 earnedPoints,
                 orderProduct.getCurrency(),
                 order.getStatus(),
