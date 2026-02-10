@@ -66,16 +66,16 @@ public class User extends BaseEntity {
     }
 
     public void addPoints(BigDecimal earnedPoints) {
-        this.pointBalance += earnedPoints;
+        this.pointBalance = this.pointBalance.add(earnedPoints);
     }
 
-    public void expirePoints(BigDecimal points) {
-        if (this.pointBalance < points) {
+    public void expirePoints(BigDecimal deductedPoints) {
+        if (this.pointBalance.compareTo(deductedPoints) < 0) {
             // 만료 처리는 강제 실행이므로 0으로 설정
-            this.pointBalance = 0;
+            this.pointBalance = BigDecimal.ZERO;
         }
          else {
-            this.pointBalance -= points;
+            this.pointBalance = this.pointBalance.subtract(deductedPoints);
         }
     }
 
