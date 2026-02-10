@@ -1,4 +1,4 @@
-package com.paymentteamproject.domain.pointTransactions.entity;
+package com.paymentteamproject.domain.pointTransaction.entity;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

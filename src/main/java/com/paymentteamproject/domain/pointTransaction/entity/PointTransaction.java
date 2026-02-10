@@ -1,4 +1,4 @@
-package com.paymentteamproject.domain.pointTransactions.entity;
+package com.paymentteamproject.domain.pointTransaction.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
 import com.paymentteamproject.domain.order.entity.Orders;

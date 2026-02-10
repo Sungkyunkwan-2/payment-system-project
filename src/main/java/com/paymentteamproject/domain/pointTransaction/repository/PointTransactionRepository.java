@@ -1,8 +1,8 @@
-package com.paymentteamproject.domain.pointTransactions.repository;
+package com.paymentteamproject.domain.pointTransaction.repository;
 
 
-import com.paymentteamproject.domain.pointTransactions.entity.PointTransaction;
-import com.paymentteamproject.domain.pointTransactions.entity.PointTransactionType;
+import com.paymentteamproject.domain.pointTransaction.entity.PointTransaction;
+import com.paymentteamproject.domain.pointTransaction.entity.PointTransactionType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

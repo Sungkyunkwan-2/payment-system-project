@@ -1,12 +1,12 @@
-package com.paymentteamproject.domain.pointTransactions.service;
+package com.paymentteamproject.domain.pointTransaction.service;
 
 import com.paymentteamproject.domain.masterMembership.exception.MembershipNotFoundException;
 import com.paymentteamproject.domain.membershipTransaction.entity.MembershipTransaction;
 import com.paymentteamproject.domain.membershipTransaction.repository.MembershipTransactionRepository;
 import com.paymentteamproject.domain.order.entity.Orders;
-import com.paymentteamproject.domain.pointTransactions.entity.PointTransaction;
-import com.paymentteamproject.domain.pointTransactions.entity.PointTransactionType;
-import com.paymentteamproject.domain.pointTransactions.repository.PointTransactionRepository;
+import com.paymentteamproject.domain.pointTransaction.entity.PointTransaction;
+import com.paymentteamproject.domain.pointTransaction.entity.PointTransactionType;
+import com.paymentteamproject.domain.pointTransaction.repository.PointTransactionRepository;
 import com.paymentteamproject.domain.user.entity.User;
 import com.paymentteamproject.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

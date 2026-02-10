@@ -8,7 +8,7 @@ import com.paymentteamproject.domain.orderProduct.dto.getAllOrderProductResponse
 import com.paymentteamproject.domain.orderProduct.dto.getOneOrderProductResponse;
 import com.paymentteamproject.domain.orderProduct.entity.OrderProduct;
 import com.paymentteamproject.domain.orderProduct.repository.OrderProductRepository;
-import com.paymentteamproject.domain.pointTransactions.repository.PointTransactionRepository;
+import com.paymentteamproject.domain.pointTransaction.repository.PointTransactionRepository;
 import com.paymentteamproject.domain.user.entity.User;
 import com.paymentteamproject.domain.user.exception.UserNotFoundException;
 import com.paymentteamproject.domain.user.repository.UserRepository;
@@ -33,7 +33,7 @@ public class OrderProductService {
                 .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
 
         List<OrderProduct> orderProducts =
-                orderProductRepository.findAllByOrderUserEmail(email);
+                orderProductRepository.findAllByOrderUser(user);
 
 
         return orderProducts.stream()
@@ -65,7 +65,7 @@ public class OrderProductService {
         Orders order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException("주문을 찾을 수 없습니다."));
 
-        if (!order.getUser().getEmail().equals(email)) {
+        if (!order.getUser().equals(user)) {
             throw new OrderAccessException("본인의 주문만 조회할 수 있습니다.");
         }
 

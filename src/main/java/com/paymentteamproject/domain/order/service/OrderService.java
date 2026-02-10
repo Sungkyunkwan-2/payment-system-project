@@ -1,8 +1,7 @@
 package com.paymentteamproject.domain.order.service;
 
 import com.paymentteamproject.domain.orderProduct.exception.OrderProductEmptyException;
-import com.paymentteamproject.domain.pointTransactions.service.PointService;
-import com.paymentteamproject.domain.pointTransactions.service.PointService;
+import com.paymentteamproject.domain.pointTransaction.service.PointService;
 import com.paymentteamproject.domain.product.exception.InsufficientStockException;
 import com.paymentteamproject.domain.order.dto.CreateOrderRequest;
 import com.paymentteamproject.domain.order.dto.CreateOrderResponse;
