@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -29,9 +30,9 @@ public class Orders extends BaseEntity {
     private Long orderNumber;
 
     @Column(nullable = false)
-    private double totalPrice;
+    private BigDecimal totalPrice;
 
-    private double usedPoint;
+    private BigDecimal usedPoint;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -40,7 +41,7 @@ public class Orders extends BaseEntity {
     private LocalDateTime deletedAt;
 
     @Builder
-    public Orders(User user, Long orderNumber, double totalPrice, double usedPoint, OrderStatus status) {
+    public Orders(User user, Long orderNumber, BigDecimal totalPrice, BigDecimal usedPoint, OrderStatus status) {
         this.user = user;
         this.orderNumber = orderNumber;
         this.totalPrice = totalPrice;

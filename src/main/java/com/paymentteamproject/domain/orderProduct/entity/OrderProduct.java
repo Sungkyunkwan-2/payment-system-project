@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -30,7 +31,7 @@ public class OrderProduct  extends BaseEntity {
     private String productName;
 
     @Column(nullable = false)
-    private double price;
+    private BigDecimal price;
 
     @Column(nullable = false)
     private String currency;
@@ -41,7 +42,7 @@ public class OrderProduct  extends BaseEntity {
     private LocalDateTime deletedAt;
 
     @Builder
-    public OrderProduct(Orders order, Long productId, String productName, double price, String currency, Long quantity) {
+    public OrderProduct(Orders order, Long productId, String productName, BigDecimal price, String currency, Long quantity) {
         this.order = order;
         this.productId = productId;
         this.productName = productName;

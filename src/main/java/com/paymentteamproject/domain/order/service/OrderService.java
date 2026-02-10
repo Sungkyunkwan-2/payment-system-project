@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -46,7 +47,7 @@ public class OrderService {
                 .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
 
         // 총액 계산 및 상품 검증
-        double totalAmount = 0.0;
+        BigDecimal totalAmount = BigDecimal.ZERO;
         for (OrderItemRequest item : request.getItems()) {
             Product product = productRepository.findById(item.getProductId())
                     .orElseThrow(() -> new ProductNotFoundException("상품을 찾을 수 없습니다. ID: " + item.getProductId()));
@@ -59,14 +60,14 @@ public class OrderService {
                 );
             }
 
-            totalAmount += product.getPrice() * item.getQuantity();
+            totalAmount = totalAmount.add(product.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
         }
 
         // 주문 생성
         Orders order = Orders.builder()
                 .user(user)
                 .totalPrice(totalAmount)
-                .usedPoint(0.0)
+                .usedPoint(BigDecimal.ZERO)
                 .status(OrderStatus.PAYMENT_PENDING)
                 .build();
 
