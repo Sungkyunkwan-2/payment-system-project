@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -65,7 +66,7 @@ public class RefundService {
         }
 
         // 환불 요청 이벤트 저장
-        double amount = payment.getPrice();
+        BigDecimal amount = payment.getPrice();
         Refund requestEvent = new Refund(payment, amount, request.getReason());
         refundRepository.save(requestEvent);
 

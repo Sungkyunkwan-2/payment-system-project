@@ -8,6 +8,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -24,7 +25,7 @@ public class Refund extends BaseEntity {
     private Payment payment;
 
     @Column(nullable = false)
-    private double amount;
+    private BigDecimal amount;
 
     @Column(nullable = false)
     private String reason;
@@ -37,7 +38,7 @@ public class Refund extends BaseEntity {
 
     private LocalDateTime deletedAt;
 
-    public Refund(Payment payment, double amount, String reason) {
+    public Refund(Payment payment, BigDecimal amount, String reason) {
         this.payment = payment;
         this.amount = amount;
         this.reason = reason;
@@ -45,7 +46,7 @@ public class Refund extends BaseEntity {
         this.deletedAt = null;
     }
 
-    private Refund(Payment payment, double amount, String reason, RefundStatus status, LocalDateTime refundedAt) {
+    private Refund(Payment payment, BigDecimal amount, String reason, RefundStatus status, LocalDateTime refundedAt) {
         this.payment = payment;
         this.amount = amount;
         this.reason = reason;

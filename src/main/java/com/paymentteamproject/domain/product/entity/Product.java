@@ -9,6 +9,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -24,7 +25,7 @@ public class Product extends BaseEntity {
     private String name;
 
     @Column (nullable = false)
-    private double price;
+    private BigDecimal price;
 
     @Column (nullable = false)
     private Long stock;
@@ -43,7 +44,7 @@ public class Product extends BaseEntity {
     @Column
     private LocalDateTime deletedAt;
 
-    public Product(String name, double price, Long stock, String content, ProductStatus status, ProductCategory category) {
+    public Product(String name, BigDecimal price, Long stock, String content, ProductStatus status, ProductCategory category) {
         this.name = name;
         this.price = price;
         this.stock = stock;
