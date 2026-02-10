@@ -8,6 +8,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -30,7 +31,7 @@ public class Payment extends BaseEntity {
     private PaymentStatus status;
 
     @Column(nullable = false)
-    private double price;
+    private BigDecimal price;
 
     private LocalDateTime paidAt;
 
@@ -38,14 +39,14 @@ public class Payment extends BaseEntity {
 
     private LocalDateTime deletedAt;
 
-    private Payment(Orders order, String paymentId, PaymentStatus status, double price) {
+    private Payment(Orders order, String paymentId, PaymentStatus status, BigDecimal price) {
         this.order = order;
         this.paymentId = paymentId;
         this.status = status;
         this.price = price;
     }
 
-    public static Payment start(Orders order, double price) {
+    public static Payment start(Orders order, BigDecimal price) {
         return new Payment(
                 order,
                 "PAY" + order.getId() + System.currentTimeMillis(),

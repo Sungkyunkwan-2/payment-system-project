@@ -2,7 +2,6 @@ package com.paymentteamproject.domain.pointTransaction.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
 import com.paymentteamproject.domain.order.entity.Orders;
-import com.paymentteamproject.domain.pointTransactions.consts.TransactionType;
 import com.paymentteamproject.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -10,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -31,7 +31,7 @@ public class PointTransaction extends BaseEntity {
     private Orders order;
 
     @Column(nullable = false)
-    private double points;
+    private BigDecimal points;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -46,7 +46,7 @@ public class PointTransaction extends BaseEntity {
     private LocalDateTime deletedAt;
 
     @Builder
-    public PointTransaction(User user, Orders order, double points, PointTransactionType type, LocalDateTime expiresAt){
+    public PointTransaction(User user, Orders order, BigDecimal points, PointTransactionType type, LocalDateTime expiresAt){
         this.user = user;
         this.order = order;
         this.points = points;

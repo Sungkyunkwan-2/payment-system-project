@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -17,16 +18,16 @@ public interface PointTransactionRepository extends JpaRepository<PointTransacti
     @Query("SELECT pt.points FROM PointTransaction pt " +
             "WHERE pt.order.id = :orderId " +
             "AND pt.type = :type")
-    Optional<Double> findPointsByOrderIdAndType(
+    Optional<BigDecimal> findPointsByOrderIdAndType(
             @Param("orderId") Long orderId,
             @Param("type") PointTransactionType type
     );
 
 
     //특정 주문의 ADDED(적립) 포인트 조회
-    default Double findEarnedPointsByOrderId(Long orderId) {
+    default BigDecimal findEarnedPointsByOrderId(Long orderId) {
         return findPointsByOrderIdAndType(orderId, PointTransactionType.ADDED)
-                .orElse(0.0);
+                .orElse(BigDecimal.valueOf(0.0));
     }
 
 
