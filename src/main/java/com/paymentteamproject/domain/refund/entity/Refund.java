@@ -45,13 +45,23 @@ public class Refund extends BaseEntity {
         this.deletedAt = null;
     }
 
-    public void markSuccess(LocalDateTime refundedAt) {
-        this.status = RefundStatus.SUCCESS;
+    private Refund(Payment payment, double amount, String reason, RefundStatus status, LocalDateTime refundedAt) {
+        this.payment = payment;
+        this.amount = amount;
+        this.reason = reason;
+        this.status = status;
         this.refundedAt = refundedAt;
+        this.deletedAt = null;
     }
 
-    public void markFailure() {
-        this.status = RefundStatus.FAILURE;
+    // append-only: 성공 이벤트 row 생성
+    public Refund success(LocalDateTime refundedAt) {
+        return new Refund(this.payment, this.amount, this.reason, RefundStatus.SUCCESS, refundedAt);
+    }
+
+    // append-only: 실패 이벤트 row 생성
+    public Refund failure() {
+        return new Refund(this.payment, this.amount, this.reason, RefundStatus.FAILURE, null);
     }
 
     public boolean isSuccess() {
@@ -60,5 +70,9 @@ public class Refund extends BaseEntity {
 
     public boolean isRequesting() {
         return this.status == RefundStatus.REQUEST;
+    }
+
+    public boolean isFailure() {
+        return this.status == RefundStatus.FAILURE;
     }
 }

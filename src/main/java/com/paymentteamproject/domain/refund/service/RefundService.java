@@ -1,17 +1,25 @@
 package com.paymentteamproject.domain.refund.service;
 
+import com.paymentteamproject.domain.order.entity.Orders;
+import com.paymentteamproject.domain.order.repository.OrderRepository;
 import com.paymentteamproject.domain.payment.entity.Payment;
-import com.paymentteamproject.domain.payment.consts.PaymentStatus;
+import com.paymentteamproject.domain.payment.entity.PaymentStatus;
 import com.paymentteamproject.domain.payment.repository.PaymentRepository;
-import com.paymentteamproject.domain.refund.dto.PortOneCancelRequest;
-import com.paymentteamproject.domain.refund.dto.PortOneCancelResponse;
-import com.paymentteamproject.domain.refund.dto.RefundCreateRequest;
-import com.paymentteamproject.domain.refund.dto.RefundCreateResponse;
+import com.paymentteamproject.domain.refund.dtos.PortOneCancelRequest;
+import com.paymentteamproject.domain.refund.dtos.RefundCreateRequest;
+import com.paymentteamproject.domain.refund.dtos.RefundCreateResponse;
 import com.paymentteamproject.domain.refund.entity.Refund;
+import com.paymentteamproject.domain.refund.exception.RefundForbiddenException;
+import com.paymentteamproject.domain.refund.exception.RefundInvalidStateException;
+import com.paymentteamproject.domain.refund.exception.RefundNotFoundException;
 import com.paymentteamproject.domain.refund.repository.RefundRepository;
 import com.paymentteamproject.domain.user.entity.User;
+import com.paymentteamproject.domain.user.exception.UserNotFoundException;
 import com.paymentteamproject.domain.user.repository.UserRepository;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
@@ -19,6 +27,7 @@ import org.springframework.web.client.RestClientResponseException;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RefundService {
@@ -26,60 +35,62 @@ public class RefundService {
     private final RefundRepository refundRepository;
     private final PaymentRepository paymentRepository;
     private final UserRepository userRepository;
-
-    // RestClientConfig에서 만든 Bean
     private final RestClient portOneRestClient;
+    private final EntityManager em;
 
     @Transactional
     public RefundCreateResponse requestRefund(String paymentId, String email, RefundCreateRequest request) {
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
 
         Long userId = user.getId();
 
-        Payment payment = paymentRepository.findByPaymentId(paymentId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 결제를 찾을 수 없습니다."));
+        Payment latestPayment = findLatestPayment(paymentId);
+        if (latestPayment.getStatus() != PaymentStatus.SUCCESS) {
+            throw new RefundInvalidStateException("결제 성공 상태만 환불할 수 있습니다.");
+        }
+
+        Payment payment = findLatestSuccessPayment(paymentId);
 
         // 소유권 검증
         Long ownerId = payment.getOrder().getUser().getId();
-        if (!ownerId.equals(userId)) throw new IllegalArgumentException("해당 결제에 대한 환불 권한이 없습니다.");
+        if (!ownerId.equals(userId)) throw new RefundForbiddenException("해당 결제에 대한 환불 권한이 없습니다.");
 
         // 멱등성: 이미 refunds 레코드가 있으면 "상태 변경 없이" 그대로 반환(성공/요청중)
-        Refund existing = refundRepository.findByPayment_PaymentId(paymentId);
-        if (existing != null) {
-            if (existing.isSuccess() || existing.isRequesting()) {
-                return toResponse(existing);
+        Refund latestRefund = refundRepository.findTopByPayment_PaymentIdOrderByIdDesc(paymentId).orElse(null);
+        if (latestRefund != null) {
+            if (latestRefund.isSuccess()) {
+                throw new RefundInvalidStateException("이미 환불 완료된 결제입니다.", HttpStatus.CONFLICT);
             }
-            throw new IllegalArgumentException("환불 실패 상태입니다.");
+            if (latestRefund.isRequesting()) {
+                throw new RefundInvalidStateException("이미 환불 처리 중입니다.", HttpStatus.CONFLICT);
+            }
         }
 
-        // 환불 가능 상태 검증
-        if (!isRefundable(payment)) {
-            throw new IllegalArgumentException("현재 상태에서는 환불이 불가능합니다.");
-        }
-
-        // 환불 레코드 생성(영구 기록: 요청 사실부터 남김)
+        // 환불 요청 이벤트 저장
         double amount = payment.getPrice();
-        Refund refund = new Refund(payment, amount, request.getReason());
-        refundRepository.save(refund);
+        Refund requestEvent = new Refund(payment, amount, request.getReason());
+        refundRepository.save(requestEvent);
 
-        // PortOne 취소 호출 (실제 연동)
+        // PortOne 취소 호출
         boolean cancelSuccess = cancelPortOne(payment, request.getReason());
 
-        // 결과 반영
         if (cancelSuccess) {
-            refund.markSuccess(LocalDateTime.now());
+            Refund successEvent = requestEvent.success(LocalDateTime.now());
+            refundRepository.save(successEvent);
 
-            payment.markRefunded();
             payment.getOrder().markRefunded();
-            // TODO: 포인트 복구 / 적립 취소 / 멤버십 재계산
 
-            return toResponse(refund);
+            Payment refundedPayment = payment.refund();
+            paymentRepository.save(refundedPayment);
+
+            return toResponse(successEvent);
         }
 
-        refund.markFailure();
-        throw new IllegalArgumentException("환불 처리 중 오류가 발생했습니다.");
+        Refund failureEvent = requestEvent.failure();
+        refundRepository.save(failureEvent);
+        return toResponse(failureEvent);
     }
 
     private RefundCreateResponse toResponse(Refund refund) {
@@ -93,26 +104,49 @@ public class RefundService {
         );
     }
 
-    private boolean isRefundable(Payment payment) {
-        // 결제 성공건만 환불 가능, 이미 환불된 건은 불가
-        return payment.getStatus() == PaymentStatus.SUCCESS;
-    }
-
     private boolean cancelPortOne(Payment payment, String reason) {
-        // PortOne 결제 취소는 "PortOne paymentId" (String) 로 호출해야 함
         String portOnePaymentId = payment.getPaymentId();
 
         try {
-            PortOneCancelResponse response = portOneRestClient.post()
+            portOneRestClient.post()
                     .uri("/payments/{paymentId}/cancel", portOnePaymentId)
                     .body(new PortOneCancelRequest(reason))
                     .retrieve()
-                    .body(PortOneCancelResponse.class);
-
-            // response가 null인 경우도 방어
-            return response != null;
+                    .toBodilessEntity();
+            return true;
         } catch (RestClientResponseException e) {
+            log.error("PortOne cancel failed. paymentId={}, status={}, body={}",
+                    portOnePaymentId, e.getStatusCode(), e.getResponseBodyAsString(), e);
             return false;
         }
+    }
+
+    private Payment findLatestPayment(String paymentId) {
+        return em.createQuery(
+                        "select p from Payment p " +
+                                "where p.paymentId = :paymentId " +
+                                "order by p.id desc",
+                        Payment.class
+                )
+                .setParameter("paymentId", paymentId)
+                .setMaxResults(1)
+                .getResultStream()
+                .findFirst()
+                .orElseThrow(() -> new RefundNotFoundException("해당 결제를 찾을 수 없습니다."));
+    }
+
+    private Payment findLatestSuccessPayment(String paymentId) {
+        return em.createQuery(
+                        "select p from Payment p " +
+                                "where p.paymentId = :paymentId and p.status = :status " +
+                                "order by p.id desc",
+                        Payment.class
+                )
+                .setParameter("paymentId", paymentId)
+                .setParameter("status", PaymentStatus.SUCCESS)
+                .setMaxResults(1)
+                .getResultStream()
+                .findFirst()
+                .orElseThrow(() -> new RefundNotFoundException("해당 결제를 찾을 수 없습니다."));
     }
 }

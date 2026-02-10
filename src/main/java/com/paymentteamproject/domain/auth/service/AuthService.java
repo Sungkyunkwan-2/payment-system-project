@@ -4,7 +4,6 @@ import com.paymentteamproject.domain.auth.dto.LoginRequest;
 import com.paymentteamproject.domain.auth.dto.TokenDto;
 import com.paymentteamproject.domain.auth.entity.RefreshToken;
 import com.paymentteamproject.domain.user.entity.User;
-import com.paymentteamproject.domain.user.repository.UserRepository;
 import com.paymentteamproject.security.CustomUserDetails;
 import com.paymentteamproject.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -63,6 +62,15 @@ public class AuthService {
             throw e;
         }
 
+    }
+
+    @Transactional
+    public void logout(String refreshToken) {
+        log.info("로그아웃 처리 시작 - 토큰 {}", refreshToken);
+        if (refreshToken != null) {
+            refreshTokenService.deleteRefreshToken(refreshToken);
+        }
+        log.info("로그아웃 완료");
     }
 
     @Transactional
