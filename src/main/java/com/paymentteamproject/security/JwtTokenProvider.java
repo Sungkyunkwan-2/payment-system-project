@@ -8,7 +8,9 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Date;
+import java.util.UUID;
 
 /**
  * JWT 토큰 생성 및 검증 유틸리티
@@ -18,14 +20,17 @@ import java.util.Date;
 public class JwtTokenProvider {
 
     private final SecretKey secretKey;
-    private final long tokenValidityInMilliseconds;
+    private final long accessTokenValidityInMilliseconds;
+    private final long refreshTokenValidityInMilliseconds;
 
     public JwtTokenProvider(
             @Value("${jwt.secret:commercehub-secret-key-for-demo-please-change-this-in-production-environment}") String secret,
-            @Value("${jwt.token-validity-in-seconds:86400}") long tokenValidityInSeconds
+            @Value("${jwt.access-token-validity:1800}") long accessTokenValidityInSeconds,
+            @Value("${jwt.refresh-token-validity:604800}") long refreshTokenValidityInSeconds
     ) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        this.tokenValidityInMilliseconds = tokenValidityInSeconds * 1000;
+        this.accessTokenValidityInMilliseconds = accessTokenValidityInSeconds * 1000;
+        this.refreshTokenValidityInMilliseconds = refreshTokenValidityInSeconds * 1000;
     }
 
     /**
@@ -38,7 +43,7 @@ public class JwtTokenProvider {
      */
     public String createToken(String email, String name, String role) {
         Date now = new Date();
-        Date validity = new Date(now.getTime() + tokenValidityInMilliseconds);
+        Date validity = new Date(now.getTime() + accessTokenValidityInMilliseconds);
 
         return Jwts.builder()
                 .subject(email)
@@ -51,7 +56,26 @@ public class JwtTokenProvider {
     }
 
     /**
-     * JWT 토큰에서 사용자 이름 추출
+     * Refresh Token 생성
+     * - Access Token보다 긴 유효기간
+     * - 최소한의정보만 포함(이메일만)
+     */
+    public String createRefreshToken(String email) {
+        Date now = new Date();
+        Date validity = new Date(now.getTime() + refreshTokenValidityInMilliseconds);
+
+        return Jwts.builder()
+                .subject(email)
+                .claim("type", "refresh")
+                .claim("tokenId", UUID.randomUUID().toString()) //토큰 고유 식별자
+                .issuedAt(now)
+                .expiration(validity)
+                .signWith(secretKey)
+                .compact();
+    }
+
+    /**
+     * JWT 토큰에서 사용자 이메일 추출
      */
     public String getEmail(String token) {
         Claims claims = Jwts.parser()
@@ -85,5 +109,32 @@ public class JwtTokenProvider {
             // - SignatureException: 서명 오류
             return false;
         }
+    }
+
+    /**
+     * Refresh Token의 만료 시간 반환
+     */
+    public Instant getRefreshTokenExpiryDate() {
+        return Instant.now().plusMillis(refreshTokenValidityInMilliseconds);
+    }
+
+    /**
+     * Access Token의 만료 시간 반환
+     */
+    public Instant getAccessTokenExpiryDate() {
+        return Instant.now().plusMillis(accessTokenValidityInMilliseconds);
+    }
+
+    /**
+     * 토큰 타입 확인 (access or refresh)
+     */
+    public String getTokenType(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return claims.get("type", String.class);
     }
 }

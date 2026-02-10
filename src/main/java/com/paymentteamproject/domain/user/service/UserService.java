@@ -1,8 +1,10 @@
 package com.paymentteamproject.domain.user.service;
 
-import com.paymentteamproject.common.dtos.auth.RegisterRequest;
-import com.paymentteamproject.common.dtos.auth.RegisterResponse;
+import com.paymentteamproject.domain.auth.dto.ProfileResponse;
+import com.paymentteamproject.domain.auth.dto.RegisterRequest;
+import com.paymentteamproject.domain.auth.dto.RegisterResponse;
 import com.paymentteamproject.domain.user.entity.User;
+import com.paymentteamproject.domain.user.exception.UserNotFoundException;
 import com.paymentteamproject.domain.user.exceptions.DuplicateEmailException;
 import com.paymentteamproject.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -43,4 +45,20 @@ public class UserService {
                 savedUser.getEmail()
         );
     }
+
+    @Transactional(readOnly = true)
+    public ProfileResponse getCurrentUser(String email){
+        User user = userRepository.findByEmail(email).orElseThrow(
+                UserNotFoundException::new
+        );
+        return ProfileResponse.builder()
+                .email(user.getEmail())
+                .customerUid("CUST_" + Math.abs(email.hashCode()))
+                .name(user.getUsername())
+                .phone(user.getPhone())
+                .pointBalance(user.getPointBalance())
+                .build();
+    }
 }
+
+
