@@ -71,9 +71,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()
 
                         // 4) 인증 API
-                        // 리프레시 토큰 재발급 API 엔드포인트도 추가
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register", "/api/auth/refresh").permitAll()
-
+                        .requestMatchers(HttpMethod.POST, "/portone-webhook").permitAll()
                         // 5) 그 외 API는 인증 필요
                         .requestMatchers("/api/**").authenticated()
 

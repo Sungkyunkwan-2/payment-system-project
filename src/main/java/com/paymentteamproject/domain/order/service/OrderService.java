@@ -22,6 +22,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -95,5 +97,30 @@ public class OrderService {
                 savedOrder.getTotalPrice(),
                 savedOrder.getOrderNumber()
         );
+    }
+
+    @Transactional
+    public void processOrderCancellation(Orders order) {
+
+        // 주문 상품 목록 조회
+        List<OrderProduct> orderProducts = orderProductRepository.findByOrder(order);
+
+        if (orderProducts.isEmpty()) {
+            return;
+        }
+
+        // 각 상품의 재고 복구
+        for (OrderProduct orderProduct : orderProducts) {
+            Long productId = orderProduct.getProductId();
+            Long quantity = orderProduct.getQuantity();
+
+            // Product 조회
+            Product product = productRepository.findByIdAndDeletedAtIsNull(productId)
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            String.format("상품을 찾을 수 없습니다. productId: %d", productId)));
+
+            // 재고 복구
+            product.increaseStock(quantity);
+        }
     }
 }

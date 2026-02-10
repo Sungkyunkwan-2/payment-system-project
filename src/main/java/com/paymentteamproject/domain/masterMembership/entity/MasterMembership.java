@@ -30,10 +30,6 @@ public class MasterMembership extends BaseEntity {
         this.ratio = ratio;
     }
 
-    public void changeRatio(double ratio) {
-        this.ratio = ratio;
-    }
-
     public void softDelete() {
         this.deletedAt = LocalDateTime.now();
     }

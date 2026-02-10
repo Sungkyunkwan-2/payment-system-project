@@ -60,4 +60,40 @@ public class Orders extends BaseEntity {
     public void completedOrder(OrderStatus status) {
         this.status = status;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public void updateStatus(OrderStatus newStatus) {
+        validateStatusTransition(newStatus);
+        this.status = newStatus;
+    }
+
+    private void validateStatusTransition(OrderStatus newStatus) {
+        // 이미 취소된 주문은 완료로 변경 불가
+        if (this.status == OrderStatus.ORDER_CANCELED && newStatus == OrderStatus.ORDER_COMPLETED) {
+            throw new IllegalStateException(
+                    String.format("취소된 주문은 완료로 변경할 수 없습니다. (현재: %s, 변경 시도: %s)",
+                            this.status, newStatus)
+            );
+        }
+    }
 }
