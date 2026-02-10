@@ -4,7 +4,7 @@ import com.paymentteamproject.domain.auth.dto.ProfileResponse;
 import com.paymentteamproject.domain.auth.dto.RegisterRequest;
 import com.paymentteamproject.domain.auth.dto.RegisterResponse;
 import com.paymentteamproject.domain.masterMembership.entity.MasterMembership;
-import com.paymentteamproject.domain.masterMembership.entity.MembershipStatus;
+import com.paymentteamproject.domain.masterMembership.consts.MembershipStatus;
 import com.paymentteamproject.domain.masterMembership.exception.MembershipNotFoundException;
 import com.paymentteamproject.domain.masterMembership.repository.MasterMembershipRepository;
 import com.paymentteamproject.domain.membershipTransaction.entity.MembershipTransaction;

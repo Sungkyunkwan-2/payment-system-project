@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -37,13 +38,13 @@ public class User extends BaseEntity {
     private String password;
 
     @Column(nullable = false)
-    private double pointBalance;
+    private BigDecimal pointBalance;
 
     private LocalDateTime deletedAt;
 
     @Builder
     public User(String username, String phone, String email,
-                String password, double pointBalance){
+                String password, BigDecimal pointBalance){
 
         this.username = username;
 
@@ -72,7 +73,7 @@ public class User extends BaseEntity {
 
 
 
-    public void addPoints(double earnedPoints) {
+    public void addPoints(BigDecimal earnedPoints) {
         this.pointBalance += earnedPoints;
     }
 }

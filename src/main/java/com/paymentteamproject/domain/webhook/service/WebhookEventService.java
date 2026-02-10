@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -52,8 +53,8 @@ public class WebhookEventService {
 
         Orders order = payment.getOrder();
 
-        double portOneAmount = portOnePayment.getAmount().getTotal();
-        double orderAmount = order.getTotalPrice();
+        BigDecimal portOneAmount = portOnePayment.getAmount().getTotal();
+        BigDecimal orderAmount = order.getTotalPrice();
 
         if(!(portOneAmount == orderAmount)){
             throw  new PaymentAmountMismatchException("결제 금액 불일치");
