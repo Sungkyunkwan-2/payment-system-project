@@ -80,7 +80,7 @@ public class WebhookEventService {
             case PAID -> {
                 // 결제 완료 처리
                 payment.updateStatus(PaymentStatus.SUCCESS);
-                payment.updatePayedAt(LocalDateTime.now());
+                payment.updatePaidAt(LocalDateTime.now());
 
                 // 주문 완료 처리
                 order.updateStatus(OrderStatus.ORDER_COMPLETED);

@@ -95,7 +95,7 @@ public class Payment extends BaseEntity {
         this.status = newStatus;
     }
 
-    public void updatePayedAt(LocalDateTime paidAt) {
+    public void updatePaidAt(LocalDateTime paidAt) {
         this.paidAt = paidAt;
     }
 

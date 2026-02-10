@@ -1,3 +1,4 @@
+# application.yml 파일
 spring:
   jpa:
     hibernate:
@@ -39,18 +40,17 @@ server:
 portone:
   api:
     base-url: https://api.portone.io
-    secret: e2oJFOfAH84oLmNOyfOKsLWAD5f7SNjJ5r5bGAIN8IMUnHy3qXsisKgteTyYyCzKePg9Z81zXWLvuNh6
+    secret: PgATOHhDMlBjzdg8fPlrFKh95LXLLjnmrRLFF7ZVgwICbtxAfCJhR4KTEou1X2wimwk41b7Cg09NlTnw
   store:
-    id: store-89abe8a4-5cc1-4d62-a4d2-0e1dff9a6efe
+    id: store-c9c1e7ef-b40f-4e2d-b06f-01cf338e09fa
   channel:
-    kg-inicis: channel-key-c5bd60db-b2c2-4db7-851d-f219273843ff
+    kg-inicis: channel-key-0359cbfa-1b19-4d21-ad22-f5652d984a92
     toss: channel-key-fce9da67-4cf8-4e5d-9ed9-36508b63ada4
-  webhook:
-    secret: whsec_ph0eD2RN/EO8bKg+gFDWwYlzZSQFACLbTx78/OR7eRo=
 # JWT Configuration
 jwt:
   secret: ${JWT_SECRET:commercehub-secret-key-for-demo-please-change-this-in-production-environment}
-  token-validity-in-seconds: ${JWT_VALIDITY:86400}  # 24 hours
+  access-token-validity: 10 #테스트용: 10초 #30분
+  refresh-token-validity: 604800 # 7일
 
 
 # UI Branding Configuration
@@ -65,3 +65,6 @@ logging:
   level:
     com.bootcamp.paymentdemo: DEBUG
     org.springframework.security: INFO
+
+cookie:
+  secure: false
