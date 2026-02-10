@@ -1,4 +1,4 @@
-package com.paymentteamproject.domain.refund.dtos;
+package com.paymentteamproject.domain.refund.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

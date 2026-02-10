@@ -1,8 +1,8 @@
 package com.paymentteamproject.domain.payment.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
-import com.paymentteamproject.domain.order.entity.OrderStatus;
 import com.paymentteamproject.domain.order.entity.Orders;
+import com.paymentteamproject.domain.payment.consts.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -58,7 +58,7 @@ public class Payment extends BaseEntity {
         Payment payment = new Payment(this.order, this.paymentId, PaymentStatus.SUCCESS, this.price);
 
         payment.paidAt = LocalDateTime.now();
-        order.completedOrder(OrderStatus.ORDER_COMPLETED);
+        order.completedOrder();
 
         return payment;
     }

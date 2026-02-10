@@ -2,6 +2,7 @@ package com.paymentteamproject.domain.pointTransaction.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
 import com.paymentteamproject.domain.order.entity.Orders;
+import com.paymentteamproject.domain.pointTransactions.consts.TransactionType;
 import com.paymentteamproject.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

@@ -1,6 +1,6 @@
 package com.paymentteamproject.common.controller;
 
-import com.paymentteamproject.common.dtos.PublicConfigResponse;
+import com.paymentteamproject.common.dto.PublicConfigResponse;
 import com.paymentteamproject.config.AppProperties;
 import com.paymentteamproject.config.ClientApiProperties;
 import com.paymentteamproject.config.PortOneProperties;

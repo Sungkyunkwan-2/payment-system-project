@@ -1,6 +1,6 @@
-package com.paymentteamproject.domain.payment.dtos;
+package com.paymentteamproject.domain.payment.dto;
 
-import com.paymentteamproject.domain.payment.entity.PaymentStatus;
+import com.paymentteamproject.domain.payment.consts.PaymentStatus;
 import lombok.Getter;
 
 @Getter

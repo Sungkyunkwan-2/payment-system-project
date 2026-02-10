@@ -1,6 +1,8 @@
 package com.paymentteamproject.domain.webhook.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
+import com.paymentteamproject.domain.webhook.consts.PaymentWebhookPaymentStatus;
+import com.paymentteamproject.domain.webhook.consts.WebhookStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -57,13 +59,6 @@ public class WebhookEvent extends BaseEntity {
         this.processedAt = LocalDateTime.now();
 
         log.info("처리완료 시각: {}, 상태: {}", processedAt, status);
-    }
-
-    public void fail() {
-        this.status = WebhookStatus.FAILED;
-        this.processedAt = LocalDateTime.now();
-
-        log.info("처리실패 시각: {} 상태: {}", processedAt, status);
     }
 
     public void softDelete() {

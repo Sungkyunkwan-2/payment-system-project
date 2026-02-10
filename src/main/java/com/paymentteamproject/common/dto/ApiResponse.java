@@ -1,4 +1,4 @@
-package com.paymentteamproject.common.dtos;
+package com.paymentteamproject.common.dto;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

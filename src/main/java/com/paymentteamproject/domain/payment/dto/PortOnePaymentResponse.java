@@ -1,4 +1,4 @@
-package com.paymentteamproject.domain.payment.dtos;
+package com.paymentteamproject.domain.payment.dto;
 
 import lombok.Data;
 import lombok.Getter;

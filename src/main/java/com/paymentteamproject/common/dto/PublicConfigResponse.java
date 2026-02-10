@@ -1,4 +1,4 @@
-package com.paymentteamproject.common.dtos;
+package com.paymentteamproject.common.dto;
 
 import com.paymentteamproject.config.ClientApiProperties;
 import lombok.AllArgsConstructor;

@@ -1,10 +1,9 @@
 package com.paymentteamproject.domain.order.controller;
 
-import com.paymentteamproject.common.dtos.ApiResponse;
+import com.paymentteamproject.common.dto.ApiResponse;
 import com.paymentteamproject.domain.order.dto.CreateOrderRequest;
 import com.paymentteamproject.domain.order.dto.CreateOrderResponse;
 import com.paymentteamproject.domain.order.service.OrderService;
-import com.paymentteamproject.domain.user.entity.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

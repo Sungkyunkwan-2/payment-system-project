@@ -1,6 +1,6 @@
 package com.paymentteamproject.config;
 
-import com.paymentteamproject.common.dtos.ApiResponse;
+import com.paymentteamproject.common.dto.ApiResponse;
 import com.paymentteamproject.common.exception.BusinessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

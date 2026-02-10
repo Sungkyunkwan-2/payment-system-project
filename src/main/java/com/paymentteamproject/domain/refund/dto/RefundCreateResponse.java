@@ -1,6 +1,6 @@
-package com.paymentteamproject.domain.refund.dtos;
+package com.paymentteamproject.domain.refund.dto;
 
-import com.paymentteamproject.domain.refund.entity.RefundStatus;
+import com.paymentteamproject.domain.refund.consts.RefundStatus;
 import lombok.Getter;
 
 import java.time.LocalDateTime;

@@ -1,7 +1,7 @@
 package com.paymentteamproject.domain.webhook.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.paymentteamproject.domain.webhook.entity.PaymentWebhookPaymentStatus;
+import com.paymentteamproject.domain.webhook.consts.PaymentWebhookPaymentStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

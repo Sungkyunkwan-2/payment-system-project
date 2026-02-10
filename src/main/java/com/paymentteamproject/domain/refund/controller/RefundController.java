@@ -1,8 +1,8 @@
 package com.paymentteamproject.domain.refund.controller;
 
-import com.paymentteamproject.common.dtos.ApiResponse;
-import com.paymentteamproject.domain.refund.dtos.RefundCreateRequest;
-import com.paymentteamproject.domain.refund.dtos.RefundCreateResponse;
+import com.paymentteamproject.common.dto.ApiResponse;
+import com.paymentteamproject.domain.refund.dto.RefundCreateRequest;
+import com.paymentteamproject.domain.refund.dto.RefundCreateResponse;
 import com.paymentteamproject.domain.refund.service.RefundService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
