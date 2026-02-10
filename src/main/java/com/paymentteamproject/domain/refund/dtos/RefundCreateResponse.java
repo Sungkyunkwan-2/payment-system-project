@@ -1,6 +1,5 @@
 package com.paymentteamproject.domain.refund.dtos;
 
-import com.paymentteamproject.domain.refund.entity.Refund;
 import com.paymentteamproject.domain.refund.entity.RefundStatus;
 import lombok.Getter;
 
