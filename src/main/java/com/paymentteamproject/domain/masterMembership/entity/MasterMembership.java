@@ -1,6 +1,7 @@
 package com.paymentteamproject.domain.masterMembership.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
+import com.paymentteamproject.domain.user.consts.UserRank;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -17,7 +18,7 @@ public class MasterMembership extends BaseEntity {
     @Id
     @Enumerated(EnumType.STRING)
     @Column(name = "membership", nullable = false, length = 30)
-    private MembershipStatus membership;
+    private UserRank membership;
 
     @Column(name = "ratio", nullable = false)
     private double ratio;
@@ -25,8 +26,13 @@ public class MasterMembership extends BaseEntity {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    public MasterMembership(MembershipStatus membership, double ratio) {
-        this.membership = membership;
+//    public MasterMembership(MembershipStatus membership, double ratio) {
+//        this.membership = membership;
+//        this.ratio = ratio;
+//    }
+
+    public MasterMembership(UserRank userRank, double ratio) {
+        this.membership = userRank;
         this.ratio = ratio;
     }
 

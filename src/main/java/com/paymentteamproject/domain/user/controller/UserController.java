@@ -10,10 +10,4 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 public class UserController {
-
-    public ResponseEntity<ApiResponse<String>> viewMembershipPolicy() {
-        return ResponseEntity.ok().body(
-                new ApiResponse(true, HttpStatus.OK, )
-        );
-    }
 }

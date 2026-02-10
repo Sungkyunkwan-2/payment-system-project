@@ -3,6 +3,8 @@ package com.paymentteamproject.domain.masterMembership.entity;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+
+//TODO: UserRank랑 겹침 - 우선 UserRank 우선 사용 중
 @Getter
 @RequiredArgsConstructor
 public enum MembershipStatus {
