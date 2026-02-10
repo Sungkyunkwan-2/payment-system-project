@@ -1,6 +1,7 @@
 package com.paymentteamproject.domain.product.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
+import com.paymentteamproject.domain.product.exception.InsufficientStockException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -100,7 +101,7 @@ public class Product extends BaseEntity {
     // 재고 차감
     public void decreaseStock(Long quantity) {
         if (this.stock < quantity) {
-            throw new IllegalArgumentException(
+            throw new InsufficientStockException(
                     String.format("재고가 부족합니다. 상품: %s, 요청 수량: %d, 현재 재고: %d",
                             this.name, quantity, this.stock)
             );

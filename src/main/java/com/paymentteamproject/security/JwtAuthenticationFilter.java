@@ -1,5 +1,7 @@
 package com.paymentteamproject.security;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -71,6 +73,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // 6. SecurityContext에 인증 정보 설정
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
+        } catch (ExpiredJwtException e) {
+            log.error("토큰이 만료되었습니다. {}", e.getMessage());
+            setErrorResponse(response, "TOKEN_EXPIRED", "토큰이 만료되었습니다. 갱신이 필요합니다.");
+            return;
+        } catch (JwtException | IllegalArgumentException e) {
+            log.error("유효하지 않은 토큰입니다: {}", e.getMessage());
+            setErrorResponse(response, "INVALID_TOKEN", "유효하지 않은 토큰입니다.");
+            return;
         } catch (Exception e) {
             log.error("JWT 인증 실패", e);
             // TODO: 구현 - 적절한 에러 응답
@@ -92,5 +102,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         return null;
+    }
+
+    // 응답을 JSON 형태로 만드는 편의 메서드
+    private void setErrorResponse(HttpServletResponse response, String errorCode, String message) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 세팅
+        response.setContentType("application/json;charset=UTF-8");
+
+        // 프론트엔드와 약속한 에러 포맷으로 전송
+        String json = String.format("{\"success\":false, \"errorCode\":\"%s\", \"message\":\"%s\"}", errorCode, message);
+        response.getWriter().write(json);
     }
 }

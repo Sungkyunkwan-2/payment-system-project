@@ -1,4 +1,4 @@
-package com.paymentteamproject.common.dtos.auth;
+package com.paymentteamproject.domain.auth.dto;
 
 import lombok.Getter;
 
