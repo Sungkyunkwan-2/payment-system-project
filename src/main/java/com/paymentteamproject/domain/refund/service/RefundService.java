@@ -1,5 +1,6 @@
 package com.paymentteamproject.domain.refund.service;
 
+import com.paymentteamproject.domain.order.service.OrderService;
 import com.paymentteamproject.domain.payment.entity.Payment;
 import com.paymentteamproject.domain.payment.consts.PaymentStatus;
 import com.paymentteamproject.domain.payment.repository.PaymentRepository;
@@ -36,6 +37,7 @@ public class RefundService {
     private final UserRepository userRepository;
     private final RestClient portOneRestClient;
     private final EntityManager em;
+    private final OrderService orderService;
 
     @Transactional
     public RefundCreateResponse requestRefund(String paymentId, String email, RefundCreateRequest request) {
@@ -78,6 +80,7 @@ public class RefundService {
             refundRepository.save(successEvent);
 
             payment.getOrder().markRefunded();
+            orderService.processOrderCancellation(payment.getOrder());
 
             Payment refundedPayment = payment.refund();
             paymentRepository.save(refundedPayment);
