@@ -66,9 +66,11 @@ public class AuthService {
 
     @Transactional
     public void logout(String refreshToken) {
+        log.info("로그아웃 처리 시작 - 토큰 {}", refreshToken);
         if (refreshToken != null) {
             refreshTokenService.deleteRefreshToken(refreshToken);
         }
+        log.info("로그아웃 완료");
     }
 
     @Transactional
