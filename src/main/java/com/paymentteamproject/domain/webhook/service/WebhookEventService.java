@@ -53,7 +53,7 @@ public class WebhookEventService {
 
         Orders order = payment.getOrder();
 
-        BigDecimal portOneAmount = portOnePayment.getAmount().getTotal();
+        BigDecimal portOneAmount = new BigDecimal(portOnePayment.getAmount().getTotal());
         BigDecimal orderAmount = order.getTotalPrice();
 
         if(!(portOneAmount == orderAmount)){

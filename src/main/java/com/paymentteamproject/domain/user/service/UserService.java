@@ -4,9 +4,6 @@ import com.paymentteamproject.domain.auth.dto.ProfileResponse;
 import com.paymentteamproject.domain.auth.dto.RegisterRequest;
 import com.paymentteamproject.domain.auth.dto.RegisterResponse;
 import com.paymentteamproject.domain.masterMembership.consts.MembershipStatus;
-import com.paymentteamproject.domain.masterMembership.entity.MasterMembership;
-import com.paymentteamproject.domain.masterMembership.exception.MembershipNotFoundException;
-import com.paymentteamproject.domain.masterMembership.repository.MasterMembershipRepository;
 import com.paymentteamproject.domain.membershipTransaction.entity.MembershipTransaction;
 import com.paymentteamproject.domain.membershipTransaction.repository.MembershipTransactionRepository;
 import com.paymentteamproject.domain.user.entity.User;
@@ -48,7 +45,7 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
 
-        MembershipTransaction membershipTransaction = new MembershipTransaction(savedUser);
+        MembershipTransaction membershipTransaction = new MembershipTransaction(savedUser, MembershipStatus.BRONZE);
 
         membershipTransactionRepository.save(membershipTransaction);
 
