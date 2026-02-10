@@ -44,7 +44,7 @@ public class User extends BaseEntity {
 
     @Builder
     public User(String username, String phone, String email,
-                String password, BigDecimal pointBalance){
+                String password, BigDecimal pointBalance) {
 
         this.username = username;
 
@@ -61,27 +61,20 @@ public class User extends BaseEntity {
         this.role = UserRole.USER;
     }
 
-    public void softDelete(){
+    public void softDelete() {
         this.deletedAt = LocalDateTime.now();
     }
-
-
-
-
-
-
-
-
 
     public void addPoints(BigDecimal earnedPoints) {
         this.pointBalance += earnedPoints;
     }
 
-    public void expirePoints(double points) {
+    public void expirePoints(BigDecimal points) {
         if (this.pointBalance < points) {
             // 만료 처리는 강제 실행이므로 0으로 설정
             this.pointBalance = 0;
-        } else {
+        }
+         else {
             this.pointBalance -= points;
         }
     }
