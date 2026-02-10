@@ -5,6 +5,7 @@ import com.paymentteamproject.domain.order.entity.Orders;
 import com.paymentteamproject.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -33,7 +34,7 @@ public class PointTransaction extends BaseEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private TransactionType type; //enum 구현 전
+    private PointTransactionType type; //enum 구현 전
 
     @Column(nullable = false)
     private LocalDateTime expiresAt;
@@ -43,7 +44,8 @@ public class PointTransaction extends BaseEntity {
 
     private LocalDateTime deletedAt;
 
-    public PointTransaction(User user, Orders order, double points, TransactionType type, LocalDateTime expiresAt){
+    @Builder
+    public PointTransaction(User user, Orders order, double points, PointTransactionType type, LocalDateTime expiresAt){
         this.user = user;
         this.order = order;
         this.points = points;

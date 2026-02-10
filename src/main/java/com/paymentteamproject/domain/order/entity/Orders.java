@@ -67,6 +67,7 @@ public class Orders extends BaseEntity {
             throw new IllegalStateException("주문 완료 상태만 환불할 수 있습니다.");
         }
         this.status = OrderStatus.ORDER_CANCELED;
+    }
 
 
 

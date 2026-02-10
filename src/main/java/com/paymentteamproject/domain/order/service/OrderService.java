@@ -1,6 +1,7 @@
 package com.paymentteamproject.domain.order.service;
 
 import com.paymentteamproject.domain.orderProduct.exception.OrderProductEmptyException;
+import com.paymentteamproject.domain.pointTransactions.service.PointService;
 import com.paymentteamproject.domain.product.exception.InsufficientStockException;
 import com.paymentteamproject.domain.order.dto.CreateOrderRequest;
 import com.paymentteamproject.domain.order.dto.CreateOrderResponse;
@@ -31,7 +32,7 @@ public class OrderService {
     private final OrderProductRepository orderProductRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
-
+    private final PointService pointService;
 
     @Transactional
     public CreateOrderResponse createOrder(String email, CreateOrderRequest request) {
@@ -91,6 +92,9 @@ public class OrderService {
             // 재고 차감
             product.decreaseStock(item.getQuantity());
         }
+
+        //포인트 적립
+        pointService.earnPoints(user, savedOrder);
 
         return new CreateOrderResponse(
                 savedOrder.getId(),
