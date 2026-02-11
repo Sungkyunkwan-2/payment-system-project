@@ -1,4 +1,4 @@
-package com.paymentteamproject.domain.masterMembership.consts;
+package com.paymentteamproject.domain.membershipTransaction.consts;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
