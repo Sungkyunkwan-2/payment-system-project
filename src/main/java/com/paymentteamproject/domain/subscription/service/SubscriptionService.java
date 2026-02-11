@@ -245,7 +245,7 @@ public class SubscriptionService {
 
             try {
                 // 결제 대상 구독 조회
-                List<Subscription> dueSubscriptions = subscriptionRepository.findDueSubscriptionsForPayment(now);
+                List<Subscription> dueSubscriptions = subscriptionRepository.findByCurrentPeriodEndBefore(now);
 
                 if (dueSubscriptions.isEmpty()) {
                     log.info("결제 대상 구독이 없습니다.");
@@ -284,7 +284,7 @@ public class SubscriptionService {
             Long subscriptionId = subscription.getId();
 
             try {
-                // 1. 중복 결제 방지 확인
+                // 중복 결제 방지 확인
                 LocalDateTime periodStart = subscription.getCurrentPeriodStart();
                 LocalDateTime periodEnd = subscription.getCurrentPeriodEnd();
 

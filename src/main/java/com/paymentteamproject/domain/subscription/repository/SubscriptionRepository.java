@@ -8,6 +8,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
-    List<Subscription> findDueSubscriptionsForPayment(LocalDateTime now);
+    List<Subscription> findByCurrentPeriodEndBefore(LocalDateTime now);
     Optional<Subscription> findBySubscriptionId(String subscriptionId);
 }
