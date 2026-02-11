@@ -5,6 +5,7 @@ import com.paymentteamproject.common.entity.BaseEntity;
 import com.paymentteamproject.domain.paymentMethod.entity.PaymentMethod;
 import com.paymentteamproject.domain.plan.entity.Plan;
 import com.paymentteamproject.domain.subscription.consts.SubscriptionStatus;
+import com.paymentteamproject.domain.subscription.exception.InvalidCancelSubscriptionException;
 import com.paymentteamproject.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -46,6 +47,8 @@ public class Subscription extends BaseEntity {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime currentPeriodEnd;
 
+    private String canceledReason;
+
     private LocalDateTime canceledAt;
 
     public Subscription(User user, Plan plan, PaymentMethod paymentMethod,
@@ -63,5 +66,15 @@ public class Subscription extends BaseEntity {
         if (this.subscriptionId == null) {
             this.subscriptionId = "SUB_" + UUID.randomUUID().toString().replace("-", "").substring(0, 16).toUpperCase();
         }
+    }
+
+    public void cancel(String canceledReason) {
+        if (this.status != SubscriptionStatus.ACTIVE) {
+            throw new InvalidCancelSubscriptionException("활성화된 구독만 취소 가능합니다.");
+        }
+
+        this.canceledReason = canceledReason;
+        this.canceledAt = LocalDateTime.now();
+        this.status = SubscriptionStatus.CANCELLED;
     }
 }

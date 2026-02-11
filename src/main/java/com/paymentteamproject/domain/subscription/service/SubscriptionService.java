@@ -7,10 +7,9 @@ import com.paymentteamproject.domain.plan.entity.Plan;
 import com.paymentteamproject.domain.plan.exception.PlanNotFoundException;
 import com.paymentteamproject.domain.plan.repository.PlanRepository;
 import com.paymentteamproject.domain.subscription.consts.SubscriptionStatus;
-import com.paymentteamproject.domain.subscription.dto.CreateSubscriptionRequest;
-import com.paymentteamproject.domain.subscription.dto.CreateSubscriptionResponse;
-import com.paymentteamproject.domain.subscription.dto.GetSubscriptionResponse;
+import com.paymentteamproject.domain.subscription.dto.*;
 import com.paymentteamproject.domain.subscription.entity.Subscription;
+import com.paymentteamproject.domain.subscription.exception.SubscriptionNotFoundException;
 import com.paymentteamproject.domain.subscription.repository.SubscriptionRepository;
 import com.paymentteamproject.domain.user.entity.User;
 import com.paymentteamproject.domain.user.exception.UserNotFoundException;
@@ -62,7 +61,7 @@ public class SubscriptionService {
     @Transactional(readOnly = true)
     public GetSubscriptionResponse getOne(String subscriptionId) {
         Subscription subscription = subscriptionRepository.findBySubscriptionId(subscriptionId).orElseThrow(
-                () -> new IllegalArgumentException("구독 ID와 일치하는 구독이 없습니다."));
+                () -> new SubscriptionNotFoundException("구독 ID와 일치하는 구독이 없습니다."));
 
         return new GetSubscriptionResponse(
                 subscription.getSubscriptionId(),
@@ -72,5 +71,18 @@ public class SubscriptionService {
                 subscription.getStatus(),
                 subscription.getPlan().getPrice(),
                 subscription.getCurrentPeriodEnd());
+    }
+
+    // 구독 해지
+    @Transactional
+    public UpdateSubscriptionResponse update(String subscriptionId, UpdateSubscriptionRequest request) {
+        Subscription subscription = subscriptionRepository.findBySubscriptionId(subscriptionId).orElseThrow(
+                () -> new SubscriptionNotFoundException("구독 ID와 일치하는 구독이 없습니다."));
+
+        subscription.cancel(request.getReason());
+
+        return new UpdateSubscriptionResponse(
+                subscription.getSubscriptionId(),
+                subscription.getStatus());
     }
 }

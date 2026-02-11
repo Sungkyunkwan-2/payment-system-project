@@ -1,9 +1,7 @@
 package com.paymentteamproject.domain.subscription.controller;
 
 import com.paymentteamproject.common.dto.ApiResponse;
-import com.paymentteamproject.domain.subscription.dto.CreateSubscriptionRequest;
-import com.paymentteamproject.domain.subscription.dto.CreateSubscriptionResponse;
-import com.paymentteamproject.domain.subscription.dto.GetSubscriptionResponse;
+import com.paymentteamproject.domain.subscription.dto.*;
 import com.paymentteamproject.domain.subscription.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -38,5 +36,17 @@ public class SubscriptionController {
                         HttpStatus.OK,
                         "구독 정보를 불러오기를 성공했습니다.",
                         subscriptionService.getOne(subscriptionId)));
+    }
+
+    // 구독 해지
+    @PutMapping("/subscriptions/{subscriptionId}")
+    public ResponseEntity<ApiResponse<UpdateSubscriptionResponse>> updateResponse(
+            @PathVariable String subscriptionId,
+            @RequestBody UpdateSubscriptionRequest request) {
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(
+                        HttpStatus.OK,
+                        "구독 해지를 성공했습니다.",
+                        subscriptionService.update(subscriptionId, request)));
     }
 }
