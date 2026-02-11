@@ -226,7 +226,15 @@
                 }
 
                 if (result && Array.isArray(result)) {
-                    orders = result;
+                    // 중복 제거: orderId 기준으로 고유한 주문만 남김
+                    const uniqueOrdersMap = new Map();
+                    result.forEach(order => {
+                        if (!uniqueOrdersMap.has(order.orderId)) {
+                            uniqueOrdersMap.set(order.orderId, order);
+                        }
+                    });
+                    orders = Array.from(uniqueOrdersMap.values());
+
                     renderOrders();
                 } else {
                     showNotification('주문 목록이 배열 형식이 아닙니다', 'error');
@@ -248,8 +256,13 @@
                 return;
             }
 
-            // PENDING 상태의 주문만 필터링
-            const pendingOrders = orders.filter(order => order.status === 'PAYMENT_PENDING');
+            // PENDING 상태의 주문만 필터링 + 필수 필드 검증
+            const pendingOrders = orders.filter(order => {
+                return order.status === 'PAYMENT_PENDING'
+                    && order.orderId
+                    && order.orderNumber
+                    && order.totalAmount !== undefined;
+            });
 
             if (pendingOrders.length === 0) {
                 container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">결제 대기 중인 주문이 없습니다</p>';
@@ -258,36 +271,36 @@
 
             const ordersHtml = pendingOrders.map(order => {
                 const statusClass = order.status === 'PAYMENT_PENDING' ? 'warning' :
-                                  order.status === 'PAID' ? 'success' : 'secondary';
+                    order.status === 'PAID' ? 'success' : 'secondary';
 
                 return `
-                    <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: 1rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
-                            <div>
-                                <div style="font-weight: 700; font-size: 1.125rem; margin-bottom: 0.25rem;">
-                                    ${order.orderNumber}
-                                </div>
-                                <div style="font-size: 0.875rem; color: var(--text-secondary);">
-                                    ${new Date(order.createdAt || Date.now()).toLocaleString()}
-                                </div>
-                            </div>
-                            <span class="badge badge-${statusClass}">${order.status}</span>
+            <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
+                    <div>
+                        <div style="font-weight: 700; font-size: 1.125rem; margin-bottom: 0.25rem;">
+                            ${order.orderNumber}
                         </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 0.75rem; border-top: 1px solid var(--border);">
-                            <div>
-                                <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
-                                    주문 금액
-                                </div>
-                                <div style="font-size: 1.5rem; font-weight: 700;">
-                                    ${order.totalAmount.toLocaleString()}원
-                                </div>
-                            </div>
-                            <button class="btn btn-primary" onclick=openPointsModal("${order.orderId}")>
-                                💰 포인트로 결제
-                            </button>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                            ${new Date(order.createdAt || Date.now()).toLocaleString()}
                         </div>
                     </div>
-                `;
+                    <span class="badge badge-${statusClass}">${order.status}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 0.75rem; border-top: 1px solid var(--border);">
+                    <div>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
+                            주문 금액
+                        </div>
+                        <div style="font-size: 1.5rem; font-weight: 700;">
+                            ${order.totalAmount.toLocaleString()}원
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="openPointsModal('${order.orderId}')">
+                        💰 포인트로 결제
+                    </button>
+                </div>
+            </div>
+        `;
             }).join('');
 
             container.innerHTML = ordersHtml;
