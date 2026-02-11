@@ -20,4 +20,6 @@ public interface MembershipHistoryRepository extends JpaRepository<MembershipHis
             "ORDER BY mh.createdAt DESC " +
             "LIMIT 1")
     Optional<MembershipHistory> findByUserId(@Param("userId") Long userId);
+
+    Optional<MembershipHistory> findFirstByUser_IdAndDeletedAtIsNullOrderByCreatedAtDesc(Long userId);
 }

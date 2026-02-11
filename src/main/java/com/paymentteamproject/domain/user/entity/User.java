@@ -90,4 +90,8 @@ public class User extends BaseEntity {
     }
 
 
+    public void updateTotalSpend(BigDecimal amount){
+        this.totalSpend = this.totalSpend.add(amount);
+    }
+
 }
