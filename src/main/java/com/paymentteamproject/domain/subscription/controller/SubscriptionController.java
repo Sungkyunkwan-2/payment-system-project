@@ -2,9 +2,7 @@ package com.paymentteamproject.domain.subscription.controller;
 
 import com.paymentteamproject.domain.subscription.dto.CreateSubscriptionRequest;
 import com.paymentteamproject.domain.subscription.dto.CreateSubscriptionResponse;
-import com.paymentteamproject.domain.subscription.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
