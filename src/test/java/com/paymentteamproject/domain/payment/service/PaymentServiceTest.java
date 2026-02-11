@@ -22,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.client.RestClient;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -77,7 +78,7 @@ class PaymentServiceTest {
         setField(testOrder, "id", 1L);
 
         // 테스트 결제 생성
-        testPayment = Payment.start(testOrder, 10000.0);
+        testPayment = Payment.start(testOrder, BigDecimal.valueOf(10000.0));
         setField(testPayment, "id", 1L);
         setField(testPayment, "createdAt", LocalDateTime.now());
     }
