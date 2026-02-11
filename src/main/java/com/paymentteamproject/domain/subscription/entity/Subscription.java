@@ -1,5 +1,6 @@
 package com.paymentteamproject.domain.subscription.entity;
 
+import com.paymentteamproject.common.entity.BaseEntity;
 import com.paymentteamproject.domain.paymentMethod.entity.PaymentMethod;
 import com.paymentteamproject.domain.plan.entity.Plan;
 import com.paymentteamproject.domain.subscription.consts.SubscriptionStatus;
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "subscriptions")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Subscription {
+public class Subscription extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
