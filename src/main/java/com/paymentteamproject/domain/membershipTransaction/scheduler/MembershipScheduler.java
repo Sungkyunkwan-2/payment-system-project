@@ -1,6 +1,6 @@
-package com.paymentteamproject.domain.masterMembership.scheduler;
+package com.paymentteamproject.domain.membershipTransaction.scheduler;
 
-import com.paymentteamproject.domain.masterMembership.service.MembershipService;
+import com.paymentteamproject.domain.membershipTransaction.service.MembershipService;
 import com.paymentteamproject.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,4 +1,4 @@
-package com.paymentteamproject.domain.masterMembership.exception;
+package com.paymentteamproject.domain.membershipTransaction.exception;
 
 import com.paymentteamproject.common.exception.BusinessException;
 import org.springframework.http.HttpStatus;

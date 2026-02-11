@@ -1,6 +1,6 @@
-package com.paymentteamproject.domain.masterMembership.service;
+package com.paymentteamproject.domain.membershipTransaction.service;
 
-import com.paymentteamproject.domain.masterMembership.consts.MembershipStatus;
+import com.paymentteamproject.domain.membershipTransaction.consts.MembershipStatus;
 import com.paymentteamproject.domain.membershipTransaction.entity.MembershipHistory;
 import com.paymentteamproject.domain.membershipTransaction.repository.MembershipHistoryRepository;
 import com.paymentteamproject.domain.user.entity.User;
