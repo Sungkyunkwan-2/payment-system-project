@@ -7,10 +7,15 @@ import com.paymentteamproject.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
+import org.springframework.dao.DataAccessException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
+
+import java.math.BigDecimal;
 
 @Slf4j
 @Component // 더 가벼움
@@ -18,20 +23,21 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserEventListener {
     private final UserRepository userRepository;
 
+    @Async
     @EventListener
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleTotalSpendChangedEvent(TotalSpendChangedEvent event){
-        log.info("이벤트 수신: 사용자ID = {}, 추가 금액 = {}", event.user().getId(), event.newSpend());
+        Long userId = event.user().getId();
+        BigDecimal delta = event.delta() == null ? BigDecimal.ZERO : event.delta();
 
-        User foundUser = userRepository.findById(event.user().getId())
+        log.info("이벤트 수신(AFTER_COMMIT): userId={}, delta={}", userId, delta);
+
+        User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
 
-        foundUser.updateTotalSpend(event.newSpend());
+        user.updateTotalSpend(delta);
 
-        // 명시적으로 DB에 즉시 반영 명령
-        userRepository.saveAndFlush(foundUser);
-
-        log.info("업데이트 완료: 총 결제액 = {}", foundUser.getTotalSpend());
-    }
+        log.info("업데이트 완료: userId={}, totalSpend={}", userId, user.getTotalSpend());
+        }
 }
