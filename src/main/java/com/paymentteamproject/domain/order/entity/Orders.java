@@ -84,4 +84,29 @@ public class Orders extends BaseEntity {
             );
         }
     }
+
+    //주문에 사용된 포인트 설정
+    public void setUsedPoint(BigDecimal usedPoint) {
+        if (usedPoint == null) {
+            this.usedPoint = BigDecimal.ZERO;
+            return;
+        }
+
+        if (usedPoint.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("사용 포인트는 음수일 수 없습니다.");
+        }
+
+        if (usedPoint.compareTo(this.totalPrice) > 0) {
+            throw new IllegalArgumentException("사용 포인트가 주문 금액을 초과할 수 없습니다.");
+        }
+
+        this.usedPoint = usedPoint;
+    }
+
+
+    //실제 결제해야 할 금액 계산 (총 금액 - 사용 포인트)
+    public BigDecimal getActualPaymentAmount() {
+        BigDecimal used = this.usedPoint != null ? this.usedPoint : BigDecimal.ZERO;
+        return this.totalPrice.subtract(used);
+    }
 }

@@ -3,8 +3,10 @@ package com.paymentteamproject.domain.refund.service;
 import com.paymentteamproject.domain.order.service.OrderService;
 import com.paymentteamproject.domain.payment.entity.Payment;
 import com.paymentteamproject.domain.payment.consts.PaymentStatus;
+import com.paymentteamproject.domain.payment.event.TotalSpendChangedEvent;
 import com.paymentteamproject.domain.payment.exception.PaymentNotFoundException;
 import com.paymentteamproject.domain.payment.repository.PaymentRepository;
+import com.paymentteamproject.domain.pointTransaction.service.PointService;
 import com.paymentteamproject.domain.refund.dto.PortOneCancelRequest;
 import com.paymentteamproject.domain.refund.dto.RefundCreateRequest;
 import com.paymentteamproject.domain.refund.dto.RefundCreateResponse;
@@ -19,6 +21,7 @@ import com.paymentteamproject.domain.user.repository.UserRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +42,9 @@ public class RefundService {
     private final RestClient portOneRestClient;
     private final EntityManager em;
     private final OrderService orderService;
+    private final ApplicationEventPublisher eventPublisher;
+    private final PointService pointService;
+
 
     @Transactional
     public RefundCreateResponse requestRefund(String paymentId, String email, RefundCreateRequest request) {
@@ -85,8 +91,26 @@ public class RefundService {
             payment.getOrder().markRefunded();
             orderService.processOrderCancellation(payment.getOrder());
 
-            Payment refundedPayment = payment.refund();
-            paymentRepository.save(refundedPayment);
+            Payment refundedPayment = paymentRepository.save(payment.refund());
+
+            //포인트 복구
+            BigDecimal usedPoint = refundedPayment.getOrder().getUsedPoint();
+            if (usedPoint != null && usedPoint.compareTo(BigDecimal.ZERO) > 0) {
+                pointService.refundPoints(
+                        refundedPayment.getOrder().getUser(),
+                        refundedPayment.getOrder(),
+                        usedPoint
+                );
+            }
+
+            // 총 거래액 이벤트
+            BigDecimal price = refundedPayment.getPrice();
+            BigDecimal negatedPrice = (price != null) ? price.negate() : BigDecimal.ZERO;
+
+            eventPublisher.publishEvent(new TotalSpendChangedEvent(
+                    refundedPayment.getOrder().getUser(),
+                    negatedPrice
+            ));
 
             return toResponse(successEvent);
         }
