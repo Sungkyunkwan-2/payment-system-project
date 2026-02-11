@@ -3,13 +3,13 @@ package com.paymentteamproject.domain.webhook.service;
 import com.paymentteamproject.domain.order.consts.OrderStatus;
 import com.paymentteamproject.domain.order.entity.Orders;
 import com.paymentteamproject.domain.order.service.OrderService;
-import com.paymentteamproject.domain.payment.entity.Payment;
 import com.paymentteamproject.domain.payment.consts.PaymentStatus;
+import com.paymentteamproject.domain.payment.entity.Payment;
 import com.paymentteamproject.domain.payment.exception.PaymentNotFoundException;
 import com.paymentteamproject.domain.payment.repository.PaymentRepository;
+import com.paymentteamproject.domain.webhook.consts.PaymentWebhookPaymentStatus;
 import com.paymentteamproject.domain.webhook.dto.GetPaymentResponse;
 import com.paymentteamproject.domain.webhook.dto.WebHookRequest;
-import com.paymentteamproject.domain.webhook.consts.PaymentWebhookPaymentStatus;
 import com.paymentteamproject.domain.webhook.entity.WebhookEvent;
 import com.paymentteamproject.domain.webhook.exception.PaymentAmountMismatchException;
 import com.paymentteamproject.domain.webhook.exception.PaymentStatusNotAllowedException;
@@ -56,7 +56,7 @@ public class WebhookEventService {
         BigDecimal portOneAmount = new BigDecimal(portOnePayment.getAmount().getTotal());
         BigDecimal orderAmount = order.getTotalPrice();
 
-        if(!(portOneAmount == orderAmount)){
+        if (portOneAmount.compareTo(orderAmount) != 0){
             throw  new PaymentAmountMismatchException("결제 금액 불일치");
         }
 
