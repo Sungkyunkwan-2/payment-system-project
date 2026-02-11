@@ -6,11 +6,14 @@ import com.paymentteamproject.domain.auth.dto.RegisterResponse;
 import com.paymentteamproject.domain.masterMembership.consts.MembershipStatus;
 import com.paymentteamproject.domain.membershipTransaction.entity.MembershipHistory;
 import com.paymentteamproject.domain.membershipTransaction.repository.MembershipHistoryRepository;
+import com.paymentteamproject.domain.payment.event.TotalSpendChangedEvent;
 import com.paymentteamproject.domain.user.entity.User;
 import com.paymentteamproject.domain.user.exception.UserNotFoundException;
 import com.paymentteamproject.domain.user.exception.DuplicateEmailException;
 import com.paymentteamproject.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,6 +72,19 @@ public class UserService {
                 .pointBalance(user.getPointBalance())
                 .build();
     }
+
+    @EventListener
+    @Transactional
+    @Async
+    public void handleTotalSpendChangedEvent(TotalSpendChangedEvent event){
+        User user = event.user();
+
+        User foundUser = userRepository.findById(user.getId())
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        foundUser.updateTotalSpend(event.newSpend());
+    }
+
 }
 
 
