@@ -9,6 +9,7 @@ import com.paymentteamproject.domain.plan.repository.PlanRepository;
 import com.paymentteamproject.domain.subscription.consts.SubscriptionStatus;
 import com.paymentteamproject.domain.subscription.dto.CreateSubscriptionRequest;
 import com.paymentteamproject.domain.subscription.dto.CreateSubscriptionResponse;
+import com.paymentteamproject.domain.subscription.dto.GetSubscriptionResponse;
 import com.paymentteamproject.domain.subscription.entity.Subscription;
 import com.paymentteamproject.domain.subscription.repository.SubscriptionRepository;
 import com.paymentteamproject.domain.user.entity.User;
@@ -28,6 +29,7 @@ public class SubscriptionService {
     private final UserRepository userRepository;
     private final PlanRepository planRepository;
 
+    // 구독 신청
     @Transactional
     public CreateSubscriptionResponse create(String email, CreateSubscriptionRequest request) {
         User user = userRepository.findByEmail(email).orElseThrow(
@@ -54,5 +56,21 @@ public class SubscriptionService {
         Subscription savedSubscription = subscriptionRepository.save(subscription);
 
         return new CreateSubscriptionResponse(savedSubscription.getSubscriptionId());
+    }
+
+    // 구독 조회
+    @Transactional(readOnly = true)
+    public GetSubscriptionResponse getOne(String subscriptionId) {
+        Subscription subscription = subscriptionRepository.findBySubscriptionId(subscriptionId).orElseThrow(
+                () -> new IllegalArgumentException("구독 ID와 일치하는 구독이 없습니다."));
+
+        return new GetSubscriptionResponse(
+                subscription.getSubscriptionId(),
+                subscription.getPaymentMethod().getCustomerUid(),
+                subscription.getPlan().getPlanId(),
+                subscription.getPaymentMethod().getPaymentMethodId(),
+                subscription.getStatus(),
+                subscription.getPlan().getPrice(),
+                subscription.getCurrentPeriodEnd());
     }
 }

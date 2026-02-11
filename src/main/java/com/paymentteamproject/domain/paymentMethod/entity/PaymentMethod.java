@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Entity
@@ -24,6 +25,9 @@ public class PaymentMethod extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @Column(nullable = false)
+    private String paymentMethodId;
 
     @Column(nullable = false)
     private String billingKey;
@@ -53,4 +57,10 @@ public class PaymentMethod extends BaseEntity {
         this.status = status;
     }
 
+    @PrePersist
+    private void generatePaymentMethodId() {
+        if (this.paymentMethodId == null) {
+            this.paymentMethodId = "PM_CARD_" + UUID.randomUUID().toString().replace("-", "").substring(0, 16).toUpperCase();
+        }
+    }
 }
