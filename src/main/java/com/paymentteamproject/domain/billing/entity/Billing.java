@@ -50,14 +50,16 @@ public class Billing extends BaseEntity {
     private LocalDateTime deletedAt;
 
     public Billing(Subscription subscription, BigDecimal amount,
-                   BillingStatus status, String paymentId, String failureMessage) {
+                   BillingStatus status, String paymentId,
+                   LocalDateTime periodStart, LocalDateTime periodEnd,
+                   String failureMessage) {
         this.subscriptionId = subscription;
         this.amount = amount;
         this.status = status;
         this.paymentId = paymentId;
         this.attemptedAt = LocalDateTime.now();
-        this.periodStart = LocalDateTime.now();
-        this.periodEnd = LocalDateTime.now();
+        this.periodStart = periodStart;
+        this.periodEnd = periodEnd;
         this.failureMessage = failureMessage;
     }
 }
