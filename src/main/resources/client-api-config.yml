@@ -482,11 +482,11 @@ api:
               description: 변경된 구독 상태
 
     create-billing:
-      url:
-      method:
+      url: /billings/{subscriptionId}
+      method: post
       description: 즉시 결제 (현재 주기 청구 실행)
       pathParams:
-        - name:
+        - name: subscriptionId
           description: 구독 ID
       request:
         fields:
@@ -522,11 +522,11 @@ api:
               description: "청구 상태 (COMPLETED: 결제 완료, FAILED: 실패)"
 
     list-billing-history:
-      url:
-      method:
+      url: /billings/{subscriptionId}
+      method: get
       description: 청구 내역 조회
       pathParams:
-        - name:
+        - name: subscriptionId
           description: 구독 ID
       response:
         body:
