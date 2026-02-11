@@ -44,12 +44,12 @@ public class PaymentMethod extends BaseEntity {
     @Column
     private LocalDateTime deletedAt;
 
-    public PaymentMethod(User user, String billingKey, String customerUid, PgProvider pgProvider, PaymentMethodStatus status) {
+    public PaymentMethod(User user, String billingKey, String customerUid, PaymentMethodStatus status) {
         this.user = user;
         this.billingKey = billingKey;
         this.customerUid = customerUid;
-        this.pgProvider = pgProvider;
-        this.isDefault = false;
+        this.pgProvider = PgProvider.TOSS_PAYMENTS;
+        this.isDefault = true;
         this.status = status;
     }
 

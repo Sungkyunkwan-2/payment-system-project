@@ -1,5 +1,6 @@
 package com.paymentteamproject.domain.subscription.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.paymentteamproject.common.entity.BaseEntity;
 import com.paymentteamproject.domain.paymentMethod.entity.PaymentMethod;
 import com.paymentteamproject.domain.plan.entity.Plan;
@@ -11,6 +12,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Entity
@@ -34,10 +36,14 @@ public class Subscription extends BaseEntity {
     private PaymentMethod paymentMethod;
 
     @Column(nullable = false)
+    private String subscriptionId;
+
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private SubscriptionStatus status;
 
     @Column(nullable = false)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime currentPeriodEnd;
 
     private LocalDateTime canceledAt;
@@ -50,5 +56,12 @@ public class Subscription extends BaseEntity {
         this.paymentMethod = paymentMethod;
         this.status = status;
         this.currentPeriodEnd = currentPeriodEnd;
+    }
+
+    @PrePersist
+    private void generateSubscriptionId() {
+        if (this.subscriptionId == null) {
+            this.subscriptionId = "SUB_" + UUID.randomUUID().toString().replace("-", "").substring(0, 16).toUpperCase();
+        }
     }
 }
