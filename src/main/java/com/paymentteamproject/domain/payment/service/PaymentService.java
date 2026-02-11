@@ -9,6 +9,7 @@ import com.paymentteamproject.domain.payment.dto.StartPaymentRequest;
 import com.paymentteamproject.domain.payment.dto.StartPaymentResponse;
 import com.paymentteamproject.domain.payment.entity.Payment;
 import com.paymentteamproject.domain.payment.consts.PaymentStatus;
+import com.paymentteamproject.domain.payment.event.TotalSpendChangedEvent;
 import com.paymentteamproject.domain.payment.exception.DuplicatePaymentConfirmException;
 import com.paymentteamproject.domain.payment.exception.PaymentCompensationException;
 import com.paymentteamproject.domain.payment.exception.PaymentNotFoundException;
@@ -18,6 +19,7 @@ import com.paymentteamproject.domain.refund.dto.RefundCreateRequest;
 import com.paymentteamproject.domain.refund.service.RefundService;
 import com.paymentteamproject.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
@@ -32,6 +34,7 @@ public class PaymentService {
     private final RestClient restClient;
     private final RefundService refundService;
     private final PointService pointService;
+    private final ApplicationEventPublisher eventPublisher;
 
         // 결제 시작
     @Transactional
@@ -83,6 +86,12 @@ public class PaymentService {
         try {
             Payment success = payment.success();
             Payment savedSuccess = paymentRepository.save(success);
+
+            // 결제 성공 시 총 거래액 변동 이벤트 발행, 비동기 처리
+            eventPublisher.publishEvent(new TotalSpendChangedEvent(
+                    savedSuccess.getOrder().getUser(),
+                    savedSuccess.getPrice())
+            );
 
             // 결제 성공 시 포인트 적립 추가
             Orders order = savedSuccess.getOrder();

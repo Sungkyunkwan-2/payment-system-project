@@ -1,12 +1,14 @@
 package com.paymentteamproject.domain.user.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
+import com.paymentteamproject.domain.payment.event.TotalSpendChangedEvent;
 import com.paymentteamproject.domain.user.consts.UserRole;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.context.event.EventListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -83,6 +85,15 @@ public class User extends BaseEntity {
          else {
             this.pointBalance = this.pointBalance.subtract(deductedPoints);
         }
+    }
+
+    public void updateTotalSpend(BigDecimal amount){
+        // NPE 방지
+        if (this.totalSpend == null) {
+            this.totalSpend = BigDecimal.ZERO;
+        }
+
+        this.totalSpend = this.totalSpend.add(amount);
     }
 
 }
