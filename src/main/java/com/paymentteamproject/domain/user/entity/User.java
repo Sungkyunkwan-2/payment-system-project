@@ -88,11 +88,6 @@ public class User extends BaseEntity {
     }
 
     public void updateTotalSpend(BigDecimal amount){
-        // NPE 방지
-        if (this.totalSpend == null) {
-            this.totalSpend = BigDecimal.ZERO;
-        }
-
         this.totalSpend = this.totalSpend.add(amount);
     }
 
