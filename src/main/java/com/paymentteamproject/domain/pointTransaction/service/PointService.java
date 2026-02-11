@@ -72,7 +72,7 @@ public class PointService {
     }
 
     @Transactional
-    public void usePoints(User user, BigDecimal pointsToUse) {
+    public void usePoints(User user, Orders order,BigDecimal pointsToUse) {
 
         // 1. null / 0 이하 방어
         if (pointsToUse == null || pointsToUse.compareTo(BigDecimal.ZERO) <= 0) {
@@ -97,7 +97,8 @@ public class PointService {
         // 5. 차감 트랜잭션 생성
         PointTransaction transaction = PointTransaction.builder()
                 .user(user)
-                .points(pointsToUse.negate())  // 차감은 음수로 저장
+                .order(order)
+                .points(pointsToUse.negate()) //차감은 음수로 저장
                 .type(PointTransactionType.USED)
                 .build();
 
