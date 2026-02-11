@@ -17,6 +17,10 @@ public enum BillingCycle {
     }
 
     public LocalDateTime calculatePeriodEnd(LocalDateTime from) {
-        return from.plus(period, unit);
+        return from.plus(period, unit)
+                .withHour(23)
+                .withMinute(59)
+                .withSecond(59)
+                .withNano(0);
     }
 }
