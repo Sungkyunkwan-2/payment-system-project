@@ -1,4 +1,4 @@
-package com.paymentteamproject.domain.paymentmethod.consts;
+package com.paymentteamproject.domain.paymentMethod.consts;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

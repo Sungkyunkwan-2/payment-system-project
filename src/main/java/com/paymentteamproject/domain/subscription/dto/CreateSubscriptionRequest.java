@@ -2,9 +2,12 @@ package com.paymentteamproject.domain.subscription.dto;
 
 import lombok.Getter;
 
+import java.math.BigDecimal;
+
 @Getter
 public class CreateSubscriptionRequest {
-    private Long userId;
+    private String customerUid;
     private String planId;
-    private Long paymentMethodId;
+    private String billingKey;
+    private BigDecimal amount;
 }

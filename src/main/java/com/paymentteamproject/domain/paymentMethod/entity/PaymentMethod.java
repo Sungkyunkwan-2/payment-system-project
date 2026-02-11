@@ -1,8 +1,8 @@
-package com.paymentteamproject.domain.paymentmethod.entity;
+package com.paymentteamproject.domain.paymentMethod.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
-import com.paymentteamproject.domain.paymentmethod.consts.PaymentMethodStatus;
-import com.paymentteamproject.domain.paymentmethod.consts.PgProvider;
+import com.paymentteamproject.domain.paymentMethod.consts.PaymentMethodStatus;
+import com.paymentteamproject.domain.paymentMethod.consts.PgProvider;
 import com.paymentteamproject.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

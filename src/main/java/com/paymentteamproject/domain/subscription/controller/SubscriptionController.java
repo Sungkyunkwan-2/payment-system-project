@@ -1,10 +1,14 @@
 package com.paymentteamproject.domain.subscription.controller;
 
+import com.paymentteamproject.common.dto.ApiResponse;
 import com.paymentteamproject.domain.subscription.dto.CreateSubscriptionRequest;
 import com.paymentteamproject.domain.subscription.dto.CreateSubscriptionResponse;
+import com.paymentteamproject.domain.subscription.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,7 +19,10 @@ public class SubscriptionController {
     private final SubscriptionService subscriptionService;
 
     @PostMapping("/subscriptions")
-    public ResponseEntity<CreateSubscriptionResponse> create(@RequestBody CreateSubscriptionRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(subscriptionService.save(request));
+    public ResponseEntity<ApiResponse<CreateSubscriptionResponse>> createSubscription(
+            @AuthenticationPrincipal UserDetails user,
+            @RequestBody CreateSubscriptionRequest request) {
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(HttpStatus.OK, "성공적으로 구독을 생성했습니다.", subscriptionService.create(user, request)));
     }
 }
