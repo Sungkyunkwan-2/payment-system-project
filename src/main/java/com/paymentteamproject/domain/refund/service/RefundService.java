@@ -3,6 +3,7 @@ package com.paymentteamproject.domain.refund.service;
 import com.paymentteamproject.domain.order.service.OrderService;
 import com.paymentteamproject.domain.payment.entity.Payment;
 import com.paymentteamproject.domain.payment.consts.PaymentStatus;
+import com.paymentteamproject.domain.payment.event.TotalSpendChangedEvent;
 import com.paymentteamproject.domain.payment.exception.PaymentNotFoundException;
 import com.paymentteamproject.domain.payment.repository.PaymentRepository;
 import com.paymentteamproject.domain.refund.dto.PortOneCancelRequest;
@@ -19,6 +20,7 @@ import com.paymentteamproject.domain.user.repository.UserRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +41,7 @@ public class RefundService {
     private final RestClient portOneRestClient;
     private final EntityManager em;
     private final OrderService orderService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public RefundCreateResponse requestRefund(String paymentId, String email, RefundCreateRequest request) {
@@ -85,8 +88,18 @@ public class RefundService {
             payment.getOrder().markRefunded();
             orderService.processOrderCancellation(payment.getOrder());
 
-            Payment refundedPayment = payment.refund();
-            paymentRepository.save(refundedPayment);
+            Payment refundedPayment = paymentRepository.save(payment.refund());
+
+            // 환불 성공 시 총 거래액 변동 이벤트 발행, 비동기 처리
+            // NPE 방지 (환불 금액이 NULL일 가능성)
+            BigDecimal price = refundedPayment.getPrice();
+            BigDecimal negatedPrice = (price != null) ? price.negate() : BigDecimal.ZERO;
+
+            eventPublisher.publishEvent(new TotalSpendChangedEvent(
+                    refundedPayment.getOrder().getUser(),
+                    negatedPrice
+                    )
+            );
 
             return toResponse(successEvent);
         }
