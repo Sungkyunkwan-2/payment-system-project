@@ -109,7 +109,7 @@ public class PointService {
     }
 
     @Transactional
-    public void refundPoints(User user, BigDecimal pointsToRefund) {
+    public void refundPoints(User user, Orders order, BigDecimal pointsToRefund) {
         if (pointsToRefund == null || pointsToRefund.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("환불 포인트는 0보다 커야 합니다.");
         }
@@ -120,6 +120,7 @@ public class PointService {
         // 3. 환불 트랜잭션 생성
         PointTransaction transaction = PointTransaction.builder()
                 .user(user)
+                .order(order)
                 .points(pointsToRefund)
                 .type(PointTransactionType.RECOVERED)
                 .build();

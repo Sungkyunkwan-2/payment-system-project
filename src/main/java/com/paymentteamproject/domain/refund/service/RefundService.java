@@ -6,6 +6,7 @@ import com.paymentteamproject.domain.payment.consts.PaymentStatus;
 import com.paymentteamproject.domain.payment.event.TotalSpendChangedEvent;
 import com.paymentteamproject.domain.payment.exception.PaymentNotFoundException;
 import com.paymentteamproject.domain.payment.repository.PaymentRepository;
+import com.paymentteamproject.domain.pointTransaction.service.PointService;
 import com.paymentteamproject.domain.refund.dto.PortOneCancelRequest;
 import com.paymentteamproject.domain.refund.dto.RefundCreateRequest;
 import com.paymentteamproject.domain.refund.dto.RefundCreateResponse;
@@ -42,6 +43,8 @@ public class RefundService {
     private final EntityManager em;
     private final OrderService orderService;
     private final ApplicationEventPublisher eventPublisher;
+    private final PointService pointService;
+
 
     @Transactional
     public RefundCreateResponse requestRefund(String paymentId, String email, RefundCreateRequest request) {
@@ -90,16 +93,24 @@ public class RefundService {
 
             Payment refundedPayment = paymentRepository.save(payment.refund());
 
-            // 환불 성공 시 총 거래액 변동 이벤트 발행, 비동기 처리
-            // NPE 방지 (환불 금액이 NULL일 가능성)
+            //포인트 복구
+            BigDecimal usedPoint = refundedPayment.getOrder().getUsedPoint();
+            if (usedPoint != null && usedPoint.compareTo(BigDecimal.ZERO) > 0) {
+                pointService.refundPoints(
+                        refundedPayment.getOrder().getUser(),
+                        refundedPayment.getOrder(),
+                        usedPoint
+                );
+            }
+
+            // 총 거래액 이벤트
             BigDecimal price = refundedPayment.getPrice();
             BigDecimal negatedPrice = (price != null) ? price.negate() : BigDecimal.ZERO;
 
             eventPublisher.publishEvent(new TotalSpendChangedEvent(
                     refundedPayment.getOrder().getUser(),
                     negatedPrice
-                    )
-            );
+            ));
 
             return toResponse(successEvent);
         }
