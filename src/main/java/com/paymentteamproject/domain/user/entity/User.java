@@ -40,6 +40,9 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private BigDecimal pointBalance;
 
+    @Column(nullable = false)
+    private BigDecimal totalSpend;
+
     private LocalDateTime deletedAt;
 
     @Builder
@@ -54,11 +57,14 @@ public class User extends BaseEntity {
 
         this.password = password;
 
-        //가입 시 관리자 임의로 포인트 지급 가능(가입 이벤트 등)
+        // 가입 시 관리자 임의로 포인트 지급 가능(가입 이벤트 등)
         this.pointBalance = pointBalance;
 
         // 생성 시 기본 권한은 USER
         this.role = UserRole.USER;
+
+        // 생성 시 결재액은 0
+        this.totalSpend = BigDecimal.ZERO;
     }
 
     public void softDelete() {
