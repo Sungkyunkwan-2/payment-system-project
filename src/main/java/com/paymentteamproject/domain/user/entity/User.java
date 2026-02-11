@@ -85,4 +85,9 @@ public class User extends BaseEntity {
         }
     }
 
+    public void subPoints(BigDecimal amount) {
+        this.pointBalance = this.pointBalance.subtract(amount);
+    }
+
+
 }
