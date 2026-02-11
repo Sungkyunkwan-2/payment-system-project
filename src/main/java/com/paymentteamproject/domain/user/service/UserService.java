@@ -7,8 +7,8 @@ import com.paymentteamproject.domain.membershipTransaction.consts.MembershipStat
 import com.paymentteamproject.domain.membershipTransaction.entity.MembershipHistory;
 import com.paymentteamproject.domain.membershipTransaction.repository.MembershipHistoryRepository;
 import com.paymentteamproject.domain.user.entity.User;
-import com.paymentteamproject.domain.user.exception.UserNotFoundException;
 import com.paymentteamproject.domain.user.exception.DuplicateEmailException;
+import com.paymentteamproject.domain.user.exception.UserNotFoundException;
 import com.paymentteamproject.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
