@@ -154,7 +154,7 @@ public class PaymentService {
         }
 
         // 5. 부분 포인트 결제인 경우
-        if (actualPaymentAmount.compareTo(BigDecimal.valueOf(1000)) <= 0) {
+        if (actualPaymentAmount.compareTo(BigDecimal.valueOf(1000)) < 0) {
             throw new MinimumPaymentAmountException("결제 금액은 1000원 미만일 수 없습니다.");
         }
 
