@@ -13,6 +13,8 @@ import com.paymentteamproject.domain.payment.exception.DuplicatePaymentConfirmEx
 import com.paymentteamproject.domain.payment.exception.PaymentCompensationException;
 import com.paymentteamproject.domain.payment.exception.PaymentNotFoundException;
 import com.paymentteamproject.domain.payment.repository.PaymentRepository;
+import com.paymentteamproject.domain.refund.dto.RefundCreateRequest;
+import com.paymentteamproject.domain.refund.service.RefundService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
     private final RestClient restClient;
+    private final RefundService refundService;
 
         // 결제 시작
     @Transactional
@@ -83,7 +86,10 @@ public class PaymentService {
                     savedSuccess.getStatus());
         } catch (Exception e) {
             // TODO 결제 취소 메서드 호출
-
+            refundService.requestRefund(
+                    payment.getPaymentId(),
+                    payment.getOrder().getUser().getEmail(),
+                    new RefundCreateRequest());
             throw new PaymentCompensationException("결제 승인 처리 중 내부 오류로 인해 결제 취소되었습니다.");
         }
     }

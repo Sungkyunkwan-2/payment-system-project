@@ -4,8 +4,8 @@ import com.paymentteamproject.domain.auth.dto.ProfileResponse;
 import com.paymentteamproject.domain.auth.dto.RegisterRequest;
 import com.paymentteamproject.domain.auth.dto.RegisterResponse;
 import com.paymentteamproject.domain.masterMembership.consts.MembershipStatus;
-import com.paymentteamproject.domain.membershipTransaction.entity.MembershipTransaction;
-import com.paymentteamproject.domain.membershipTransaction.repository.MembershipTransactionRepository;
+import com.paymentteamproject.domain.membershipTransaction.entity.MembershipHistory;
+import com.paymentteamproject.domain.membershipTransaction.repository.MembershipHistoryRepository;
 import com.paymentteamproject.domain.user.entity.User;
 import com.paymentteamproject.domain.user.exception.UserNotFoundException;
 import com.paymentteamproject.domain.user.exception.DuplicateEmailException;
@@ -23,7 +23,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final MembershipTransactionRepository membershipTransactionRepository;
+    private final MembershipHistoryRepository membershipHistoryRepository;
 
     @Transactional
     public RegisterResponse save(RegisterRequest request){
@@ -45,9 +45,9 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
 
-        MembershipTransaction membershipTransaction = new MembershipTransaction(savedUser, MembershipStatus.BRONZE);
+        MembershipHistory membershipHistory = new MembershipHistory(savedUser, MembershipStatus.BRONZE);
 
-        membershipTransactionRepository.save(membershipTransaction);
+        membershipHistoryRepository.save(membershipHistory);
 
         // 반환
         return new RegisterResponse(
