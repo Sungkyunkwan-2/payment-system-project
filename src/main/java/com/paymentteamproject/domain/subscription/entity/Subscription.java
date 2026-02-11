@@ -1,6 +1,7 @@
 package com.paymentteamproject.domain.subscription.entity;
 
 import com.paymentteamproject.domain.paymentmethod.entity.PaymentMethod;
+import com.paymentteamproject.domain.plan.entity.Plan;
 import com.paymentteamproject.domain.subscription.consts.SubscriptionStatus;
 import com.paymentteamproject.domain.user.entity.User;
 import jakarta.persistence.*;
