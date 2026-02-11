@@ -3,6 +3,7 @@ package com.paymentteamproject.domain.refund.service;
 import com.paymentteamproject.domain.order.service.OrderService;
 import com.paymentteamproject.domain.payment.entity.Payment;
 import com.paymentteamproject.domain.payment.consts.PaymentStatus;
+import com.paymentteamproject.domain.payment.exception.PaymentNotFoundException;
 import com.paymentteamproject.domain.payment.repository.PaymentRepository;
 import com.paymentteamproject.domain.refund.dto.PortOneCancelRequest;
 import com.paymentteamproject.domain.refund.dto.RefundCreateRequest;
@@ -47,7 +48,9 @@ public class RefundService {
 
         Long userId = user.getId();
 
-        Payment payment = findLatestPayment(paymentId);
+        Payment payment = paymentRepository.findFirstByPaymentIdOrderByIdDesc(paymentId).orElseThrow(
+                () -> new PaymentNotFoundException("해당 결제를 찾을 수 없습니다."));
+
         if (payment.getStatus() != PaymentStatus.SUCCESS) {
             throw new RefundInvalidStateException("결제 성공 상태만 환불할 수 있습니다.");
         }
@@ -119,19 +122,5 @@ public class RefundService {
                     portOnePaymentId, e.getStatusCode(), e.getResponseBodyAsString(), e);
             return false;
         }
-    }
-
-    private Payment findLatestPayment(String paymentId) {
-        return em.createQuery(
-                        "select p from Payment p " +
-                                "where p.paymentId = :paymentId " +
-                                "order by p.id desc",
-                        Payment.class
-                )
-                .setParameter("paymentId", paymentId)
-                .setMaxResults(1)
-                .getResultStream()
-                .findFirst()
-                .orElseThrow(() -> new RefundNotFoundException("해당 결제를 찾을 수 없습니다."));
     }
 }

@@ -23,9 +23,8 @@ public class PointService {
     private final MembershipHistoryRepository membershipHistoryRepository;
     private final UserRepository userRepository;
 
-    /**
-     * 주문 생성 시: 포인트 트랜잭션만 생성 (잔액 업데이트 X)
-     */
+
+    // 주문 생성 시: 포인트 트랜잭션만 생성 (잔액 업데이트 X)
     @Transactional
     public PointTransaction createEarnPointsTransaction(User user, Orders order) {
         // 1. 사용자의 현재 활성 멤버십 조회
@@ -67,7 +66,6 @@ public class PointService {
                 .orElse(null);
 
         if (pointTransaction != null && pointTransaction.getPoints().signum() > 0) {
-            // 사용자 포인트 잔액 업데이트
             user.addPoints(pointTransaction.getPoints());
             userRepository.save(user);
         }
