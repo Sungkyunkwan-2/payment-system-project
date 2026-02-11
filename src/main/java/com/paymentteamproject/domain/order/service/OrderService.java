@@ -94,8 +94,8 @@ public class OrderService {
             product.decreaseStock(item.getQuantity());
         }
 
-        //포인트 적립
-        pointService.earnPoints(user, savedOrder);
+        //포인트 적립금액 계산
+        pointService.createEarnPointsTransaction(user, savedOrder);
 
         return new CreateOrderResponse(
                 savedOrder.getId(),

@@ -23,24 +23,26 @@ public class PointService {
     private final MembershipHistoryRepository membershipHistoryRepository;
     private final UserRepository userRepository;
 
+    /**
+     * 주문 생성 시: 포인트 트랜잭션만 생성 (잔액 업데이트 X)
+     */
     @Transactional
-    public PointTransaction earnPoints(User user, Orders order) {
+    public PointTransaction createEarnPointsTransaction(User user, Orders order) {
         // 1. 사용자의 현재 활성 멤버십 조회
         MembershipHistory activeMembership = membershipHistoryRepository
                 .findByUserId(user.getId())
                 .orElse(null);
 
         // 2. 적립 비율 결정 (멤버십 없으면 예외, 있으면 멤버십 비율)
-
         if (activeMembership == null) {
-            throw  new MembershipNotFoundException("멤버십이 존재하지 않습니다.");
+            throw new MembershipNotFoundException("멤버십이 존재하지 않습니다.");
         }
         BigDecimal ratio = activeMembership.getMembershipStatus().getRatio();
 
         // 3. 적립 포인트 계산 (주문 금액 * 적립 비율)
         BigDecimal earnedPoints = order.getTotalPrice().multiply(ratio);
 
-        // 4. 포인트가 0보다 클 때만 적립
+        // 4. 포인트가 0보다 클 때만 트랜잭션 생성
         if (earnedPoints.signum() > 0) {
             PointTransaction pointTransaction = PointTransaction.builder()
                     .user(user)
@@ -49,16 +51,25 @@ public class PointService {
                     .type(PointTransactionType.ADDED)
                     .build();
 
-            PointTransaction savedTransaction = pointTransactionRepository.save(pointTransaction);
-
-            // 5. 사용자 포인트 잔액 업데이트
-            user.addPoints(earnedPoints);
-            userRepository.save(user);
-            //TODO 이걸 결제로 옮겨야 함
-
-            return savedTransaction;
+            return pointTransactionRepository.save(pointTransaction);
         }
 
         return null;
+    }
+
+
+    //결제 완료 시: 사용자 포인트 잔액 업데이트
+    @Transactional
+    public void applyEarnedPoints(User user, Orders order) {
+        // 해당 주문의 ADDED 타입 포인트 트랜잭션 조회
+        PointTransaction pointTransaction = pointTransactionRepository
+                .findByOrderAndType(order, PointTransactionType.ADDED)
+                .orElse(null);
+
+        if (pointTransaction != null && pointTransaction.getPoints().signum() > 0) {
+            // 사용자 포인트 잔액 업데이트
+            user.addPoints(pointTransaction.getPoints());
+            userRepository.save(user);
+        }
     }
 }

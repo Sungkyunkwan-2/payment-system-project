@@ -13,8 +13,10 @@ import com.paymentteamproject.domain.payment.exception.DuplicatePaymentConfirmEx
 import com.paymentteamproject.domain.payment.exception.PaymentCompensationException;
 import com.paymentteamproject.domain.payment.exception.PaymentNotFoundException;
 import com.paymentteamproject.domain.payment.repository.PaymentRepository;
+import com.paymentteamproject.domain.pointTransaction.service.PointService;
 import com.paymentteamproject.domain.refund.dto.RefundCreateRequest;
 import com.paymentteamproject.domain.refund.service.RefundService;
+import com.paymentteamproject.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +31,7 @@ public class PaymentService {
     private final OrderRepository orderRepository;
     private final RestClient restClient;
     private final RefundService refundService;
+    private final PointService pointService;
 
         // 결제 시작
     @Transactional
@@ -80,6 +83,11 @@ public class PaymentService {
         try {
             Payment success = payment.success();
             Payment savedSuccess = paymentRepository.save(success);
+
+            // 결제 성공 시 포인트 적립 추가
+            Orders order = savedSuccess.getOrder();
+            User user = order.getUser();
+            pointService.applyEarnedPoints(user, order);
 
             return new ConfirmPaymentResponse(
                     savedSuccess.getOrder().getOrderNumber(),
