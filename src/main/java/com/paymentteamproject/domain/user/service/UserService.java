@@ -4,9 +4,6 @@ import com.paymentteamproject.domain.auth.dto.ProfileResponse;
 import com.paymentteamproject.domain.auth.dto.RegisterRequest;
 import com.paymentteamproject.domain.auth.dto.RegisterResponse;
 import com.paymentteamproject.domain.masterMembership.consts.MembershipStatus;
-import com.paymentteamproject.domain.masterMembership.entity.MasterMembership;
-import com.paymentteamproject.domain.masterMembership.exception.MembershipNotFoundException;
-import com.paymentteamproject.domain.masterMembership.repository.MasterMembershipRepository;
 import com.paymentteamproject.domain.membershipTransaction.entity.MembershipTransaction;
 import com.paymentteamproject.domain.membershipTransaction.repository.MembershipTransactionRepository;
 import com.paymentteamproject.domain.user.entity.User;
@@ -18,6 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -25,7 +24,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final MembershipTransactionRepository membershipTransactionRepository;
-    private final MasterMembershipRepository masterMembershipRepository;
 
     @Transactional
     public RegisterResponse save(RegisterRequest request){
@@ -42,20 +40,13 @@ public class UserService {
                 .phone(request.getPhone())
                 .email(request.getEmail())
                 .password(encodedPassword)
-                .pointBalance(0)
+                .pointBalance(BigDecimal.ZERO)
                 .build();
 
         User savedUser = userRepository.save(user);
 
-        // BRONZE 멤버십 자동 부여
-        MasterMembership bronzeMembership = masterMembershipRepository
-                .findByMembership(MembershipStatus.BRONZE)
-                .orElseThrow(() -> new MembershipNotFoundException("멤버십이 존재하지 않습니다."));
+        MembershipTransaction membershipTransaction = new MembershipTransaction(savedUser, MembershipStatus.BRONZE);
 
-        MembershipTransaction membershipTransaction = new MembershipTransaction(
-                savedUser,
-                bronzeMembership
-        );
         membershipTransactionRepository.save(membershipTransaction);
 
         // 반환

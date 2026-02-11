@@ -31,17 +31,17 @@ public class PointService {
                 .orElse(null);
 
         // 2. 적립 비율 결정 (멤버십 없으면 예외, 있으면 멤버십 비율)
-        BigDecimal ratio = BigDecimal.valueOf(0.0);
+
         if (activeMembership == null) {
             throw  new MembershipNotFoundException("멤버십이 존재하지 않습니다.");
         }
-        ratio = activeMembership.getMasterMembership().getRatio();
+        BigDecimal ratio = activeMembership.getMembershipStatus().getRatio();
 
         // 3. 적립 포인트 계산 (주문 금액 * 적립 비율)
-        BigDecimal earnedPoints = order.getTotalPrice() * ratio;
+        BigDecimal earnedPoints = order.getTotalPrice().multiply(ratio);
 
         // 4. 포인트가 0보다 클 때만 적립
-        if (earnedPoints > 0) {
+        if (earnedPoints.signum() > 0) {
             PointTransaction pointTransaction = PointTransaction.builder()
                     .user(user)
                     .order(order)

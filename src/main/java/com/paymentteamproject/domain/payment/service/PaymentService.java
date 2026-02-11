@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 
+import java.math.BigDecimal;
+
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
@@ -63,7 +65,7 @@ public class PaymentService {
         if(response == null) throw new PaymentNotFoundException("존재하지 않는 결제입니다.");
 
         int amount = response.getAmount().getTotal();
-        if(!response.getStatus().equals("PAID") || amount != payment.getPrice()) {
+        if(!response.getStatus().equals("PAID") || !payment.getPrice().equals(new BigDecimal(amount))) {
             Payment fail = payment.fail();
             Payment savedFail = paymentRepository.save(fail);
 

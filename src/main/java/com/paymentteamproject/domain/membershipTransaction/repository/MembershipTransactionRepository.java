@@ -15,7 +15,6 @@ public interface MembershipTransactionRepository extends JpaRepository<Membershi
      * - 가장 최근에 생성된 멤버십
      */
     @Query("SELECT mt FROM MembershipTransaction mt " +
-            "JOIN FETCH mt.masterMembership " +
             "WHERE mt.user.id = :userId " +
             "AND mt.deletedAt IS NULL " +
             "ORDER BY mt.createdAt DESC " +

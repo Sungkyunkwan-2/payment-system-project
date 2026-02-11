@@ -1,7 +1,7 @@
 package com.paymentteamproject.domain.membershipTransaction.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
-import com.paymentteamproject.domain.masterMembership.entity.MasterMembership;
+import com.paymentteamproject.domain.masterMembership.consts.MembershipStatus;
 import com.paymentteamproject.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -24,21 +24,17 @@ public class MembershipTransaction extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // master_memberships(membership) FK
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(
-            name = "membership",
-            referencedColumnName = "membership",
-            nullable = false
-    )
-    private MasterMembership masterMembership;
+    @Column
+    @Enumerated(EnumType.STRING)
+    private MembershipStatus membershipStatus;
+
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    public MembershipTransaction(User user, MasterMembership masterMembership) {
+    public MembershipTransaction(User user, MembershipStatus membershipStatus) {
         this.user = user;
-        this.masterMembership = masterMembership;
+        this.membershipStatus = membershipStatus;
     }
 
     public void softDelete() {
