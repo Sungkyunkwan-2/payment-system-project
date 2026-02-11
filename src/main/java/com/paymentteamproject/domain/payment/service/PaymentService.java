@@ -52,10 +52,10 @@ public class PaymentService {
     @Transactional
     public ConfirmPaymentResponse confirm(String paymentId) {
 
-        Payment payment = paymentRepository.findByPaymentId(paymentId).orElseThrow(
+        Payment payment = paymentRepository.findFirstByPaymentIdOrderByIdDesc(paymentId).orElseThrow(
                 () -> new PaymentNotFoundException("존재하지 않는 결제입니다."));
 
-        if(!payment.getStatus().equals(PaymentStatus.PENDING)) {
+        if(payment.getStatus().equals(PaymentStatus.SUCCESS)) {
             throw new DuplicatePaymentConfirmException("이미 처리 중이거나 완료된 결제입니다.");
         }
 
@@ -68,7 +68,7 @@ public class PaymentService {
         if(response == null) throw new PaymentNotFoundException("존재하지 않는 결제입니다.");
 
         int amount = response.getAmount().getTotal();
-        if(!response.getStatus().equals("PAID") || !payment.getPrice().equals(new BigDecimal(amount))) {
+        if(!response.getStatus().equals("PAID") || payment.getPrice().compareTo(new BigDecimal(amount)) != 0) {
             Payment fail = payment.fail();
             Payment savedFail = paymentRepository.save(fail);
 
