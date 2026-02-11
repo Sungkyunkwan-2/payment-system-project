@@ -70,4 +70,65 @@ public class PointService {
             userRepository.save(user);
         }
     }
+
+    @Transactional
+    public void usePoints(User user, Orders order,BigDecimal pointsToUse) {
+
+        // 1. null / 0 이하 방어
+        if (pointsToUse == null || pointsToUse.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("사용 포인트는 0보다 커야 합니다.");
+        }
+
+        // 2. 사용자 현재 포인트 조회
+        BigDecimal currentPoints = user.getPointBalance();
+
+        if (currentPoints == null) {
+            currentPoints = BigDecimal.ZERO;
+        }
+
+        // 3. 잔액 부족 검증
+        if (currentPoints.compareTo(pointsToUse) < 0) {
+            throw new IllegalStateException("보유 포인트가 부족합니다.");
+        }
+
+        // 4. 포인트 차감
+        user.subPoints(pointsToUse);
+
+        // 5. 차감 트랜잭션 생성
+        PointTransaction transaction = PointTransaction.builder()
+                .user(user)
+                .order(order)
+                .points(pointsToUse.negate()) //차감은 음수로 저장
+                .type(PointTransactionType.USED)
+                .build();
+
+        pointTransactionRepository.save(transaction);
+
+        // 6. 사용자 저장
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void refundPoints(User user, BigDecimal pointsToRefund) {
+        if (pointsToRefund == null || pointsToRefund.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("환불 포인트는 0보다 커야 합니다.");
+        }
+
+        // 2. 사용자 포인트 증가
+        user.addPoints(pointsToRefund);
+
+        // 3. 환불 트랜잭션 생성
+        PointTransaction transaction = PointTransaction.builder()
+                .user(user)
+                .points(pointsToRefund)
+                .type(PointTransactionType.RECOVERED)
+                .build();
+
+        pointTransactionRepository.save(transaction);
+
+        // 4. 사용자 저장
+        userRepository.save(user);
+    }
+
+
 }
