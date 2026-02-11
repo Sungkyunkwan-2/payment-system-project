@@ -1,6 +1,7 @@
 package com.paymentteamproject.domain.pointTransaction.repository;
 
 
+import com.paymentteamproject.domain.order.entity.Orders;
 import com.paymentteamproject.domain.pointTransaction.entity.PointTransaction;
 import com.paymentteamproject.domain.pointTransaction.entity.PointTransactionType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -38,4 +39,6 @@ public interface PointTransactionRepository extends JpaRepository<PointTransacti
             "AND pt.expiresAt < :now " +
             "AND pt.deletedAt IS NULL")
     List<PointTransaction> findExpiredPoints(@Param("now") LocalDateTime now);
+
+    Optional<PointTransaction> findByOrderAndType(Orders order, PointTransactionType type);
 }

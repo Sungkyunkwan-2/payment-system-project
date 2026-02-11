@@ -3,12 +3,12 @@ package com.paymentteamproject.domain.user.service;
 import com.paymentteamproject.domain.auth.dto.ProfileResponse;
 import com.paymentteamproject.domain.auth.dto.RegisterRequest;
 import com.paymentteamproject.domain.auth.dto.RegisterResponse;
-import com.paymentteamproject.domain.masterMembership.consts.MembershipStatus;
+import com.paymentteamproject.domain.membershipTransaction.consts.MembershipStatus;
 import com.paymentteamproject.domain.membershipTransaction.entity.MembershipHistory;
 import com.paymentteamproject.domain.membershipTransaction.repository.MembershipHistoryRepository;
 import com.paymentteamproject.domain.user.entity.User;
-import com.paymentteamproject.domain.user.exception.UserNotFoundException;
 import com.paymentteamproject.domain.user.exception.DuplicateEmailException;
+import com.paymentteamproject.domain.user.exception.UserNotFoundException;
 import com.paymentteamproject.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -69,6 +69,7 @@ public class UserService {
                 .pointBalance(user.getPointBalance())
                 .build();
     }
+
 }
 
 
