@@ -5,6 +5,6 @@ import java.math.BigDecimal;
 
 public record TotalSpendChangedEvent(
         User user,
-        BigDecimal newSpend
+        BigDecimal delta
 ) {
 }
