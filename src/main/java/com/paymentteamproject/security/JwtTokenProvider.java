@@ -117,24 +117,4 @@ public class JwtTokenProvider {
     public Instant getRefreshTokenExpiryDate() {
         return Instant.now().plusMillis(refreshTokenValidityInMilliseconds);
     }
-
-    /**
-     * Access Token의 만료 시간 반환
-     */
-    public Instant getAccessTokenExpiryDate() {
-        return Instant.now().plusMillis(accessTokenValidityInMilliseconds);
-    }
-
-    /**
-     * 토큰 타입 확인 (access or refresh)
-     */
-    public String getTokenType(String token) {
-        Claims claims = Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-
-        return claims.get("type", String.class);
-    }
 }
