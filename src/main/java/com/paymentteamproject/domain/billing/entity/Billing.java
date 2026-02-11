@@ -23,7 +23,7 @@ public class Billing extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subscription_id", nullable = false)
-    private Subscription subscriptionId;
+    private Subscription subscription;
 
     @Column(nullable = false)
     private String billingId;
@@ -55,7 +55,7 @@ public class Billing extends BaseEntity {
 
     public Billing(Subscription subscription, BigDecimal amount, BillingStatus status,
                    String paymentId, LocalDateTime periodStart, LocalDateTime periodEnd) {
-        this.subscriptionId = subscription;
+        this.subscription = subscription;
         this.amount = amount;
         this.status = status;
         this.paymentId = paymentId;

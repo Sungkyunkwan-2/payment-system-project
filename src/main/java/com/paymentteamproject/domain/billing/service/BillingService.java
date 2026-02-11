@@ -3,6 +3,7 @@ package com.paymentteamproject.domain.billing.service;
 import com.paymentteamproject.domain.billing.consts.BillingStatus;
 import com.paymentteamproject.domain.billing.dto.CreateBillingRequest;
 import com.paymentteamproject.domain.billing.dto.CreateBillingResponse;
+import com.paymentteamproject.domain.billing.dto.GetBillingResponse;
 import com.paymentteamproject.domain.billing.entity.Billing;
 import com.paymentteamproject.domain.billing.repository.BillingRepository;
 import com.paymentteamproject.domain.subscription.entity.Subscription;
@@ -11,6 +12,8 @@ import com.paymentteamproject.domain.subscription.repository.SubscriptionReposit
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -44,5 +47,25 @@ public class BillingService {
                 savedBilling.getPaymentId(),
                 savedBilling.getAmount(),
                 savedBilling.getStatus());
+    }
+
+    // 청구 내역 조회
+    @Transactional(readOnly = true)
+    public List<GetBillingResponse> getAll(String subscriptionId) {
+        Subscription subscription = subscriptionRepository.findBySubscriptionId(subscriptionId).orElseThrow(
+                () -> new SubscriptionNotFoundException("구독 ID와 일치하는 구독이 없습니다."));
+
+        List<Billing> billings = billingRepository.findBySubscription(subscription);
+
+        return billings.stream().map(b -> new GetBillingResponse(
+                b.getBillingId(),
+                b.getPeriodStart(),
+                b.getPeriodEnd(),
+                b.getAmount(),
+                b.getStatus(),
+                b.getPaymentId(),
+                b.getAttemptedAt(),
+                b.getFailureMessage()))
+                .toList();
     }
 }
