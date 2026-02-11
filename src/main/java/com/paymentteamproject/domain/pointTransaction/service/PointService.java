@@ -1,6 +1,6 @@
 package com.paymentteamproject.domain.pointTransaction.service;
 
-import com.paymentteamproject.domain.masterMembership.exception.MembershipNotFoundException;
+import com.paymentteamproject.domain.membershipTransaction.exception.MembershipNotFoundException;
 import com.paymentteamproject.domain.membershipTransaction.entity.MembershipHistory;
 import com.paymentteamproject.domain.membershipTransaction.repository.MembershipHistoryRepository;
 import com.paymentteamproject.domain.order.entity.Orders;
