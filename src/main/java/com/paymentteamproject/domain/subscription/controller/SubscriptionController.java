@@ -23,6 +23,9 @@ public class SubscriptionController {
             @AuthenticationPrincipal UserDetails user,
             @RequestBody CreateSubscriptionRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(
-                ApiResponse.success(HttpStatus.OK, "성공적으로 구독을 생성했습니다.", subscriptionService.create(user, request)));
+                ApiResponse.success(
+                        HttpStatus.OK,
+                        "성공적으로 구독을 생성했습니다.",
+                        subscriptionService.create(user.getUsername(), request)));
     }
 }
