@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Entity
@@ -22,7 +23,10 @@ public class Billing extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subscription_id", nullable = false)
-    private Subscription subscriptionId;
+    private Subscription subscription;
+
+    @Column(nullable = false)
+    private String billingId;
 
     @Column(nullable = false)
     private BigDecimal amount;
@@ -43,21 +47,27 @@ public class Billing extends BaseEntity {
     @Column(nullable = false)
     private LocalDateTime periodEnd;
 
-    @Column()
+    @Column
     private String failureMessage;
 
     @Column
     private LocalDateTime deletedAt;
 
-    public Billing(Subscription subscription, BigDecimal amount,
-                   BillingStatus status, String paymentId, String failureMessage) {
-        this.subscriptionId = subscription;
+    public Billing(Subscription subscription, BigDecimal amount, BillingStatus status,
+                   String paymentId, LocalDateTime periodStart, LocalDateTime periodEnd) {
+        this.subscription = subscription;
         this.amount = amount;
         this.status = status;
         this.paymentId = paymentId;
         this.attemptedAt = LocalDateTime.now();
-        this.periodStart = LocalDateTime.now();
-        this.periodEnd = LocalDateTime.now();
-        this.failureMessage = failureMessage;
+        this.periodStart = periodStart;
+        this.periodEnd = periodEnd;
+    }
+
+    @PrePersist
+    private void generateBillingId() {
+        if (this.billingId == null) {
+            this.billingId = "BILL_" + UUID.randomUUID().toString().replace("-", "").substring(0, 16).toUpperCase();
+        }
     }
 }
