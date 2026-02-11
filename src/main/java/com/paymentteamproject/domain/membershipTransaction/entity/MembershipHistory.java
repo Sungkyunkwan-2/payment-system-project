@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "membership_transactions")
 @NoArgsConstructor
-public class MembershipTransaction extends BaseEntity {
+public class MembershipHistory extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,7 +32,7 @@ public class MembershipTransaction extends BaseEntity {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    public MembershipTransaction(User user, MembershipStatus membershipStatus) {
+    public MembershipHistory(User user, MembershipStatus membershipStatus) {
         this.user = user;
         this.membershipStatus = membershipStatus;
     }

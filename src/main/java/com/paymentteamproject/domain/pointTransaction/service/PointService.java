@@ -1,8 +1,8 @@
 package com.paymentteamproject.domain.pointTransaction.service;
 
 import com.paymentteamproject.domain.masterMembership.exception.MembershipNotFoundException;
-import com.paymentteamproject.domain.membershipTransaction.entity.MembershipTransaction;
-import com.paymentteamproject.domain.membershipTransaction.repository.MembershipTransactionRepository;
+import com.paymentteamproject.domain.membershipTransaction.entity.MembershipHistory;
+import com.paymentteamproject.domain.membershipTransaction.repository.MembershipHistoryRepository;
 import com.paymentteamproject.domain.order.entity.Orders;
 import com.paymentteamproject.domain.pointTransaction.entity.PointTransaction;
 import com.paymentteamproject.domain.pointTransaction.entity.PointTransactionType;
@@ -20,13 +20,13 @@ import java.math.BigDecimal;
 @RequiredArgsConstructor
 public class PointService {
     private final PointTransactionRepository pointTransactionRepository;
-    private final MembershipTransactionRepository membershipTransactionRepository;
+    private final MembershipHistoryRepository membershipHistoryRepository;
     private final UserRepository userRepository;
 
     @Transactional
     public PointTransaction earnPoints(User user, Orders order) {
         // 1. 사용자의 현재 활성 멤버십 조회
-        MembershipTransaction activeMembership = membershipTransactionRepository
+        MembershipHistory activeMembership = membershipHistoryRepository
                 .findByUserId(user.getId())
                 .orElse(null);
 
