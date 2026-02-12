@@ -117,17 +117,38 @@ public class PointService {
         // 2. 사용자 포인트 증가
         user.addPoints(pointsToRefund);
 
-        // 3. 환불 트랜잭션 생성
-        PointTransaction transaction = PointTransaction.builder()
+        // 사용자가 사용한 포인트 환불 이력
+        PointTransaction recoveredTransaction = PointTransaction.builder()
                 .user(user)
                 .order(order)
                 .points(pointsToRefund)
                 .type(PointTransactionType.RECOVERED)
                 .build();
 
-        pointTransactionRepository.save(transaction);
+        pointTransactionRepository.save(recoveredTransaction);
 
-        // 4. 사용자 저장
+        // 3. 주문 적립 포인트 회수
+        pointTransactionRepository
+                .findByOrderAndTypeAndValidityTrue(order, PointTransactionType.ADDED)
+                .ifPresent(earnedTransaction -> {
+                    BigDecimal earnedPoint = earnedTransaction.getPoints();
+                    // 유저 포인트 차감
+                    user.subPoints(earnedPoint);
+
+                    // 기존 적립 트랜잭션 무효화
+                    earnedTransaction.invalidate();
+
+                    // 회수 이력 생성 (음수로 기록)
+                    PointTransaction revokeTransaction = PointTransaction.builder()
+                            .user(user)
+                            .order(order)
+                            .points(earnedPoint.negate())
+                            .type(PointTransactionType.CANCELLED)
+                            .build();
+
+                    pointTransactionRepository.save(revokeTransaction);
+                });
+
         userRepository.save(user);
     }
 

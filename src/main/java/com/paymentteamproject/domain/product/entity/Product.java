@@ -53,54 +53,6 @@ public class Product extends BaseEntity {
         this.category = category;
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     // 재고 차감
     public void decreaseStock(Long quantity) {
         if (this.stock < quantity) {
@@ -110,11 +62,21 @@ public class Product extends BaseEntity {
             );
         }
         this.stock -= quantity;
+
+        // 재고가 0이면 품절 처리 (단종 제외)
+        if (this.stock == 0 && this.status != ProductStatus.DISCONTINUED) {
+            this.status = ProductStatus.SOLDOUT;
+        }
     }
 
     //재고 증가
     public void increaseStock(Long quantity) {
         this.stock += quantity;
+
+        // 재고가 0 → 양수로 복구되면 판매중 처리
+        if (this.stock > 0 && this.status == ProductStatus.SOLDOUT) {
+            this.status = ProductStatus.ONSALE;
+        }
     }
 
 }
