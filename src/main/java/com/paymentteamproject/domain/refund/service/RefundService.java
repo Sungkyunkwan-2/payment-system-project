@@ -29,6 +29,7 @@ import org.springframework.web.client.RestClientResponseException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Slf4j
 @Service
@@ -58,6 +59,14 @@ public class RefundService {
 
         if (payment.getStatus() != PaymentStatus.SUCCESS) {
             throw new RefundInvalidStateException("결제 성공 상태만 환불할 수 있습니다.");
+        }
+
+        //환불 기간 검증 (1일)
+        LocalDateTime paymentTime = payment.getCreatedAt();
+        long daysSincePayment = ChronoUnit.DAYS.between(paymentTime, LocalDateTime.now());
+
+        if (daysSincePayment > 1) {
+            throw new IllegalStateException("환불 기간(1일)이 지났습니다.");
         }
 
         // 소유권 검증
