@@ -117,6 +117,16 @@ public class PointService {
         // 2. 사용자 포인트 증가
         user.addPoints(pointsToRefund);
 
+        // 사용자가 사용한 포인트 환불 이력
+        PointTransaction recoveredTransaction = PointTransaction.builder()
+                .user(user)
+                .order(order)
+                .points(pointsToRefund)
+                .type(PointTransactionType.RECOVERED)
+                .build();
+
+        pointTransactionRepository.save(recoveredTransaction);
+
         // 3. 주문 적립 포인트 회수
         pointTransactionRepository
                 .findByOrderAndTypeAndValidityTrue(order, PointTransactionType.ADDED)
