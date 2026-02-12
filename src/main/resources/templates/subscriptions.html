@@ -253,6 +253,7 @@
                 const result = await makeApiRequest('list-billing-history', {
                     pathParams: subscriptionId
                 });
+                result.billings = result;
 
                 // Display billing history
                 const container = document.getElementById('billing-history-container');
