@@ -51,6 +51,8 @@ public class Subscription extends BaseEntity {
 
     private LocalDateTime canceledAt;
 
+    private LocalDateTime currentPeriodStart;
+
     public Subscription(User user, Plan plan, PaymentMethod paymentMethod,
                         SubscriptionStatus status, LocalDateTime currentPeriodEnd)
     {
@@ -76,5 +78,16 @@ public class Subscription extends BaseEntity {
         this.canceledReason = canceledReason;
         this.canceledAt = LocalDateTime.now();
         this.status = SubscriptionStatus.CANCELLED;
+    }
+
+
+    public void markAsPastDue() {
+        this.status = SubscriptionStatus.UNPAID;
+    }
+
+    public void renewPeriod() {
+        this.currentPeriodStart = this.currentPeriodEnd;
+        this.currentPeriodEnd = this.plan.getBillingCycle()
+                .calculatePeriodEnd(this.currentPeriodEnd);
     }
 }
