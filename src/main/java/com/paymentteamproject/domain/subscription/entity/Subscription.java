@@ -43,22 +43,22 @@ public class Subscription extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private SubscriptionStatus status;
 
-    @Column(nullable = false)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime currentPeriodEnd;
-
     private String canceledReason;
 
     private LocalDateTime canceledAt;
 
-    public Subscription(User user, Plan plan, PaymentMethod paymentMethod,
-                        SubscriptionStatus status, LocalDateTime currentPeriodEnd)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime currentPeriodStart;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime currentPeriodEnd;
+
+    public Subscription(User user, Plan plan, PaymentMethod paymentMethod, SubscriptionStatus status)
     {
         this.user = user;
         this.plan = plan;
         this.paymentMethod = paymentMethod;
         this.status = status;
-        this.currentPeriodEnd = currentPeriodEnd;
     }
 
     @PrePersist
@@ -76,5 +76,16 @@ public class Subscription extends BaseEntity {
         this.canceledReason = canceledReason;
         this.canceledAt = LocalDateTime.now();
         this.status = SubscriptionStatus.CANCELLED;
+    }
+
+
+    public void markAsPastDue() {
+        this.status = SubscriptionStatus.UNPAID;
+    }
+
+    public void renewPeriod() {
+        this.currentPeriodStart = LocalDateTime.now();
+        this.currentPeriodEnd = this.plan.getBillingCycle()
+                .calculatePeriodEnd(this.currentPeriodStart);
     }
 }

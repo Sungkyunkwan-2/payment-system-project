@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Entity
@@ -49,7 +50,7 @@ public class Payment extends BaseEntity {
     public static Payment start(Orders order, BigDecimal price) {
         return new Payment(
                 order,
-                "PAY" + order.getId() + System.currentTimeMillis(),
+                "PAY_" + System.currentTimeMillis() + UUID.randomUUID().toString().substring(0, 8),
                 PaymentStatus.PENDING,
                 price
         );

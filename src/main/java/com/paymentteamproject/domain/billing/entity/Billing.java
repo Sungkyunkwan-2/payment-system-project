@@ -53,8 +53,10 @@ public class Billing extends BaseEntity {
     @Column
     private LocalDateTime deletedAt;
 
-    public Billing(Subscription subscription, BigDecimal amount, BillingStatus status,
-                   String paymentId, LocalDateTime periodStart, LocalDateTime periodEnd) {
+    public Billing(Subscription subscription, BigDecimal amount,
+                   BillingStatus status, String paymentId,
+                   LocalDateTime periodStart, LocalDateTime periodEnd,
+                   String failureMessage) {
         this.subscription = subscription;
         this.amount = amount;
         this.status = status;
@@ -62,6 +64,7 @@ public class Billing extends BaseEntity {
         this.attemptedAt = LocalDateTime.now();
         this.periodStart = periodStart;
         this.periodEnd = periodEnd;
+        this.failureMessage = failureMessage;
     }
 
     @PrePersist
