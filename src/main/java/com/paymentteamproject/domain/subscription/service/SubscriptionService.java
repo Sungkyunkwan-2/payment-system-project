@@ -343,7 +343,7 @@ public class SubscriptionService {
                             paymentResponse.getPaymentId(),
                             periodStart,
                             periodEnd,
-                            "실패"
+                            null
                     );
                     billingRepository.save(billing);
 
