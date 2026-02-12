@@ -67,6 +67,18 @@ public class Billing extends BaseEntity {
         this.failureMessage = failureMessage;
     }
 
+    public Billing(Subscription subscription, BigDecimal amount,
+                   BillingStatus status, String paymentId,
+                   LocalDateTime periodStart, LocalDateTime periodEnd) {
+        this.subscription = subscription;
+        this.amount = amount;
+        this.status = status;
+        this.paymentId = paymentId;
+        this.attemptedAt = LocalDateTime.now();
+        this.periodStart = periodStart;
+        this.periodEnd = periodEnd;
+    }
+
     @PrePersist
     private void generateBillingId() {
         if (this.billingId == null) {

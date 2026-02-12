@@ -90,10 +90,4 @@ public class Subscription extends BaseEntity {
         this.currentPeriodEnd = this.plan.getBillingCycle()
                 .calculatePeriodEnd(this.currentPeriodEnd);
     }
-
-    public void cancel() {
-        this.status = SubscriptionStatus.CANCELLED;
-        this.canceledAt = LocalDateTime.now();
-    }
-
 }

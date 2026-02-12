@@ -37,7 +37,8 @@ public class BillingService {
                 BillingStatus.COMPLETE,
                 "PAY111770788224392",
                 request.getPeriodStart(),
-                request.getPeriodEnd());
+                request.getPeriodEnd()
+                );
 
         Billing savedBilling = billingRepository.save(billing);
 
