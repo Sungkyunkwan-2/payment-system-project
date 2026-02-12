@@ -153,13 +153,13 @@ public class PaymentService {
             return handleFullPointPayment(savedPayment, user, order);
         }
 
-        // 5. 부분 포인트 결제인 경우
+        // 5. 포인트 사용 후 금액이 1000원 미만일 경우
         if (actualPaymentAmount.compareTo(BigDecimal.valueOf(1000)) < 0) {
             throw new MinimumPaymentAmountException("결제 금액은 1000원 미만일 수 없습니다.");
         }
 
+        // 6. 부분 포인트 결제인 경우
         return handlePartialPointPayment(savedPayment);
-        // 6. 포인트 사용 후 금액이 1000원 미만일 경우
     }
 
 

@@ -152,5 +152,32 @@ public class PointService {
         userRepository.save(user);
     }
 
+    @Transactional
+    public void refundPointsForNoPointPayment(User user, Orders order) {
+        // 주문 적립 포인트 회수
+        pointTransactionRepository
+                .findByOrderAndTypeAndValidityTrue(order, PointTransactionType.ADDED)
+                .ifPresent(earnedTransaction -> {
+                    BigDecimal earnedPoint = earnedTransaction.getPoints();
+
+                    // 유저 포인트 차감
+                    user.subPoints(earnedPoint);
+
+                    // 기존 적립 트랜잭션 무효화
+                    earnedTransaction.invalidate();
+
+                    // 회수 이력 생성 (음수로 기록)
+                    PointTransaction revokeTransaction = PointTransaction.builder()
+                            .user(user)
+                            .order(order)
+                            .points(earnedPoint.negate())
+                            .type(PointTransactionType.CANCELLED)
+                            .build();
+
+                    pointTransactionRepository.save(revokeTransaction);
+                });
+
+        userRepository.save(user);
+    }
 
 }
