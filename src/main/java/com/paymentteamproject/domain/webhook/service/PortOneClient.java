@@ -29,18 +29,15 @@ public class PortOneClient {
 
     public BillingKeyPaymentResponse payWithBillingKey(BillingKeyPaymentRequest request) {
         log.info("빌링키 결제 요청 - billingKey: {}, amount: {}",
-                request.getBillingKey(), request.getTotalAmount());
+                request.getBillingKey(), request.getAmount());
 
         try {
             BillingKeyPaymentResponse response = portOneRestClient.post()
-                    .uri("/billing-keys/{billingKey}/pay", request.getBillingKey())
+                    .uri("/payments/{paymentId}/billing-key", request.getBillingKey())
                     .header("Authorization", "PortOne " + portOneProperties.getApi().getSecret())
                     .body(request)
                     .retrieve()
                     .body(BillingKeyPaymentResponse.class);
-
-            log.info("빌링키 결제 응답 - paymentId: {}, status: {}",
-                    response.getPaymentId(), response.getStatus());
 
             return response;
 

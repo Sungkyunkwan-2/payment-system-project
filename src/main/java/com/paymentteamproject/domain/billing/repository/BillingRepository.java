@@ -10,4 +10,6 @@ import java.util.List;
 public interface BillingRepository extends JpaRepository<Billing, Long> {
     List<Billing> findBySubscription(Subscription subscription);
     boolean existsBySubscriptionIdAndPeriodStartAndPeriodEnd(Long subscriptionId, LocalDateTime periodStart, LocalDateTime periodEnd);
+
+    Billing findByPaymentId(Subscription subscription);
 }

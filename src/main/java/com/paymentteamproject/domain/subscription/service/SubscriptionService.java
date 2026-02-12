@@ -323,24 +323,21 @@ public class SubscriptionService {
                         billingKey,
                         plan.getName() + " 정기결제",
                         paymentMethod.getCustomerUid(),
-                        amount.intValue(),
+                        amount,
                         "KRW",
                         portOneProperties.getChannel().get("toss")
                 );
 
                 BillingKeyPaymentResponse paymentResponse = portOneClient.payWithBillingKey(paymentRequest);
 
-                if ("PAID".equals(paymentResponse.getStatus())) {
-                    // 결제 성공
-                    log.info("구독 결제 성공 - subscriptionId: {}, paymentId: {}, amount: {}",
-                            subscriptionId, paymentResponse.getPaymentId(), amount);
+                if (paymentResponse.getPaidAt() != null) {
 
                     // 청구 내역 저장 (성공)
                     Billing billing = new Billing(
                             subscription,
                             amount,
                             BillingStatus.COMPLETE,
-                            paymentResponse.getPaymentId(),
+                            paymentResponse.getPgTxId(),
                             periodStart,
                             periodEnd,
                             null

@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -66,23 +65,27 @@ public class BillingService {
                     billingKey,
                     plan.getName() + " 즉시결제",
                     paymentMethod.getCustomerUid(),
-                    amount.intValue(),
+                    amount,
                     "KRW",
                     portOneProperties.getChannel().get("toss")
             );
 
             BillingKeyPaymentResponse paymentResponse = portOneClient.payWithBillingKey(paymentRequest);
 
-            if("PAID".equals(paymentResponse.getStatus())){
+            Billing payment = billingRepository.findByPaymentId(subscription);
+
+            // 5. 결제 결과에 따른 처리
+            if (paymentResponse.getPaidAt() != null) {
                 Billing billing = new Billing(
                         subscription,
                         amount,
                         BillingStatus.COMPLETE,
-                        paymentResponse.getPaymentId(),
+                        payment.getPaymentId(),
                         request.getPeriodStart(),
                         request.getPeriodEnd(),
                         null
                 );
+
                 Billing savedBilling = billingRepository.save(billing);
 
                 return new CreateBillingResponse(
@@ -90,12 +93,14 @@ public class BillingService {
                         savedBilling.getPaymentId(),
                         savedBilling.getAmount(),
                         savedBilling.getStatus());
-            }
-            else{
+
+            } else {
                 return createFailedBillingResponse(subscription, request, "알 수 없는 오류");
             }
-        }catch (Exception e){
-            return createFailedBillingResponse(subscription, request, "시스템 오류");
+
+        } catch (Exception e) {
+            return createFailedBillingResponse(subscription, request,
+                    "시스템 오류: " + e.getMessage());
         }
     }
 
