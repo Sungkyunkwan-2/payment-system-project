@@ -1,14 +1,15 @@
-package com.paymentteamproject.domain.auth.service;
+package com.paymentteamproject.domain.user.service;
 
 
+import com.paymentteamproject.domain.auth.dto.ProfileResponse;
 import com.paymentteamproject.domain.auth.dto.RegisterRequest;
 import com.paymentteamproject.domain.auth.dto.RegisterResponse;
 import com.paymentteamproject.domain.membershipTransaction.entity.MembershipHistory;
 import com.paymentteamproject.domain.membershipTransaction.repository.MembershipHistoryRepository;
 import com.paymentteamproject.domain.user.entity.User;
 import com.paymentteamproject.domain.user.exception.DuplicateEmailException;
+import com.paymentteamproject.domain.user.exception.UserNotFoundException;
 import com.paymentteamproject.domain.user.repository.UserRepository;
-import com.paymentteamproject.domain.user.service.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +17,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.math.BigDecimal;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -25,7 +29,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class AuthServiceTest {
+public class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
@@ -101,4 +105,52 @@ public class AuthServiceTest {
         verify(userRepository, never()).save(any(User.class));
         verify(membershipHistoryRepository, never()).save(any(MembershipHistory.class));
     }
+
+
+    @Test
+    @DisplayName("성공: 존재하는 이메일로 조회 시 프로필 정보를 정확히 반환한다.")
+    void get_current_user() {
+
+
+        // 입력된 이메일에 대해 항상 동일한 customerUid가 생성되는가?
+        // User 엔티티의 필드들이 ProfileResponse로 누락 없이 전달되는가?
+
+        // given
+        String email = "test@example.com";
+
+        User user = User.builder()
+                .email(email)
+                .username("홍길동")
+                .phone("010-1111-2222")
+                .pointBalance(BigDecimal.valueOf(1000))
+                .build();
+
+        // user가 담겨 있는 Optional을 return하도록 설정
+        given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
+
+        // when
+        ProfileResponse response = userService.getCurrentUser(email);
+
+        // then
+        assertThat(response.getEmail()).isEqualTo(email);
+        assertThat(response.getName()).isEqualTo("홍길동");
+        assertThat(response.getPhone()).isEqualTo("010-1111-2222");
+        assertThat(response.getPointBalance()).isEqualByComparingTo(BigDecimal.valueOf(1000));
+
+        assertThat(response.getCustomerUid()).startsWith("CUST_");
+        assertThat(response.getCustomerUid()).isEqualTo("CUST_" + Math.abs(email.hashCode()));
+    }
+
+    @Test
+    @DisplayName("실패: 존재하지 않는 이메일인 경우 UserNotFoundException이 발생한다.")
+    void getCurrentUser_NotFound() {
+        // given
+        String email = "non-existent@example.com";
+        given(userRepository.findByEmail(email)).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> userService.getCurrentUser(email))
+                .isInstanceOf(UserNotFoundException.class);
+    }
+
 }
