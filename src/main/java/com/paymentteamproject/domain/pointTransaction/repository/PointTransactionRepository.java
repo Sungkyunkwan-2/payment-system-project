@@ -41,4 +41,9 @@ public interface PointTransactionRepository extends JpaRepository<PointTransacti
     List<PointTransaction> findExpiredPoints(@Param("now") LocalDateTime now);
 
     Optional<PointTransaction> findByOrderAndType(Orders order, PointTransactionType type);
+
+    Optional<PointTransaction> findByOrderAndTypeAndValidityTrue(
+            Orders order,
+            PointTransactionType type
+    );
 }
