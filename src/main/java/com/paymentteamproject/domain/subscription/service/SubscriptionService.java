@@ -353,15 +353,7 @@ public class SubscriptionService {
 
                     return true;
                 } else {
-                    // 결제 실패
-                    String failureReason = paymentResponse.getFailureReason() != null
-                            ? paymentResponse.getFailureReason()
-                            : "알 수 없는 오류";
-
-                    log.error("구독 결제 실패 - subscriptionId: {}, paymentId: {}, reason: {}",
-                            subscriptionId, paymentResponse.getPaymentId(), failureReason);
-
-                    createFailedBilling(subscription, periodStart, periodEnd, failureReason);
+                    createFailedBilling(subscription, periodStart, periodEnd, "알 수 없는 오류");
 
                     // 구독 상태를 미납으로 변경
                     subscription.markAsPastDue();
