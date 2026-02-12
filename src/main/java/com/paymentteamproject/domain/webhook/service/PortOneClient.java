@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
+import java.util.UUID;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -27,19 +29,17 @@ public class PortOneClient {
                 .body(GetPaymentResponse.class);
     }
 
-    public BillingKeyPaymentResponse payWithBillingKey(BillingKeyPaymentRequest request) {
+    public BillingKeyPaymentResponse payWithBillingKey(BillingKeyPaymentRequest request, String paymentId) {
+
         log.info("빌링키 결제 요청 - billingKey: {}, amount: {}",
                 request.getBillingKey(), request.getAmount());
 
         try {
-            BillingKeyPaymentResponse response = portOneRestClient.post()
-                    .uri("/payments/{paymentId}/billing-key", request.getBillingKey())
-                    .header("Authorization", "PortOne " + portOneProperties.getApi().getSecret())
+            return portOneRestClient.post()
+                    .uri("/payments/{paymentId}/billing-key", paymentId)
                     .body(request)
                     .retrieve()
                     .body(BillingKeyPaymentResponse.class);
-
-            return response;
 
         } catch (Exception e) {
             log.error("빌링키 결제 실패 - billingKey: {}, error: {}",
