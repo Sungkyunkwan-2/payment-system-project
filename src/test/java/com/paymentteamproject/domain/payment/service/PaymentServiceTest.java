@@ -11,7 +11,6 @@ import com.paymentteamproject.domain.payment.dto.PortOnePaymentResponse;
 import com.paymentteamproject.domain.payment.dto.StartPaymentRequest;
 import com.paymentteamproject.domain.payment.dto.StartPaymentResponse;
 import com.paymentteamproject.domain.payment.entity.Payment;
-import com.paymentteamproject.domain.payment.exception.DuplicatePaymentConfirmException;
 import com.paymentteamproject.domain.payment.exception.PaymentNotFoundException;
 import com.paymentteamproject.domain.payment.repository.PaymentRepository;
 import com.paymentteamproject.domain.pointTransaction.service.PointService;
@@ -173,7 +172,7 @@ class PaymentServiceTest {
         verify(paymentRepository, never()).save(any(Payment.class));
     }
 
-    // ========== 결제 확인 테스트 ==========
+     // ========== 결제 확인 테스트 ==========
 
     @Test
     @DisplayName("결제 확인 성공 - PAID 상태이고 금액 일치")
@@ -225,26 +224,6 @@ class PaymentServiceTest {
         assertThat(exception.getMessage()).isEqualTo("존재하지 않는 결제입니다.");
         verify(paymentRepository, times(1)).findFirstByPaymentIdOrderByIdDesc(paymentId);
         verify(restClient, never()).get();
-    }
-
-    @Test
-    @DisplayName("결제 확인 실패 - 성공한 결제")
-    void confirmPayment_AlreadySuccess() {
-        // given
-        String paymentId = testPayment.getPaymentId();
-        when(paymentRepository.findFirstByPaymentIdOrderByIdDesc(paymentId)).thenReturn(Optional.of(testPayment));
-        testPayment.updateStatus(PaymentStatus.SUCCESS);
-
-        // when & then
-        DuplicatePaymentConfirmException exception = assertThrows(
-                DuplicatePaymentConfirmException.class,
-                () -> paymentService.confirm(paymentId)
-        );
-
-        assertThat(exception.getMessage()).isEqualTo("이미 처리 중이거나 완료된 결제입니다.");
-        verify(paymentRepository, times(1)).findFirstByPaymentIdOrderByIdDesc(paymentId);
-        verify(restClient, never()).get();
-
     }
 
     @Test

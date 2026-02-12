@@ -1,6 +1,8 @@
 package com.paymentteamproject.domain.payment.service;
 
+import com.paymentteamproject.domain.order.consts.OrderStatus;
 import com.paymentteamproject.domain.order.entity.Orders;
+import com.paymentteamproject.domain.order.exception.OrderAccessException;
 import com.paymentteamproject.domain.order.exception.OrderNotFoundException;
 import com.paymentteamproject.domain.order.repository.OrderRepository;
 import com.paymentteamproject.domain.payment.dto.ConfirmPaymentResponse;
@@ -47,6 +49,10 @@ public class PaymentService {
 
         Orders order = orderRepository.findById(request.getOrderId()).orElseThrow(
                 () -> new OrderNotFoundException("존재하지 않는 주문입니다"));
+
+        if(order.getStatus() != OrderStatus.PAYMENT_PENDING) {
+            throw new OrderAccessException("주문이 결제를 진행할 수 없는 상태입니다.");
+        }
 
         User user = order.getUser();
         BigDecimal pointsToUse = request.getPointsToUse();
