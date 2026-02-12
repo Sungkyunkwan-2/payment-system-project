@@ -42,7 +42,6 @@ public class PointScheduler {
                         .order(pending.getOrder())
                         .points(pending.getPoints())
                         .type(PointTransactionType.ADDED)
-                        //.expiresAt(LocalDateTime.now().plusMinutes(3))
                         .build();
 
                 pointTransactionRepository.save(addedTransaction);

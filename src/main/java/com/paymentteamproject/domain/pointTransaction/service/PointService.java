@@ -14,8 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +47,6 @@ public class PointService {
                     .order(order)
                     .points(earnedPoints)
                     .type(PointTransactionType.PENDING)
-                    //.expiresAt(LocalDateTime.now().plusDays(1))
                     .build();
 
             return pointTransactionRepository.save(pointTransaction);
