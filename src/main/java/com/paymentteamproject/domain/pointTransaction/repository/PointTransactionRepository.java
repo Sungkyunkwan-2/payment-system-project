@@ -46,4 +46,7 @@ public interface PointTransactionRepository extends JpaRepository<PointTransacti
             Orders order,
             PointTransactionType type
     );
+
+    // ★ 스케줄러용: 만료 시간이 지난 PENDING 트랜잭션 조회
+    List<PointTransaction> findByTypeAndValidityTrueAndExpiresAtBefore(PointTransactionType type, LocalDateTime dateTime);
 }
