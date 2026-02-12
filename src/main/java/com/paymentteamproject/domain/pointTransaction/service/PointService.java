@@ -147,7 +147,7 @@ public class PointService {
                     }
 
                     // 기존 적립 트랜잭션 무효화
-                    earnedTransaction.invalidate();
+                    earnedTransaction.isValid();
 
                     // 회수 이력 생성 (음수로 기록)
                     PointTransaction revokeTransaction = PointTransaction.builder()
@@ -194,7 +194,7 @@ public class PointService {
                     user.subPoints(earnedPoint);
 
                     // 기존 적립 트랜잭션 무효화
-                    earnedTransaction.invalidate();
+                    earnedTransaction.isValid();
 
                     // 회수 이력 생성 (음수로 기록)
                     PointTransaction revokeTransaction = PointTransaction.builder()
