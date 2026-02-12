@@ -132,6 +132,12 @@ public class PointService {
                 .findByOrderAndTypeAndValidityTrue(order, PointTransactionType.ADDED)
                 .ifPresent(earnedTransaction -> {
                     BigDecimal earnedPoint = earnedTransaction.getPoints();
+
+                    //만료된 포인트일 경우 포인트 회수 미이행
+                    if (!earnedTransaction.isValidity() || earnedTransaction.isExpired()) {
+                        return;
+                    }
+
                     // 유저 포인트 차감
                     user.subPoints(earnedPoint);
 
@@ -160,6 +166,9 @@ public class PointService {
                 .ifPresent(earnedTransaction -> {
                     BigDecimal earnedPoint = earnedTransaction.getPoints();
 
+                    if (!earnedTransaction.isValidity() || earnedTransaction.isExpired()) {
+                        return;
+                    }
                     // 유저 포인트 차감
                     user.subPoints(earnedPoint);
 
