@@ -100,6 +100,12 @@ public class RefundService {
                         refundedPayment.getOrder(),
                         usedPoint
                 );
+            } else {
+                // 포인트 미사용 결제: 적립 포인트 회수만
+                pointService.refundPointsForNoPointPayment(
+                        refundedPayment.getOrder().getUser(),
+                        refundedPayment.getOrder()
+                );
             }
 
             // 총 거래액 이벤트
