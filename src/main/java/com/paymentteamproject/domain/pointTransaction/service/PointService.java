@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
-
 @Service
 @RequiredArgsConstructor
 public class PointService {
@@ -47,7 +46,7 @@ public class PointService {
                     .user(user)
                     .order(order)
                     .points(earnedPoints)
-                    .type(PointTransactionType.ADDED)
+                    .type(PointTransactionType.PENDING)
                     .build();
 
             return pointTransactionRepository.save(pointTransaction);
@@ -132,11 +131,23 @@ public class PointService {
                 .findByOrderAndTypeAndValidityTrue(order, PointTransactionType.ADDED)
                 .ifPresent(earnedTransaction -> {
                     BigDecimal earnedPoint = earnedTransaction.getPoints();
+
+                    //만료된 포인트일 경우 포인트 회수 미이행
+                    if (!earnedTransaction.isValidity() || earnedTransaction.isExpired()) {
+                        return;
+                    }
+
                     // 유저 포인트 차감
-                    user.subPoints(earnedPoint);
+                    // 현재 잔액 확인
+                    BigDecimal currentBalance = user.getPointBalance();
+                    BigDecimal recoverablePoint = earnedPoint.min(currentBalance);
+
+                    if (recoverablePoint.compareTo(BigDecimal.ZERO) > 0) {
+                        user.subPoints(recoverablePoint);
+                    }
 
                     // 기존 적립 트랜잭션 무효화
-                    earnedTransaction.invalidate();
+                    earnedTransaction.isValid();
 
                     // 회수 이력 생성 (음수로 기록)
                     PointTransaction revokeTransaction = PointTransaction.builder()
@@ -160,17 +171,36 @@ public class PointService {
                 .ifPresent(earnedTransaction -> {
                     BigDecimal earnedPoint = earnedTransaction.getPoints();
 
+                    if (!earnedTransaction.isValidity() || earnedTransaction.isExpired()) {
+                        return;
+                    }
+
+                    // 현재 사용자 포인트 확인
+                    BigDecimal currentBalance = user.getPointBalance();
+                    if (currentBalance == null) {
+                        currentBalance = BigDecimal.ZERO;
+                    }
+
+                    // 회수 가능한 포인트 계산 (잔액과 적립 포인트 중 작은 값)
+                    BigDecimal recoverablePoint = earnedPoint.min(currentBalance);
+
+                    // 회수 가능한 포인트만큼만 차감
+                    if (recoverablePoint.compareTo(BigDecimal.ZERO) > 0) {
+                        user.subPoints(recoverablePoint);
+                    }
+
+
                     // 유저 포인트 차감
                     user.subPoints(earnedPoint);
 
                     // 기존 적립 트랜잭션 무효화
-                    earnedTransaction.invalidate();
+                    earnedTransaction.isValid();
 
                     // 회수 이력 생성 (음수로 기록)
                     PointTransaction revokeTransaction = PointTransaction.builder()
                             .user(user)
                             .order(order)
-                            .points(earnedPoint.negate())
+                            .points(recoverablePoint.negate())
                             .type(PointTransactionType.CANCELLED)
                             .build();
 
