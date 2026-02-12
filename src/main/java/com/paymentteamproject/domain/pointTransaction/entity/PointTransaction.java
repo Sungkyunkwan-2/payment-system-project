@@ -51,8 +51,15 @@ public class PointTransaction extends BaseEntity {
         this.order = order;
         this.points = points;
         this.type = type;
-        //TODO: 만료 시간 테스트로 3분으로 해놓음 - 수정 필요
-        this.expiresAt = (expiresAt != null) ? expiresAt : LocalDateTime.now().plusMinutes(3);
+        //TODO: 만료 시간 테스트 ADDED 타입 3분, PENDING 타입 1일
+        //ADDED와 PENDING 타입만 만료 시간 설정
+        if (type == PointTransactionType.ADDED ) {
+            this.expiresAt = (expiresAt != null) ? expiresAt : LocalDateTime.now().plusMinutes(3);
+        } else if (type == PointTransactionType.PENDING) {
+            this.expiresAt = (expiresAt != null) ? expiresAt : LocalDateTime.now().plusDays(1);
+        } else {
+            this.expiresAt = null;
+        }
         this.validity = true;
     }
 
