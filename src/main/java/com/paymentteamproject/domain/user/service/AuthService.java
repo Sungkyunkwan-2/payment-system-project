@@ -1,4 +1,4 @@
-package com.paymentteamproject.domain.auth.service;
+package com.paymentteamproject.domain.user.service;
 
 import com.paymentteamproject.domain.auth.dto.LoginRequest;
 import com.paymentteamproject.domain.auth.dto.TokenDto;
@@ -86,7 +86,7 @@ public class AuthService {
         String newAccessToken = jwtTokenProvider.createToken(
                 user.getEmail(),
                 user.getUsername(),
-                user.getRole().getAuthority() // 유저 엔티티의 권한 필드명에 맞춰 수정하세요
+                user.getRole().getAuthority()
         );
 
         // 4. (선택) Refresh Token Rotation: 리프레시 토큰도 새로 발급하여 보안 강화
