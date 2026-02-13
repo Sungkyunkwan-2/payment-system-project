@@ -1,20 +1,18 @@
 package com.paymentteamproject.domain.webhook.dto;
 
-import lombok.Data;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@RequiredArgsConstructor
 public class BillingKeyPaymentResponse {
-    private String paymentId;
-    private String status;
-    private String failureReason;
-    private PaymentAmount amount;
-    private String paidAt;
 
-    @Data
-    public static class PaymentAmount {
-        private int total;
-        private int taxFree;
-        private int vat;
+    private final BillingKeyPaymentSummary payment;
+
+    @Getter
+    @RequiredArgsConstructor
+    public static class BillingKeyPaymentSummary {
+    private final String pgTxId;
+    private final String paidAt;
     }
 }

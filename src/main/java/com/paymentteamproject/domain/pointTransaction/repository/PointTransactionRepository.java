@@ -25,9 +25,9 @@ public interface PointTransactionRepository extends JpaRepository<PointTransacti
     );
 
 
-    //특정 주문의 ADDED(적립) 포인트 조회
+    //특정 주문의 PENDING(적립 예정) 포인트 조회
     default BigDecimal findEarnedPointsByOrderId(Long orderId) {
-        return findPointsByOrderIdAndType(orderId, PointTransactionType.ADDED)
+        return findPointsByOrderIdAndType(orderId, PointTransactionType.PENDING)
                 .orElse(BigDecimal.valueOf(0.0));
     }
 
@@ -47,6 +47,6 @@ public interface PointTransactionRepository extends JpaRepository<PointTransacti
             PointTransactionType type
     );
 
-    // ★ 스케줄러용: 만료 시간이 지난 PENDING 트랜잭션 조회
+    //만료 시간이 지난 PENDING 트랜잭션 조회
     List<PointTransaction> findByTypeAndValidityTrueAndExpiresAtBefore(PointTransactionType type, LocalDateTime dateTime);
 }

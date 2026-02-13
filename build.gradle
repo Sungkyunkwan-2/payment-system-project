@@ -2,6 +2,22 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '4.0.2'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'jacoco' // 1. JaCoCo 플러그인 추가
+}
+
+jacoco {
+    toolVersion = "0.8.11" // 사용할 버전 설정
+}
+
+// 2. 테스트가 끝난 후 리포트를 생성하도록 설정
+jacocoTestReport {
+    dependsOn test // 테스트가 먼저 실행되어야 함
+
+    reports {
+        html.required = true // HTML 보고서 생성 활성화
+        xml.required = false
+        csv.required = false
+    }
 }
 
 group = 'com'

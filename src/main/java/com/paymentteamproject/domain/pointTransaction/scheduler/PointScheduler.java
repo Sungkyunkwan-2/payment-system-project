@@ -42,7 +42,6 @@ public class PointScheduler {
                         .order(pending.getOrder())
                         .points(pending.getPoints())
                         .type(PointTransactionType.ADDED)
-                        //.expiresAt(LocalDateTime.now().plusMinutes(3))
                         .build();
 
                 pointTransactionRepository.save(addedTransaction);
@@ -51,11 +50,11 @@ public class PointScheduler {
                 user.addPoints(pending.getPoints());
                 userRepository.save(user);
 
-                pending.invalidate();
+                pending.isValid();
                 pointTransactionRepository.save(pending);
             } else {
                 // ORDER_CANCELED 상태면 적립 취소
-                pending.invalidate();
+                pending.isValid();
                 pointTransactionRepository.save(pending);
             }
         }

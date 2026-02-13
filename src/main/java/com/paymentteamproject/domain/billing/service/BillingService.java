@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,6 +41,13 @@ public class BillingService {
 
         if (subscription.getStatus() != SubscriptionStatus.ACTIVE) {
             throw new IllegalStateException("활성된 구독만 결제할 수 있습니다.");
+        }
+
+        boolean alreadyBilled = billingRepository.existsBySubscriptionIdAndPeriodStartAndPeriodEnd(
+                subscription.getId(), subscription.getCurrentPeriodStart(), subscription.getCurrentPeriodEnd());
+        if(alreadyBilled) {
+            throw new IllegalStateException(
+                    subscription.getCurrentPeriodStart() + " ~ " + subscription.getCurrentPeriodEnd() + " 기간 내 청구된 구독입니다.");
         }
 
         //빌링키 검증
@@ -66,23 +72,29 @@ public class BillingService {
                     billingKey,
                     plan.getName() + " 즉시결제",
                     paymentMethod.getCustomerUid(),
-                    amount.intValue(),
+                    amount,
                     "KRW",
                     portOneProperties.getChannel().get("toss")
             );
 
-            BillingKeyPaymentResponse paymentResponse = portOneClient.payWithBillingKey(paymentRequest);
+            String paymentId = "PAY_" + System.currentTimeMillis() + UUID.randomUUID().toString().substring(0, 8);
 
-            if("PAID".equals(paymentResponse.getStatus())){
+            BillingKeyPaymentResponse paymentResponse = portOneClient.payWithBillingKey(paymentRequest, paymentId);
+
+            // 5. 결제 결과에 따른 처리
+            if (paymentResponse.getPayment().getPaidAt() != null) {
+                subscription.renewPeriod();
+
                 Billing billing = new Billing(
                         subscription,
                         amount,
                         BillingStatus.COMPLETE,
-                        paymentResponse.getPaymentId(),
-                        request.getPeriodStart(),
-                        request.getPeriodEnd(),
+                        paymentId,
+                        subscription.getCurrentPeriodStart(),
+                        subscription.getCurrentPeriodEnd(),
                         null
                 );
+
                 Billing savedBilling = billingRepository.save(billing);
 
                 return new CreateBillingResponse(
@@ -90,12 +102,14 @@ public class BillingService {
                         savedBilling.getPaymentId(),
                         savedBilling.getAmount(),
                         savedBilling.getStatus());
-            }
-            else{
+
+            } else {
                 return createFailedBillingResponse(subscription, request, "알 수 없는 오류");
             }
-        }catch (Exception e){
-            return createFailedBillingResponse(subscription, request, "시스템 오류");
+
+        } catch (Exception e) {
+            return createFailedBillingResponse(subscription, request,
+                    "시스템 오류");
         }
     }
 
@@ -122,13 +136,15 @@ public class BillingService {
     private CreateBillingResponse createFailedBillingResponse(
             Subscription subscription, CreateBillingRequest request, String failureMessage) {
 
+        subscription.renewPeriod();
+
         Billing billing = new Billing(
                 subscription,
                 subscription.getPlan().getPrice(),
                 BillingStatus.FAILED,
-                "FAILED_" + UUID.randomUUID(),
-                request.getPeriodStart(),
-                request.getPeriodEnd(),
+                "PAY_" + System.currentTimeMillis() + UUID.randomUUID().toString().substring(0, 8),
+                subscription.getCurrentPeriodStart(),
+                subscription.getCurrentPeriodEnd(),
                 failureMessage
         );
 

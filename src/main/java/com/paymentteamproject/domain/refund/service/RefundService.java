@@ -17,6 +17,7 @@ import com.paymentteamproject.domain.refund.repository.RefundRepository;
 import com.paymentteamproject.domain.user.entity.User;
 import com.paymentteamproject.domain.user.exception.UserNotFoundException;
 import com.paymentteamproject.domain.user.repository.UserRepository;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -39,6 +40,7 @@ public class RefundService {
     private final PaymentRepository paymentRepository;
     private final UserRepository userRepository;
     private final RestClient portOneRestClient;
+    private final EntityManager em;
     private final OrderService orderService;
     private final ApplicationEventPublisher eventPublisher;
     private final PointService pointService;
@@ -54,6 +56,9 @@ public class RefundService {
 
         Payment payment = paymentRepository.findFirstByPaymentIdOrderByIdDesc(paymentId).orElseThrow(
                 () -> new PaymentNotFoundException("해당 결제를 찾을 수 없습니다."));
+        // 소유권 검증
+        Long ownerId = payment.getOrder().getUser().getId();
+        if (!ownerId.equals(userId)) throw new RefundForbiddenException("해당 결제에 대한 환불 권한이 없습니다.");
 
         if (payment.getStatus() != PaymentStatus.SUCCESS) {
             throw new RefundInvalidStateException("결제 성공 상태만 환불할 수 있습니다.");
@@ -67,9 +72,6 @@ public class RefundService {
             throw new IllegalStateException("환불 기간(1일)이 지났습니다.");
         }
 
-        // 소유권 검증
-        Long ownerId = payment.getOrder().getUser().getId();
-        if (!ownerId.equals(userId)) throw new RefundForbiddenException("해당 결제에 대한 환불 권한이 없습니다.");
 
         // 멱등성: 이미 refunds 레코드가 있으면 "상태 변경 없이" 그대로 반환(성공/요청중)
         Refund latestRefund = refundRepository.findTopByPayment_PaymentIdOrderByIdDesc(paymentId).orElse(null);

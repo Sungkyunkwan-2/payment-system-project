@@ -69,7 +69,7 @@ public class PointTransaction extends BaseEntity {
     }
 
     //만료된 포인트 상태 변경
-    public void invalidate() {
+    public void isValid() {
         this.validity = false;
     }
 

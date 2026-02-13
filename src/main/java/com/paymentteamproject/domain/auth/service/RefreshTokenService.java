@@ -35,21 +35,19 @@ public class RefreshTokenService {
                 () -> new TokenException("사용자를 찾을 수 없습니다.")
         );
 
-        // 2. 기존 토큰 삭제 (사용자당 하나의 토큰만 유지)
-        refreshTokenRepository.deleteByUser(user);
-
-        // 3. 새 Refresh Token 생성
+        // 2. 새 Refresh Token 생성
         String tokenValue = jwtTokenProvider.createRefreshToken(user.getEmail());
         Instant expiryDate = jwtTokenProvider.getRefreshTokenExpiryDate();
 
-        // 5. 엔티티 생성 및 저장
-        RefreshToken refreshToken = RefreshToken.builder()
-                .token(tokenValue)
-                .user(user)
-                .expiryDate(expiryDate)
-                .build();
-
-        return refreshTokenRepository.save(refreshToken);
+        // 3. 기존 토큰이 있으면 업데이트, 없으면 새로 생성 (Upsert 방식)
+        return refreshTokenRepository.findByUser(user)
+                .map(existingToken -> {
+                    existingToken.updateToken(tokenValue, expiryDate);
+                    return existingToken;
+                })
+                .orElseGet(() -> refreshTokenRepository.save(
+                        new RefreshToken(tokenValue, user, expiryDate)
+                ));
     }
 
     /**
@@ -59,12 +57,12 @@ public class RefreshTokenService {
     @Transactional
     public RefreshToken verifyRefreshToken(String token) {
         RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
-                .orElseThrow(() -> new TokenException("유효하지 않은 Refresh Token입니다."));
+                .orElseThrow(() -> new TokenException("존재하지 않는 Refresh Token입니다."));
 
         if (refreshToken.isExpired()) {
             // 만료된 토큰은 DB에서 삭제
             refreshTokenRepository.delete(refreshToken);
-            throw new TokenException("Refresh Token이 만료되었습니다. 다시 로그인해주세요.");
+            throw new TokenException("만료된 토큰입니다. 다시 로그인해주세요.");
         }
 
         return refreshToken;
@@ -77,17 +75,6 @@ public class RefreshTokenService {
     public void deleteRefreshToken(String token) {
         refreshTokenRepository.deleteByToken(token);
         log.info("Refresh Token 삭제 완료");
-    }
-
-    /**
-     * 사용자의 모든 Refresh Token 삭제
-     */
-    @Transactional
-    public void deleteAllUserTokens(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new TokenException("사용자를 찾을 수 없습니다."));
-        refreshTokenRepository.deleteByUser(user);
-        log.info("사용자의 모든 Refresh Token 삭제: {}", email);
     }
 
     /**
