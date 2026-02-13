@@ -6,6 +6,7 @@ import com.paymentteamproject.domain.paymentMethod.consts.PgProvider;
 import com.paymentteamproject.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -47,7 +48,7 @@ public class PaymentMethod extends BaseEntity {
 
     @Column
     private LocalDateTime deletedAt;
-
+    @Builder
     public PaymentMethod(User user, String billingKey, String customerUid, PaymentMethodStatus status) {
         this.user = user;
         this.billingKey = billingKey;
