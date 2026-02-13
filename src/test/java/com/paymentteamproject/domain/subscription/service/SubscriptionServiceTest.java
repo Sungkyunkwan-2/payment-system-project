@@ -9,11 +9,13 @@ import com.paymentteamproject.domain.paymentMethod.repository.PaymentMethodRepos
 import com.paymentteamproject.domain.plan.entity.Plan;
 import com.paymentteamproject.domain.plan.exception.PlanNotFoundException;
 import com.paymentteamproject.domain.plan.repository.PlanRepository;
-import com.paymentteamproject.domain.subscription.dto.CreateSubscriptionRequest;
-import com.paymentteamproject.domain.subscription.dto.CreateSubscriptionResponse;
+import com.paymentteamproject.domain.subscription.consts.SubscriptionStatus;
+import com.paymentteamproject.domain.subscription.dto.*;
 import com.paymentteamproject.domain.subscription.entity.Subscription;
+import com.paymentteamproject.domain.subscription.exception.SubscriptionNotFoundException;
 import com.paymentteamproject.domain.subscription.repository.SubscriptionRepository;
 import com.paymentteamproject.domain.subscription.service.data.PlanFixture;
+import com.paymentteamproject.domain.subscription.service.data.SubscriptionFixture;
 import com.paymentteamproject.domain.subscription.service.data.UserFixture;
 import com.paymentteamproject.domain.user.entity.User;
 import com.paymentteamproject.domain.user.exception.UserNotFoundException;
@@ -52,6 +54,7 @@ class SubscriptionServiceTest {
     private String planId;
     private String billingKey;
     private String customerUid;
+    private String subscriptionId;
 
 
     @BeforeEach
@@ -60,6 +63,7 @@ class SubscriptionServiceTest {
         planId = "plan-123";
         billingKey = "billing-key-123";
         customerUid = "customer-uid-123";
+        subscriptionId = "SUB-123";
     }
 
 
@@ -241,6 +245,92 @@ class SubscriptionServiceTest {
                 () -> subscriptionService.create(null, request)
         );
     }
+
+    @Test
+    @DisplayName("구독 조회 성공")
+    void getSubscription_success() {
+        // given
+        Subscription subscription = SubscriptionFixture.createSubscription();
+
+        String subscriptionId = subscription.getSubscriptionId();
+
+        when(subscriptionRepository.findBySubscriptionId(subscriptionId))
+                .thenReturn(Optional.of(subscription));
+
+        // when
+        GetSubscriptionResponse response = subscriptionService.getOne(subscriptionId);
+
+        // then
+        assertNotNull(response);
+
+        assertEquals(subscription.getSubscriptionId(), response.getSubscriptionId());
+        assertEquals(subscription.getPaymentMethod().getCustomerUid(), response.getCustomerUid());
+        assertEquals(subscription.getPlan().getPlanId(), response.getPlanId());
+        assertEquals(subscription.getPaymentMethod().getPaymentMethodId(), response.getPaymentMethodId());
+        assertEquals(subscription.getStatus(), response.getStatus());
+        assertEquals(subscription.getPlan().getPrice(), response.getAmount());
+        assertEquals(subscription.getCurrentPeriodEnd(), response.getCurrentPeriodEnd());
+
+        verify(subscriptionRepository).findBySubscriptionId(subscriptionId);
+    }
+
+    @Test
+    @DisplayName("구독 조회 실패")
+    void getSubscription_notFound() {
+        when(subscriptionRepository.findBySubscriptionId(any()))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                SubscriptionNotFoundException.class,
+                () -> subscriptionService.getOne("NOT_EXIST")
+        );
+    }
+
+    @Test
+    @DisplayName("구독 해지 성공")
+    void updateSubscription_success() {
+        // given
+        Subscription subscription = SubscriptionFixture.createSubscription();
+        String subscriptionId = subscription.getSubscriptionId();
+
+        UpdateSubscriptionRequest request = new UpdateSubscriptionRequest();
+        ReflectionTestUtils.setField(request, "reason", "사용자 요청");
+
+        when(subscriptionRepository.findBySubscriptionId(subscriptionId))
+                .thenReturn(Optional.of(subscription));
+
+        // when
+        UpdateSubscriptionResponse response =
+                subscriptionService.update(subscriptionId, request);
+
+        // then
+        assertNotNull(response);
+        assertEquals(subscriptionId, response.getSubscriptionId());
+        assertEquals(subscription.getStatus(), response.getStatus());
+
+        // cancel 되었는지 검증
+        assertEquals(SubscriptionStatus.CANCELLED, subscription.getStatus());
+
+        verify(subscriptionRepository).findBySubscriptionId(subscriptionId);
+    }
+
+    @Test
+    @DisplayName("구독 해지 실패 - 구독 없음")
+    void updateSubscription_notFound() {
+        // given
+        UpdateSubscriptionRequest request = new UpdateSubscriptionRequest();
+        ReflectionTestUtils.setField(request, "reason", "사용자 요청");
+
+        when(subscriptionRepository.findBySubscriptionId(any()))
+                .thenReturn(Optional.empty());
+
+        // when & then
+        assertThrows(
+                SubscriptionNotFoundException.class,
+                () -> subscriptionService.update("NOT_EXIST", request)
+        );
+    }
+
 
 
     // Helper method
