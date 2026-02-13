@@ -6,6 +6,7 @@ build/
 !**/src/test/**/build/
 application-local.yml
 application.yml
+application-test.yml
 .DS_Store
 
 ### STS ###
@@ -38,8 +39,3 @@ out/
 
 ### VS Code ###
 .vscode/
-
-### yml
-.application.yml
-.application-local.yml
-.application-test.yml
