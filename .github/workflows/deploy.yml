@@ -21,6 +21,10 @@ jobs:
   build-and-push:
     name: Build & Test & Push Docker Image (arm64 only)
     runs-on: ubuntu-latest
+    env:
+      PORTONE_API_SECRET: dGVzdC1zZWNyZXQta2V5LTEyMzQ1Njc4OTA=
+      PORTONE_API_BASE_URL: https://api.portone.io
+
 
     steps:
       - name: Checkout code
