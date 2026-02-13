@@ -17,6 +17,11 @@ spring:
   profiles:
     active: prod
 
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
+
   config:
     import:
       - optional:classpath:client-api-config.yml
