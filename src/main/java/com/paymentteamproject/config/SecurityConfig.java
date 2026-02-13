@@ -63,20 +63,23 @@ public class SecurityConfig {
                         // 1) 정적 리소스
                         .requestMatchers(toStaticResources().atCommonLocations()).permitAll()
 
-                        // 2) 템플릿 페이지 렌더링
+                        // 2) 헬스 체크 API
+                        .requestMatchers("/actuator/health").permitAll()
+
+                        // 3) 템플릿 페이지 렌더링
                         .requestMatchers(HttpMethod.GET, "/").permitAll()
                         .requestMatchers(HttpMethod.GET, "/pages/**").permitAll()
 
-                        // 3) 공개 API
+                        // 4) 공개 API
                         .requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()
 
-                        // 4) 인증 API
+                        // 5) 인증 API
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register", "/api/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.POST, "/portone-webhook").permitAll()
-                        // 5) 그 외 API는 인증 필요
+                        // 6) 그 외 API는 인증 필요
                         .requestMatchers("/api/**").authenticated()
 
-                        // 6) 나머지 전부 인증 필요
+                        // 7) 나머지 전부 인증 필요
                         .anyRequest().authenticated()
                 )
 
