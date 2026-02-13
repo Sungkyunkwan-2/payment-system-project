@@ -1,0 +1,83 @@
+# src/test/resources/application.yml
+spring:
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  application:
+    name: payment-team-project
+
+  # AWS Parameter Store 접근 제거
+  config:
+    import: optional:classpath:client-api-config.yml
+
+  # H2 인메모리 데이터베이스 사용
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  h2:
+    console:
+      enabled: true
+
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+
+  security:
+    user:
+      name: demo
+      password: demo123
+
+server:
+  port: 0  # 랜덤 포트로 테스트 간 충돌 방지
+  servlet:
+    context-path: /
+
+# PortOne Configuration - 테스트용 더미값
+portone:
+  api:
+    base-url: https://api.portone.io
+    secret: dGVzdHBvcnRvbmVhcGlzZWNyZXRrZXlmb3J1bml0dGVzdGluZ29ubHk=
+  store:
+    id: teststoreid12345
+  channel:
+    kg-inicis: dGVzdGtnaW5pY2lzY2hhbm5lbGtleQ==
+    toss: dGVzdHRvc3NwYXltZW50c2NoYW5uZWxrZXk=
+  webhook:
+    secret: dGVzdHdlYmhvb2tzZWNyZXRrZXlmb3J2YWxpZGF0aW9u
+
+# JWT Configuration - 테스트용 더미값 (Base64 인코딩된 256bit 키)
+jwt:
+  secret: dGVzdC1qd3Qtc2VjcmV0LWtleS1mb3ItdGVzdGluZy1vbmx5LW11c3QtYmUtbG9uZy1lbm91Z2gtZm9yLXNlY3VyaXR5LTI1NmJpdHM=
+  access-token-validity: 1800  # 30분
+  refresh-token-validity: 604800  # 7일
+
+# UI Branding Configuration
+app:
+  ui:
+    branding:
+      app-name: CommerceHub
+      tagline: 통합 커머스 플랫폼
+      logo-text: 🏪 CommerceHub
+
+logging:
+  level:
+    com.bootcamp.paymentdemo: DEBUG
+    org.springframework.security: INFO
+    org.springframework.boot.test: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+cookie:
+  secure: false
