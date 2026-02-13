@@ -40,7 +40,6 @@ public class RefundService {
     private final PaymentRepository paymentRepository;
     private final UserRepository userRepository;
     private final RestClient portOneRestClient;
-    private final EntityManager em;
     private final OrderService orderService;
     private final ApplicationEventPublisher eventPublisher;
     private final PointService pointService;
