@@ -1,4 +1,4 @@
-# application-test.yml
+# src/test/resources/application.yml
 spring:
   jpa:
     open-in-view: false
@@ -12,32 +12,13 @@ spring:
   application:
     name: payment-team-project
 
-  profiles:
-    active: test
-
-  # AWS 완전 비활성화
-  cloud:
-    aws:
-      credentials:
-        access-key: test
-        secret-key: test
-      region:
-        static: ap-northeast-2
-        auto: false
-      stack:
-        auto: false
-      parameterstore:
-        enabled: false
-      secretsmanager:
-        enabled: false
-
-  # config import 비활성화
+  # AWS Parameter Store 접근 제거
   config:
-    import: none
+    import: optional:classpath:client-api-config.yml
 
   # H2 인메모리 데이터베이스 사용
   datasource:
-    url: jdbc:h2:mem:testdb
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
     password:
     driver-class-name: org.h2.Driver
@@ -58,38 +39,29 @@ spring:
       name: demo
       password: demo123
 
-  # AWS auto-configuration 제외
-  autoconfigure:
-    exclude:
-      - org.springframework.cloud.aws.autoconfigure.context.ContextStackAutoConfiguration
-      - org.springframework.cloud.aws.autoconfigure.context.ContextRegionProviderAutoConfiguration
-      - org.springframework.cloud.aws.autoconfigure.context.ContextResourceLoaderAutoConfiguration
-      - org.springframework.cloud.aws.autoconfigure.mail.MailSenderAutoConfiguration
-      - org.springframework.cloud.aws.autoconfigure.paramstore.AwsParamStoreBootstrapConfiguration
-      - org.springframework.cloud.aws.autoconfigure.secretsmanager.AwsSecretsManagerBootstrapConfiguration
-
 server:
-  port: 0  # 랜덤 포트 사용으로 테스트 충돌 방지
+  port: 0  # 랜덤 포트로 테스트 간 충돌 방지
+  servlet:
+    context-path: /
 
-# PortOne Configuration - 테스트용 Mock 값
+# PortOne Configuration - 테스트용 더미값
 portone:
   api:
     base-url: https://api.portone.io
-    secret: test-portone-secret-key-for-testing-only
+    secret: dGVzdHBvcnRvbmVhcGlzZWNyZXRrZXlmb3J1bml0dGVzdGluZ29ubHk=
   store:
-    id: test-store-id
+    id: teststoreid12345
   channel:
-    kg-inicis: test-kg-inicis-channel
-    toss: test-toss-channel
+    kg-inicis: dGVzdGtnaW5pY2lzY2hhbm5lbGtleQ==
+    toss: dGVzdHRvc3NwYXltZW50c2NoYW5uZWxrZXk=
   webhook:
-    secret: test-webhook-secret-key
+    secret: dGVzdHdlYmhvb2tzZWNyZXRrZXlmb3J2YWxpZGF0aW9u
 
-# JWT Configuration - 테스트용 값
+# JWT Configuration - 테스트용 더미값 (Base64 인코딩된 256bit 키)
 jwt:
-  # 최소 256비트(32바이트) Base64 인코딩된 시크릿
-  secret: dGVzdC1qd3Qtc2VjcmV0LWtleS1mb3ItdGVzdGluZy1vbmx5LW11c3QtYmUtbG9uZy1lbm91Z2g=
-  access-token-validity: 1800
-  refresh-token-validity: 604800
+  secret: dGVzdC1qd3Qtc2VjcmV0LWtleS1mb3ItdGVzdGluZy1vbmx5LW11c3QtYmUtbG9uZy1lbm91Z2gtZm9yLXNlY3VyaXR5LTI1NmJpdHM=
+  access-token-validity: 1800  # 30분
+  refresh-token-validity: 604800  # 7일
 
 # UI Branding Configuration
 app:
@@ -104,19 +76,8 @@ logging:
     com.bootcamp.paymentdemo: DEBUG
     org.springframework.security: INFO
     org.springframework.boot.test: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
 cookie:
   secure: false
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
-  info:
-    env:
-      enabled: true
-
-info:
-  app:
-    team-name: TestTeam
