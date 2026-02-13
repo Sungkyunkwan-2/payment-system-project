@@ -43,10 +43,10 @@ public class RefreshToken {
     }
 
     @Builder
-    public RefreshToken(String token, User user, Instant expiryDate) {
-        this.token = token;
-        this.user = user;
-        this.expiryDate = expiryDate;
+    public RefreshToken (String token, User user, Instant expiryDate) {
+                this.token = token;
+                this.user = user;
+                this.expiryDate = expiryDate;
     }
 
     /**
