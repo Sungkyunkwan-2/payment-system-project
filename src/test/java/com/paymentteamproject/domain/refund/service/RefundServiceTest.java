@@ -55,14 +55,22 @@ class RefundServiceTest {
         // given
         String paymentId = "PAY_123";
         String email = "test@test.com";
-        RefundCreateRequest request = new RefundCreateRequest(); // (실제론 reason 세팅 필요하면 리플렉션/생성자/세터 전략 사용)
+        RefundCreateRequest request = new RefundCreateRequest();
+
         // userRepository mock
         User user = mock(User.class);
         when(user.getId()).thenReturn(1L);
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
 
+        // order mock (⭐ 추가)
+        Orders order = mock(Orders.class);
+        when(order.getUser()).thenReturn(user);
+
+        // payment mock
         Payment payment = mock(Payment.class);
-        when(payment.getStatus()).thenReturn(PaymentStatus.FAILURE); // SUCCESS 아님
+        when(payment.getOrder()).thenReturn(order);                 // (NPE 방지)
+        when(payment.getStatus()).thenReturn(PaymentStatus.FAILURE);// SUCCESS 아님
+
         when(paymentRepository.findFirstByPaymentIdOrderByIdDesc(paymentId))
                 .thenReturn(Optional.of(payment));
 
