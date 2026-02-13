@@ -41,7 +41,7 @@ public class PointExpirationService {
 
         for (PointTransaction originalPoint : expiredPoints) {
             // 1. 기존 적립 포인트 무효화
-            originalPoint.invalidate();
+            originalPoint.isValid();
 
             // 2. 만료 이력 생성 (새로운 레코드)
             PointTransaction expiredRecord = PointTransaction.createExpiredRecord(originalPoint);
