@@ -1,0 +1,96 @@
+# application.yml 파일
+spring:
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+
+    show-sql: true
+
+    properties:
+      hibernate:
+        format_sql: true
+
+  application:
+    name: payment-team-project
+
+  profiles:
+    active: prod
+
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
+
+  config:
+    import:
+      - optional:classpath:client-api-config.yml
+      - optional:aws-parameterstore:/payment-team-project/prod/
+  datasource:
+    url: ${URL}
+    username: ${USERNAME}
+    password: ${PASSWORD}
+
+
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+
+  security:
+    user:
+      name: demo
+      password: demo123
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+# PortOne Configuration
+portone:
+  api:
+    base-url: https://api.portone.io
+    secret: ${PORTONE_API_SECRET}
+  store:
+    id: ${STORE_ID}
+  channel:
+    kg-inicis: ${KG_INICIS_CHANNEL}
+    toss: ${TOSS_CHANNEL}
+  webhook:
+    secret: ${WEBHOOK_SECRET}
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-validity: 1800 #30분
+  refresh-token-validity: 604800 # 7일
+
+# UI Branding Configuration
+app:
+  ui:
+    branding:
+      app-name: CommerceHub
+      tagline: 통합 커머스 플랫폼
+      logo-text: 🏪 CommerceHub
+
+logging:
+  level:
+    com.bootcamp.paymentdemo: DEBUG
+    org.springframework.security: INFO
+
+cookie:
+  secure: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  info:
+    env:
+      enabled: true
+info:
+  app:
+    team-name: ${TEAMNAME}
