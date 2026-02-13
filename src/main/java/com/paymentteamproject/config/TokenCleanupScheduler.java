@@ -1,6 +1,6 @@
 package com.paymentteamproject.config;
 
-import com.paymentteamproject.domain.user.service.RefreshTokenService;
+import com.paymentteamproject.domain.auth.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;

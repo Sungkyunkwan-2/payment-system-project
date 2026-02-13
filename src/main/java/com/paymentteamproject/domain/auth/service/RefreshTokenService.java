@@ -1,4 +1,4 @@
-package com.paymentteamproject.domain.user.service;
+package com.paymentteamproject.domain.auth.service;
 
 import com.paymentteamproject.domain.auth.entity.RefreshToken;
 import com.paymentteamproject.domain.auth.exception.TokenException;

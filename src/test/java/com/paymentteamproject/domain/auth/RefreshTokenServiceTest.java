@@ -1,10 +1,11 @@
-package com.paymentteamproject.domain.user.service;
+package com.paymentteamproject.domain.auth;
 
 import com.paymentteamproject.domain.auth.entity.RefreshToken;
 import com.paymentteamproject.domain.auth.exception.TokenException;
 import com.paymentteamproject.domain.auth.repository.RefreshTokenRepository;
 import com.paymentteamproject.domain.user.entity.User;
 import com.paymentteamproject.domain.user.repository.UserRepository;
+import com.paymentteamproject.domain.auth.service.RefreshTokenService;
 import com.paymentteamproject.security.JwtTokenProvider;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
