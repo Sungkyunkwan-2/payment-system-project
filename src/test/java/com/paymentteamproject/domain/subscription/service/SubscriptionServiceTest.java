@@ -54,7 +54,6 @@ class SubscriptionServiceTest {
     private String planId;
     private String billingKey;
     private String customerUid;
-    private String subscriptionId;
 
 
     @BeforeEach
@@ -63,7 +62,6 @@ class SubscriptionServiceTest {
         planId = "plan-123";
         billingKey = "billing-key-123";
         customerUid = "customer-uid-123";
-        subscriptionId = "SUB-123";
     }
 
 
