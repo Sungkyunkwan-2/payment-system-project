@@ -1,6 +1,7 @@
 package com.paymentteamproject.domain.user.service;
 
 import com.paymentteamproject.domain.payment.event.TotalSpendChangedEvent;
+import com.paymentteamproject.domain.payment.service.PaymentService;
 import com.paymentteamproject.domain.user.entity.User;
 import com.paymentteamproject.domain.user.exception.UserNotFoundException;
 import com.paymentteamproject.domain.user.repository.UserRepository;
@@ -20,23 +21,12 @@ import java.math.BigDecimal;
 @Component // 더 가벼움
 @RequiredArgsConstructor
 public class UserEventListener {
-    private final UserRepository userRepository;
+    private final PaymentService paymentService;
 
     @Async
-    @EventListener
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleTotalSpendChangedEvent(TotalSpendChangedEvent event){
-        Long userId = event.user().getId();
-        BigDecimal delta = event.delta() == null ? BigDecimal.ZERO : event.delta();
-
-        log.info("이벤트 수신(AFTER_COMMIT): userId={}, delta={}", userId, delta);
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(UserNotFoundException::new);
-
-        user.updateTotalSpend(delta);
-
-        log.info("업데이트 완료: userId={}, totalSpend={}", userId, user.getTotalSpend());
+        log.info("이벤트 수신(AFTER_COMMIT): userId={}, delta={}", event.user().getId(), event.delta());
+        paymentService.updateUserSpend(event.user().getId(), event.delta());
         }
 }
