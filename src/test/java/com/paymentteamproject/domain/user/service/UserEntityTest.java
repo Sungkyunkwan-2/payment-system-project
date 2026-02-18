@@ -1,4 +1,4 @@
-package com.paymentteamproject.domain.payment.service;
+package com.paymentteamproject.domain.user.service;
 
 import com.paymentteamproject.domain.user.entity.User;
 import org.junit.jupiter.api.DisplayName;
@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class PaymentServiceTest {
+public class UserEntityTest {
     @Test
     @DisplayName("금액 합산 테스트: 기존 금액에 새로운 금액이 정확히 더해져야 한다.")
     void updateTotalSpend_success() {
