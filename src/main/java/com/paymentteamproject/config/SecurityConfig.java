@@ -106,7 +106,7 @@ public class SecurityConfig {
 //                "http://127.0.0.1:3000"
 //        ));
         // 프로덕션 환경에서는 실제 도메인으로 변경
-        configuration.setAllowedOrigins(Arrays.asList("https://jihyeon1346.xyz/"));
+        configuration.setAllowedOrigins(Arrays.asList("https://jihyeon1346.xyz"));
 
         // 허용할 HTTP 메서드
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
