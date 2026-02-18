@@ -48,9 +48,6 @@ public class WebhookEventService {
         Payment payment = paymentRepository.findByPaymentId(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException("결제 정보를 찾을 수 없습니다."));
 
-        if (payment.getStatus() == PaymentStatus.SUCCESS)
-            return;
-
         Orders order = payment.getOrder();
 
         BigDecimal portOneAmount = new BigDecimal(portOnePayment.getAmount().getTotal());
