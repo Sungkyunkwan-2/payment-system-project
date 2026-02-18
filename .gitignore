@@ -6,8 +6,6 @@ build/
 !**/src/test/**/build/
 application-local.yml
 application.yml
-application-test.yml
-application-prod.yml
 .DS_Store
 
 ### STS ###
