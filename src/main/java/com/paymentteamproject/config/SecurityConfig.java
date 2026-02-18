@@ -64,7 +64,7 @@ public class SecurityConfig {
                         .requestMatchers(toStaticResources().atCommonLocations()).permitAll()
 
                         // 2) 헬스 체크 API
-                        .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
 
                         // 3) 템플릿 페이지 렌더링
                         .requestMatchers(HttpMethod.GET, "/").permitAll()
@@ -100,13 +100,13 @@ public class SecurityConfig {
 
         // 허용할 Origin (프론트엔드 URL)
         // 개발 환경
-        configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:3000",
-                "http://localhost:8080",
-                "http://127.0.0.1:3000"
-        ));
+//        configuration.setAllowedOrigins(Arrays.asList(
+//                "http://localhost:3000",
+//                "http://localhost:8080",
+//                "http://127.0.0.1:3000"
+//        ));
         // 프로덕션 환경에서는 실제 도메인으로 변경
-        // configuration.setAllowedOrigins(Arrays.asList("https://yourdomain.com"));
+        configuration.setAllowedOrigins(Arrays.asList("https://jihyeon1346.xyz"));
 
         // 허용할 HTTP 메서드
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
