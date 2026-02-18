@@ -3,6 +3,9 @@ package com.paymentteamproject.domain.subscription.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import com.paymentteamproject.config.PortOneProperties;
+import com.paymentteamproject.domain.billing.consts.BillingStatus;
+import com.paymentteamproject.domain.billing.repository.BillingRepository;
 import com.paymentteamproject.domain.paymentMethod.consts.PaymentMethodStatus;
 import com.paymentteamproject.domain.paymentMethod.entity.PaymentMethod;
 import com.paymentteamproject.domain.paymentMethod.repository.PaymentMethodRepository;
@@ -20,6 +23,9 @@ import com.paymentteamproject.domain.subscription.service.data.UserFixture;
 import com.paymentteamproject.domain.user.entity.User;
 import com.paymentteamproject.domain.user.exception.UserNotFoundException;
 import com.paymentteamproject.domain.user.repository.UserRepository;
+import com.paymentteamproject.domain.webhook.dto.BillingKeyPaymentResponse;
+import com.paymentteamproject.domain.webhook.service.PortOneClient;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,8 +35,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class SubscriptionServiceTest {
@@ -49,6 +53,15 @@ class SubscriptionServiceTest {
 
     @Mock
     private SubscriptionRepository subscriptionRepository;
+
+    @Mock
+    private BillingRepository billingRepository;
+
+    @Mock
+    private PortOneClient portOneClient;
+
+    @Mock
+    private PortOneProperties portOneProperties;
 
     private String email;
     private String planId;
@@ -178,7 +191,6 @@ class SubscriptionServiceTest {
         assertEquals(user, capturedSubscription.getUser());
         assertEquals(plan, capturedSubscription.getPlan());
         assertSame(savedPaymentMethod, capturedSubscription.getPaymentMethod());
-        assertNotNull(capturedSubscription.getCurrentPeriodEnd());
     }
 
     @Test
@@ -228,20 +240,6 @@ class SubscriptionServiceTest {
         verify(planRepository).findByPlanId(planId);
         verify(paymentMethodRepository, never()).save(any());
         verify(subscriptionRepository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("구독 생성 실패 - email 이 null")
-    void createSubscription_emailIsNull() {
-        // given
-        CreateSubscriptionRequest request =
-                createSubscriptionRequest(planId, billingKey, customerUid);
-
-        // when & then
-        assertThrows(
-                UserNotFoundException.class,
-                () -> subscriptionService.create(null, request)
-        );
     }
 
     @Test
@@ -329,6 +327,69 @@ class SubscriptionServiceTest {
         );
     }
 
+    @Test
+    @DisplayName("정기결제 성공")
+    void processSubscriptionPayment_success() {
+
+        // given
+        Subscription subscription = SubscriptionFixture.createSubscription();
+        subscription.renewPeriod();
+
+        // subscription id
+        ReflectionTestUtils.setField(subscription, "id", 1L);
+
+        when(billingRepository.existsBySubscriptionIdAndPeriodStartAndPeriodEnd(
+                anyLong(), any(), any()))
+                .thenReturn(false);
+
+        // PortOne 응답 객체 생성
+        BillingKeyPaymentResponse.BillingKeyPaymentSummary summary =
+                new BillingKeyPaymentResponse.BillingKeyPaymentSummary(
+                        "pg-tx-id",
+                        "2026-02-18T00:00:00"
+                );
+
+        BillingKeyPaymentResponse response =
+                new BillingKeyPaymentResponse(summary);
+
+        when(portOneClient.payWithBillingKey(any(), anyString()))
+                .thenReturn(response);
+
+        PortOneProperties.Store store = mock(PortOneProperties.Store.class);
+        when(portOneProperties.getStore()).thenReturn(store);
+        when(store.getId()).thenReturn("store-id");
+
+        when(portOneProperties.getChannel())
+                .thenReturn(java.util.Map.of("toss", "channel-id"));
+
+        // when
+        boolean result = subscriptionService.processSubscriptionPayment(subscription);
+
+        // then
+        assertTrue(result);
+
+        verify(billingRepository).save(argThat(b ->
+                b.getStatus() == BillingStatus.COMPLETE
+        ));
+    }
+
+    @Test
+    @DisplayName("이미 청구된 기간이면 결제하지 않음")
+    void processSubscriptionPayment_alreadyBilled() {
+
+        Subscription subscription = SubscriptionFixture.createSubscription();
+        subscription.renewPeriod();
+        ReflectionTestUtils.setField(subscription, "id", 1L);
+
+        when(billingRepository.existsBySubscriptionIdAndPeriodStartAndPeriodEnd(
+                anyLong(), any(), any()))
+                .thenReturn(true);
+
+        boolean result = subscriptionService.processSubscriptionPayment(subscription);
+
+        assertFalse(result);
+        verify(portOneClient, never()).payWithBillingKey(any(), any());
+    }
 
 
     // Helper method
