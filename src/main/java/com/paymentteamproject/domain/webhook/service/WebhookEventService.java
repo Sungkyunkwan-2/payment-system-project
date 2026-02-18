@@ -67,7 +67,6 @@ public class WebhookEventService {
         webhookEventRepository.save(webhookEvent);
 
         processPaymentStatus(portOnePayment.getStatus(), payment, order);
-
         webhookEvent.completeProcess();
 
     }
@@ -114,7 +113,6 @@ public class WebhookEventService {
             }
 
             case READY, VIRTUAL_ACCOUNT_ISSUED, PAY_PENDING -> {
-                // 결제 대기 상태 - 상태만 업데이트
                 payment.updateStatus(PaymentStatus.PENDING);
                 order.updateStatus(OrderStatus.PAYMENT_PENDING);
 
