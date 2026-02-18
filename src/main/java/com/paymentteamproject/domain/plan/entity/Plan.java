@@ -33,4 +33,11 @@ public class Plan extends BaseEntity {
     private BillingCycle billingCycle;
 
     private LocalDateTime deletedAt;
+
+    public Plan(String planId, String name, BigDecimal price, BillingCycle billingCycle) {
+        this.planId = planId;
+        this.name = name;
+        this.price = price;
+        this.billingCycle = billingCycle;
+    }
 }

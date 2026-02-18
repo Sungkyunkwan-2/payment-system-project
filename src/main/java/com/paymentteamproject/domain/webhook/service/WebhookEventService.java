@@ -48,9 +48,6 @@ public class WebhookEventService {
         Payment payment = paymentRepository.findByPaymentId(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException("결제 정보를 찾을 수 없습니다."));
 
-        if (payment.getStatus() == PaymentStatus.SUCCESS)
-            return;
-
         Orders order = payment.getOrder();
 
         BigDecimal portOneAmount = new BigDecimal(portOnePayment.getAmount().getTotal());
@@ -70,7 +67,6 @@ public class WebhookEventService {
         webhookEventRepository.save(webhookEvent);
 
         processPaymentStatus(portOnePayment.getStatus(), payment, order);
-
         webhookEvent.completeProcess();
 
     }
@@ -117,7 +113,6 @@ public class WebhookEventService {
             }
 
             case READY, VIRTUAL_ACCOUNT_ISSUED, PAY_PENDING -> {
-                // 결제 대기 상태 - 상태만 업데이트
                 payment.updateStatus(PaymentStatus.PENDING);
                 order.updateStatus(OrderStatus.PAYMENT_PENDING);
 
