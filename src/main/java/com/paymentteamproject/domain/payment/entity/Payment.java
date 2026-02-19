@@ -2,7 +2,9 @@ package com.paymentteamproject.domain.payment.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
 import com.paymentteamproject.domain.order.entity.Orders;
+import com.paymentteamproject.domain.order.exception.NotRefundableException;
 import com.paymentteamproject.domain.payment.consts.PaymentStatus;
+import com.paymentteamproject.domain.payment.exception.NotChangeableException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -72,7 +74,7 @@ public class Payment extends BaseEntity {
 
     public Payment refund() {
         if (this.status != PaymentStatus.SUCCESS) {
-            throw new IllegalStateException("결제 성공 상태만 환불할 수 있습니다.");
+            throw new NotRefundableException("결제 성공 상태만 환불할 수 있습니다.");
         }
         Payment refunded = new Payment(this.order, this.paymentId, PaymentStatus.REFUND, this.price);
         refunded.paidAt = this.paidAt;
@@ -96,14 +98,14 @@ public class Payment extends BaseEntity {
     private void validateStatusTransition(PaymentStatus newStatus) {
         // 이미 환불된 결제는 다른 상태로 변경 불가
         if (this.status == PaymentStatus.REFUND) {
-            throw new IllegalStateException(
+            throw new NotChangeableException(
                     String.format("환불된 결제는 상태를 변경할 수 없습니다. (현재: %s, 변경 시도: %s)",
                             this.status, newStatus)
             );
         }
 
         if (this.status == PaymentStatus.SUCCESS && newStatus == PaymentStatus.FAILURE) {
-            throw new IllegalStateException(
+            throw new NotChangeableException(
                     String.format("성공한 결제를 실패로 변경할 수 없습니다. (현재: %s, 변경 시도: %s)",
                             this.status, newStatus)
             );
