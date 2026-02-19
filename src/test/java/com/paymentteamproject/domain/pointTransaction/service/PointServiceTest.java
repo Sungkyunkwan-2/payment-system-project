@@ -19,7 +19,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,166 +41,307 @@ class PointServiceTest {
     @Mock
     private UserRepository userRepository;
 
-    @Mock
-    private User user;
-
-    @Mock
-    private Orders order;
-
-    @Mock
-    private MembershipHistory membershipHistory;
-
-    @Mock
-    private MembershipStatus membershipStatus;
+    // ==================== createEarnPointsTransaction ====================
 
     @Test
-    void 포인트적립트랜잭션_생성_성공() {
+    void 주문생성시_멤버십이_없으면_MembershipNotFoundException_발생() {
+        // given
+        User mockUser = mock(User.class);
+        Orders mockOrder = mock(Orders.class);
+        given(mockUser.getId()).willReturn(1L);
+        given(membershipHistoryRepository.findByUserId(1L)).willReturn(Optional.empty());
 
-        BigDecimal totalPrice = BigDecimal.valueOf(10000);
-        BigDecimal ratio = BigDecimal.valueOf(0.1);
-        BigDecimal expectedPoints = BigDecimal.valueOf(1000.0);
+        // when & then
+        assertThatThrownBy(() -> pointService.createEarnPointsTransaction(mockUser, mockOrder))
+                .isInstanceOf(MembershipNotFoundException.class)
+                .hasMessage("멤버십이 존재하지 않습니다.");
 
-        when(user.getId()).thenReturn(1L);
-        when(order.getTotalPrice()).thenReturn(totalPrice);
-
-        when(membershipHistoryRepository.findByUserId(1L))
-                .thenReturn(Optional.of(membershipHistory));
-        when(membershipHistory.getMembershipStatus())
-                .thenReturn(membershipStatus);
-        when(membershipStatus.getRatio())
-                .thenReturn(ratio);
-
-        when(pointTransactionRepository.save(any(PointTransaction.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-
-        PointTransaction result =
-                pointService.createEarnPointsTransaction(user, order);
-
-        assertNotNull(result);
-        assertEquals(expectedPoints, result.getPoints());
-        assertEquals(PointTransactionType.PENDING, result.getType());
-
-        verify(pointTransactionRepository, times(1))
-                .save(any(PointTransaction.class));
+        verify(pointTransactionRepository, never()).save(any());
     }
 
     @Test
-    void 멤버십없으면_예외발생() {
+    void 주문생성시_적립포인트가_0보다_크면_PENDING_트랜잭션_생성() {
+        // given
+        User mockUser = mock(User.class);
+        Orders mockOrder = mock(Orders.class);
+        MembershipHistory mockMembership = mock(MembershipHistory.class);
 
-        when(user.getId()).thenReturn(1L);
-        when(membershipHistoryRepository.findByUserId(1L))
-                .thenReturn(Optional.empty());
+        given(mockUser.getId()).willReturn(1L);
+        given(mockOrder.getTotalPrice()).willReturn(BigDecimal.valueOf(10000));
+        given(membershipHistoryRepository.findByUserId(1L)).willReturn(Optional.of(mockMembership));
+        given(mockMembership.getMembershipStatus()).willReturn(MembershipStatus.BRONZE); // BRONZE: 0.1%
 
-        assertThrows(MembershipNotFoundException.class,
-                () -> pointService.createEarnPointsTransaction(user, order));
+        PointTransaction savedTransaction = mock(PointTransaction.class);
+        given(pointTransactionRepository.save(any(PointTransaction.class))).willReturn(savedTransaction);
+
+        // when
+        PointTransaction result = pointService.createEarnPointsTransaction(mockUser, mockOrder);
+
+        // then
+        // 10000 * 0.001 = 10
+        BigDecimal expectedPoints = BigDecimal.valueOf(10000).multiply(MembershipStatus.BRONZE.getRatio());
+
+        assertThat(result).isNotNull();
+        verify(pointTransactionRepository, times(1)).save(argThat(tx ->
+                tx.getType() == PointTransactionType.PENDING
+                        && tx.getPoints().compareTo(expectedPoints) == 0
+                        && tx.getUser().equals(mockUser)
+                        && tx.getOrder().equals(mockOrder)
+        ));
     }
 
     @Test
-    void 결제완료시_포인트적용_성공() {
+    void 주문생성시_적립포인트가_0보다_크면_PENDING_트랜잭션_생성_GOLD등급() {
+        // given
+        User mockUser = mock(User.class);
+        Orders mockOrder = mock(Orders.class);
+        MembershipHistory mockMembership = mock(MembershipHistory.class);
 
+        given(mockUser.getId()).willReturn(1L);
+        given(mockOrder.getTotalPrice()).willReturn(BigDecimal.valueOf(10000));
+        given(membershipHistoryRepository.findByUserId(1L)).willReturn(Optional.of(mockMembership));
+        given(mockMembership.getMembershipStatus()).willReturn(MembershipStatus.GOLD); // GOLD: 1%
+
+        PointTransaction savedTransaction = mock(PointTransaction.class);
+        given(pointTransactionRepository.save(any(PointTransaction.class))).willReturn(savedTransaction);
+
+        // when
+        PointTransaction result = pointService.createEarnPointsTransaction(mockUser, mockOrder);
+
+        // then
+        // 10000 * 0.01 = 100
+        BigDecimal expectedPoints = BigDecimal.valueOf(10000).multiply(MembershipStatus.GOLD.getRatio());
+
+        assertThat(result).isNotNull();
+        verify(pointTransactionRepository, times(1)).save(argThat(tx ->
+                tx.getType() == PointTransactionType.PENDING
+                        && tx.getPoints().compareTo(expectedPoints) == 0
+                        && tx.getUser().equals(mockUser)
+                        && tx.getOrder().equals(mockOrder)
+        ));
+    }
+
+    // ==================== applyEarnedPoints ====================
+
+    @Test
+    void 결제완료시_ADDED_타입_트랜잭션이_있으면_사용자_포인트_잔액_증가() {
+        // given
+        User mockUser = mock(User.class);
+        Orders mockOrder = mock(Orders.class);
+        PointTransaction mockTransaction = mock(PointTransaction.class);
+
+        given(pointTransactionRepository.findByOrderAndType(mockOrder, PointTransactionType.ADDED))
+                .willReturn(Optional.of(mockTransaction));
+        given(mockTransaction.getPoints()).willReturn(BigDecimal.valueOf(500));
+
+        // when
+        pointService.applyEarnedPoints(mockUser, mockOrder);
+
+        // then
+        verify(mockUser, times(1)).addPoints(BigDecimal.valueOf(500));
+        verify(userRepository, times(1)).save(mockUser);
+    }
+
+    @Test
+    void 결제완료시_ADDED_타입_트랜잭션이_없으면_포인트_잔액_변경_안됨() {
+        // given
+        User mockUser = mock(User.class);
+        Orders mockOrder = mock(Orders.class);
+
+        given(pointTransactionRepository.findByOrderAndType(mockOrder, PointTransactionType.ADDED))
+                .willReturn(Optional.empty());
+
+        // when
+        pointService.applyEarnedPoints(mockUser, mockOrder);
+
+        // then
+        verify(mockUser, never()).addPoints(any());
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void 결제완료시_ADDED_타입_포인트가_0이하이면_포인트_잔액_변경_안됨() {
+        // given
+        User mockUser = mock(User.class);
+        Orders mockOrder = mock(Orders.class);
+        PointTransaction mockTransaction = mock(PointTransaction.class);
+
+        given(pointTransactionRepository.findByOrderAndType(mockOrder, PointTransactionType.ADDED))
+                .willReturn(Optional.of(mockTransaction));
+        given(mockTransaction.getPoints()).willReturn(BigDecimal.ZERO);
+
+        // when
+        pointService.applyEarnedPoints(mockUser, mockOrder);
+
+        // then
+        verify(mockUser, never()).addPoints(any());
+        verify(userRepository, never()).save(any());
+    }
+
+    // ==================== usePoints ====================
+
+    @Test
+    void 포인트사용시_사용포인트가_null이면_IllegalArgumentException_발생() {
+        // given
+        User mockUser = mock(User.class);
+        Orders mockOrder = mock(Orders.class);
+
+        // when & then
+        assertThatThrownBy(() -> pointService.usePoints(mockUser, mockOrder, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("사용 포인트는 0보다 커야 합니다.");
+    }
+
+    @Test
+    void 포인트사용시_사용포인트가_0이하이면_IllegalArgumentException_발생() {
+        // given
+        User mockUser = mock(User.class);
+        Orders mockOrder = mock(Orders.class);
+
+        // when & then
+        assertThatThrownBy(() -> pointService.usePoints(mockUser, mockOrder, BigDecimal.ZERO))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("사용 포인트는 0보다 커야 합니다.");
+    }
+
+    @Test
+    void 포인트사용시_잔액이_부족하면_IllegalStateException_발생() {
+        // given
+        User mockUser = mock(User.class);
+        Orders mockOrder = mock(Orders.class);
+
+        given(mockUser.getPointBalance()).willReturn(BigDecimal.valueOf(100));
+
+        // when & then
+        assertThatThrownBy(() -> pointService.usePoints(mockUser, mockOrder, BigDecimal.valueOf(500)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("보유 포인트가 부족합니다.");
+    }
+
+    @Test
+    void 포인트사용시_잔액이_충분하면_포인트_차감_및_USED_트랜잭션_생성() {
+        // given
+        User mockUser = mock(User.class);
+        Orders mockOrder = mock(Orders.class);
+        BigDecimal pointsToUse = BigDecimal.valueOf(300);
+
+        given(mockUser.getPointBalance()).willReturn(BigDecimal.valueOf(1000));
+
+        // when
+        pointService.usePoints(mockUser, mockOrder, pointsToUse);
+
+        // then
+        verify(mockUser, times(1)).subPoints(pointsToUse);
+        verify(pointTransactionRepository, times(1)).save(argThat(tx ->
+                tx.getType() == PointTransactionType.USED
+                        && tx.getPoints().compareTo(pointsToUse.negate()) == 0
+                        && tx.getUser().equals(mockUser)
+                        && tx.getOrder().equals(mockOrder)
+        ));
+        verify(userRepository, times(1)).save(mockUser);
+    }
+
+    // ==================== refundPoints ====================
+
+    @Test
+    void 포인트환불시_환불포인트가_null이면_IllegalArgumentException_발생() {
+        // given
+        User mockUser = mock(User.class);
+        Orders mockOrder = mock(Orders.class);
+
+        // when & then
+        assertThatThrownBy(() -> pointService.refundPoints(mockUser, mockOrder, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("환불 포인트는 0보다 커야 합니다.");
+    }
+
+    @Test
+    void 포인트환불시_환불포인트가_0이하이면_IllegalArgumentException_발생() {
+        // given
+        User mockUser = mock(User.class);
+        Orders mockOrder = mock(Orders.class);
+
+        // when & then
+        assertThatThrownBy(() -> pointService.refundPoints(mockUser, mockOrder, BigDecimal.ZERO))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("환불 포인트는 0보다 커야 합니다.");
+    }
+
+    @Test
+    void 포인트환불시_ADDED_트랜잭션이_없으면_사용포인트만_환불되고_적립포인트_회수_안됨() {
+        // given
+        User mockUser = mock(User.class);
+        Orders mockOrder = mock(Orders.class);
+        BigDecimal refundAmount = BigDecimal.valueOf(300);
+
+        given(pointTransactionRepository.findByOrderAndTypeAndValidityTrue(mockOrder, PointTransactionType.ADDED))
+                .willReturn(Optional.empty());
+
+        // when
+        pointService.refundPoints(mockUser, mockOrder, refundAmount);
+
+        // then
+        verify(mockUser, times(1)).addPoints(refundAmount);
+        verify(pointTransactionRepository, times(1)).save(argThat(tx ->
+                tx.getType() == PointTransactionType.RECOVERED
+        ));
+        verify(mockUser, never()).subPoints(any());
+        verify(userRepository, times(1)).save(mockUser);
+    }
+
+    @Test
+    void 포인트환불시_유효한_ADDED_트랜잭션이_있으면_사용포인트_환불_및_적립포인트_회수() {
+        // given
+        User mockUser = mock(User.class);
+        Orders mockOrder = mock(Orders.class);
+        BigDecimal refundAmount = BigDecimal.valueOf(300);
         BigDecimal earnedPoints = BigDecimal.valueOf(500);
 
-        PointTransaction transaction = PointTransaction.builder()
-                .user(user)
-                .order(order)
-                .points(earnedPoints)
-                .type(PointTransactionType.ADDED)
-                .build();
+        PointTransaction mockEarnedTransaction = mock(PointTransaction.class);
+        given(mockEarnedTransaction.getPoints()).willReturn(earnedPoints);
+        given(mockEarnedTransaction.isValidity()).willReturn(true);
+        given(mockEarnedTransaction.isExpired()).willReturn(false);
+        given(mockUser.getPointBalance()).willReturn(BigDecimal.valueOf(1000));
 
-        when(pointTransactionRepository.findByOrderAndType(order, PointTransactionType.ADDED))
-                .thenReturn(Optional.of(transaction));
+        given(pointTransactionRepository.findByOrderAndTypeAndValidityTrue(mockOrder, PointTransactionType.ADDED))
+                .willReturn(Optional.of(mockEarnedTransaction));
 
-        pointService.applyEarnedPoints(user, order);
+        // when
+        pointService.refundPoints(mockUser, mockOrder, refundAmount);
 
-        verify(user, times(1)).addPoints(earnedPoints);
-        verify(userRepository, times(1)).save(user);
-    }
+        // then
+        verify(mockUser, times(1)).addPoints(refundAmount);
+        verify(mockUser, times(1)).subPoints(earnedPoints); // 적립 포인트 회수
+        verify(mockEarnedTransaction, times(1)).isValid();  // 기존 트랜잭션 무효화
 
-
-    @Test
-    void 포인트사용_성공() {
-
-        BigDecimal currentPoints = BigDecimal.valueOf(1000);
-        BigDecimal usePoints = BigDecimal.valueOf(300);
-
-        when(user.getPointBalance()).thenReturn(currentPoints);
-
-        pointService.usePoints(user, order, usePoints);
-
-        verify(user, times(1)).subPoints(usePoints);
-        verify(pointTransactionRepository, times(1))
-                .save(any(PointTransaction.class));
-        verify(userRepository, times(1)).save(user);
+        verify(pointTransactionRepository, times(2)).save(argThat(tx ->
+                tx.getType() == PointTransactionType.RECOVERED
+                        || tx.getType() == PointTransactionType.CANCELLED
+        ));
+        verify(userRepository, times(1)).save(mockUser);
     }
 
     @Test
-    void 포인트부족시_예외발생() {
+    void 포인트환불시_만료된_ADDED_트랜잭션이면_적립포인트_회수_안됨() {
+        // given
+        User mockUser = mock(User.class);
+        Orders mockOrder = mock(Orders.class);
+        BigDecimal refundAmount = BigDecimal.valueOf(300);
 
-        when(user.getPointBalance())
-                .thenReturn(BigDecimal.valueOf(100));
+        PointTransaction mockEarnedTransaction = mock(PointTransaction.class);
+        given(mockEarnedTransaction.isValidity()).willReturn(true);
+        given(mockEarnedTransaction.isExpired()).willReturn(true); // 만료된 트랜잭션
 
-        assertThrows(IllegalStateException.class,
-                () -> pointService.usePoints(user, order, BigDecimal.valueOf(500)));
-    }
+        given(pointTransactionRepository.findByOrderAndTypeAndValidityTrue(mockOrder, PointTransactionType.ADDED))
+                .willReturn(Optional.of(mockEarnedTransaction));
 
-    @Test
-    void 사용포인트가_0이하면_예외발생() {
+        // when
+        pointService.refundPoints(mockUser, mockOrder, refundAmount);
 
-        assertThrows(IllegalArgumentException.class,
-                () -> pointService.usePoints(user, order, BigDecimal.ZERO));
-    }
-
-    @Test
-    void 포인트환불_성공() {
-
-        BigDecimal refundPoints = BigDecimal.valueOf(300);
-        BigDecimal earnedPoints = BigDecimal.valueOf(500);
-
-        PointTransaction earnedTransaction = PointTransaction.builder()
-                .user(user)
-                .order(order)
-                .points(earnedPoints)
-                .type(PointTransactionType.ADDED)
-                .build();
-
-        when(user.getPointBalance()).thenReturn(BigDecimal.valueOf(1000));
-
-        when(pointTransactionRepository
-                .findByOrderAndTypeAndValidityTrue(order, PointTransactionType.ADDED))
-                .thenReturn(Optional.of(earnedTransaction));
-
-        pointService.refundPoints(user, order, refundPoints);
-
-        verify(user, times(1)).addPoints(refundPoints);
-        verify(pointTransactionRepository, atLeastOnce())
-                .save(any(PointTransaction.class));
-        verify(userRepository, times(1)).save(user);
-    }
-
-    @Test
-    void 포인트사용없는주문_환불시_적립포인트회수() {
-
-        BigDecimal earnedPoints = BigDecimal.valueOf(500);
-
-        PointTransaction earnedTransaction = PointTransaction.builder()
-                .user(user)
-                .order(order)
-                .points(earnedPoints)
-                .type(PointTransactionType.ADDED)
-                .build();
-
-        when(user.getPointBalance())
-                .thenReturn(BigDecimal.valueOf(500));
-
-        when(pointTransactionRepository
-                .findByOrderAndTypeAndValidityTrue(order, PointTransactionType.ADDED))
-                .thenReturn(Optional.of(earnedTransaction));
-
-        pointService.refundPointsForNoPointPayment(user, order);
-
-        verify(user, atLeastOnce()).subPoints(any());
-        verify(pointTransactionRepository, times(1))
-                .save(any(PointTransaction.class));
-        verify(userRepository, times(1)).save(user);
+        // then
+        verify(mockUser, times(1)).addPoints(refundAmount);
+        verify(mockUser, never()).subPoints(any()); // 회수 안됨
+        verify(mockEarnedTransaction, never()).isValid();
+        verify(userRepository, times(1)).save(mockUser);
     }
 }
