@@ -18,21 +18,15 @@ public class PortOneWebhookVerifier {
     private String secret;
 
     @Value("${portone.webhook.secret-format:base64}")
-    private String secretFormat; // base64 | raw
+    private String secretFormat;
 
-    private byte[] signingKey; // HMAC에 사용할 "진짜 키 바이트"
-
-    // (선택) 허용 시간 오차(초) – 리플레이 공격 방지
-    private static final long ALLOWED_TIMESTAMP_SKEW_SECONDS = 300; // 5분
+    private byte[] signingKey;
 
     @PostConstruct
     void init() {
         this.signingKey = decodeSigningKey(secret, secretFormat);
     }
 
-    /**
-     * PortOne Webhook V2 시그니처 검증
-     */
     public boolean verify(
             byte[] rawBody,
             String webhookId,
@@ -52,23 +46,14 @@ public class PortOneWebhookVerifier {
         webhookTimestamp = webhookTimestamp.trim();
         webhookSignature = webhookSignature.trim();
 
-        // 2) 시그니처 포맷 확인
         if (!webhookSignature.startsWith("v1,")) {
             return false;
         }
 
-        // 3) (선택) timestamp 리플레이 방지
-        if (!isTimestampValid(webhookTimestamp)) {
-            return false;
-        }
-
-        // 4) 서명 대상 데이터 생성: "{id}.{timestamp}.{payload}"
         byte[] toSign = buildToSign(webhookId, webhookTimestamp, rawBody);
 
-        // 5) 서버에서 HMAC 계산 (digest bytes)
         byte[] computedMac = hmacSha256(toSign, signingKey);
 
-        // 6) 헤더의 Base64 서명 디코딩 (digest bytes)
         byte[] givenMac;
         try {
             String givenBase64 = webhookSignature.substring(3).trim(); // "v1," 제거
@@ -77,7 +62,6 @@ public class PortOneWebhookVerifier {
             return false;
         }
 
-        // 7) 상수 시간 비교
         return MessageDigest.isEqual(computedMac, givenMac);
     }
 
@@ -100,28 +84,15 @@ public class PortOneWebhookVerifier {
         }
     }
 
-    private static boolean isTimestampValid(String webhookTimestamp) {
-        try {
-            Instant ts = Instant.parse(webhookTimestamp);
-            long now = Instant.now().getEpochSecond();
-            return Math.abs(now - ts.getEpochSecond()) <= ALLOWED_TIMESTAMP_SKEW_SECONDS;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
     private static byte[] decodeSigningKey(String secret, String format) {
         if (secret == null) return null;
 
         String s = secret.trim();
 
-        // raw 모드면 그대로 UTF-8 bytes
         if ("raw".equalsIgnoreCase(format)) {
             return s.getBytes(StandardCharsets.UTF_8);
         }
 
-        // base64 모드 (기본)
-        // "whsec_" prefix
         if (s.startsWith("whsec_")) {
             s = s.substring("whsec_".length());
         }

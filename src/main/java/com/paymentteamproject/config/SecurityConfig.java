@@ -90,11 +90,11 @@ public class SecurityConfig {
         return http.build();
     }
 
-//    //JWT필터 webhook 제외
-//    @Bean
-//    public WebSecurityCustomizer webSecurityCustomizer() {
-//        return (web) -> web.ignoring().requestMatchers("/portone-webhook");
-//    }
+    //JWT필터 webhook 제외
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers("/portone-webhook");
+    }
 
     /**
      * CORS 설정

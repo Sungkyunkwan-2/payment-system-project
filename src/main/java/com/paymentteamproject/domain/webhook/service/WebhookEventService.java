@@ -68,7 +68,6 @@ public class WebhookEventService {
 
         processPaymentStatus(portOnePayment.getStatus(), payment, order);
         webhookEvent.completeProcess();
-
     }
 
     private void processPaymentStatus(
@@ -127,7 +126,3 @@ public class WebhookEventService {
         }
     }
 }
-
-
-
-
