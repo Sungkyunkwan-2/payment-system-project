@@ -27,26 +27,33 @@ public class UserService {
 
     @Transactional
     public RegisterResponse save(RegisterRequest request) {
-
         boolean duplicate = userRepository.existsByEmail(request.getEmail());
-        if (duplicate) throw new DuplicateEmailException();
-
+        if (duplicate) {
+            throw new DuplicateEmailException();
+        }
         String encodedPassword = passwordEncoder.encode(request.getPassword());
-
-        User user = User.builder().username(request.getName()).phone(request.getPhone()).email(request.getEmail()).password(encodedPassword).pointBalance(BigDecimal.ZERO).build();
-
+        User user = User.builder()
+                .username(request.getName())
+                .phone(request.getPhone())
+                .email(request.getEmail())
+                .password(encodedPassword)
+                .pointBalance(BigDecimal.ZERO)
+                .build();
         User savedUser = userRepository.save(user);
-
         MembershipHistory membershipHistory = new MembershipHistory(savedUser, MembershipStatus.BRONZE);
-
         membershipHistoryRepository.save(membershipHistory);
-
         return new RegisterResponse(savedUser.getUsername(), savedUser.getEmail());
     }
 
     @Transactional(readOnly = true)
     public ProfileResponse getCurrentUser(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
-        return ProfileResponse.builder().email(user.getEmail()).customerUid("CUST_" + Math.abs(email.hashCode())).name(user.getUsername()).phone(user.getPhone()).pointBalance(user.getPointBalance()).build();
+        return ProfileResponse.builder()
+                .email(user.getEmail())
+                .customerUid("CUST_" + Math.abs(email.hashCode()))
+                .name(user.getUsername())
+                .phone(user.getPhone())
+                .pointBalance(user.getPointBalance())
+                .build();
     }
 }
