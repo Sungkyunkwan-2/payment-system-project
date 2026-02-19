@@ -684,7 +684,7 @@ src
    │           ├── common
    │           │   ├── controller          ← HomeController, PageController, ConfigController
    │           │   ├── dto                 ← ApiResponse, PublicConfigResponse
-   │           │   └── entity              ← BaseEntity (createdAt, updatedAt)
+   │           │   └── entity              ← BaseEntity (createdAt)
    │           ├── config
    │           │   ├── SecurityConfig.java
    │           │   ├── RestClientConfig.java
