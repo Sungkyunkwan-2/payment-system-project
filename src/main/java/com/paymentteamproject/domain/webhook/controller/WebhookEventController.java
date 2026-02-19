@@ -38,7 +38,7 @@ public class WebhookEventController {
                 webhookSignature
         );
 
-        log.info("[PORTONE_WEBHOOK] webhookid:{}, timestamp{}, signature{}, rawbody{}", webhookId, webhookTimestamp, webhookSignature, rawBody);
+        log.info("[PORTONE_WEBHOOK] verified: {}", verified);
         if (!verified) {
             log.warn("[PORTONE_WEBHOOK] signature verification failed");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
