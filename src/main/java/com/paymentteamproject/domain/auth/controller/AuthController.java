@@ -37,14 +37,25 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<RegisterResponse>> register(@Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.ok().body(ApiResponse.success(HttpStatus.CREATED, "회원가입에 성공했습니다.", userService.save(request)));
+        return ResponseEntity.ok().body(
+                ApiResponse.success(HttpStatus.CREATED, "회원가입에 성공했습니다.", userService.save(request))
+        );
     }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<String>> login(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
         TokenDto tokens = authService.login(request);
-        CookieUtil.addCookie(response, REFRESH_TOKEN_COOKIE_NAME, tokens.refreshToken(), REFRESH_TOKEN_COOKIE_MAX_AGE, cookieSecure);
-        return ResponseEntity.ok().header("Authorization", "Bearer " + tokens.accessToken()).header("Access-Control-Expose-Headers", "Authorization").body(ApiResponse.success(HttpStatus.OK, "로그인에 성공했습니다", request.getEmail()));
+        CookieUtil.addCookie(
+                response,
+                REFRESH_TOKEN_COOKIE_NAME,
+                tokens.refreshToken(),
+                REFRESH_TOKEN_COOKIE_MAX_AGE,
+                cookieSecure
+        );
+        return ResponseEntity.ok()
+                .header("Authorization", "Bearer " + tokens.accessToken())
+                .header("Access-Control-Expose-Headers", "Authorization")
+                .body(ApiResponse.success(HttpStatus.OK, "로그인에 성공했습니다", request.getEmail()));
     }
 
     @PostMapping("/logout")
@@ -57,12 +68,21 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refresh(HttpServletRequest request, HttpServletResponse response) {
-        String refreshToken = CookieUtil.getCookie(request, REFRESH_TOKEN_COOKIE_NAME).orElseThrow(() -> new TokenException("리프레시 토큰이 쿠키에 존재하지 않습니다."));
+        String refreshToken = CookieUtil.getCookie(request, REFRESH_TOKEN_COOKIE_NAME)
+                .orElseThrow(() -> new TokenException("리프레시 토큰이 쿠키에 존재하지 않습니다."));
         TokenDto tokens = authService.refresh(refreshToken);
-        CookieUtil.addCookie(response, REFRESH_TOKEN_COOKIE_NAME, tokens.refreshToken(), REFRESH_TOKEN_COOKIE_MAX_AGE, cookieSecure);
-        return ResponseEntity.ok().header(HttpHeaders.AUTHORIZATION, "Bearer " + tokens.accessToken()).header("Access-Control-Expose-Headers", "Authorization").body(Map.of("success", true, "message", "토큰 재발급 성공"));
+        CookieUtil.addCookie(
+                response,
+                REFRESH_TOKEN_COOKIE_NAME,
+                tokens.refreshToken(),
+                REFRESH_TOKEN_COOKIE_MAX_AGE,
+                cookieSecure
+        );
+        return ResponseEntity.ok()
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokens.accessToken())
+                .header("Access-Control-Expose-Headers", "Authorization")
+                .body(Map.of("success", true, "message", "토큰 재발급 성공"));
     }
-
 
     @GetMapping("/me")
     public ResponseEntity<ProfileResponse> getCurrentUser(Principal principal) {
