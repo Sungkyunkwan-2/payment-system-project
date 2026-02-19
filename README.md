@@ -1040,9 +1040,9 @@ SpringDoc OpenAPI 3.0으로 전환하여 API 문서를 자동화할 예정입니
 
 **이름**: 이현석 <br>
 **직책**: 팀원 <br>
-**담당 파트**: <br>
-**Github**: <br>
-**Email**: <br>
+**담당 파트**: 환불, 멤버십, 발표 자료 준비<br>
+**Github**: https://github.com/royhslee0120<br>
+**Email**: royhslee0120@gmail.com<br>
 
 **이름**: 유지현 <br>
 **직책**: 팀원 <br>
