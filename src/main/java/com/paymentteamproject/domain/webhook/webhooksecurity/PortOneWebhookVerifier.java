@@ -1,6 +1,7 @@
 package com.paymentteamproject.domain.webhook.webhooksecurity;
 
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +12,7 @@ import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.Base64;
 
+@Slf4j
 @Component
 public class PortOneWebhookVerifier {
 
@@ -33,6 +35,7 @@ public class PortOneWebhookVerifier {
             String webhookTimestamp,
             String webhookSignature
     ) {
+        log.info("[PORTONE_WEBHOOK] signingKey: {}, secret: {}, secretFormat: {}", signingKey, secret,  secretFormat);
         if (rawBody == null ||
                 webhookId == null ||
                 webhookTimestamp == null ||
