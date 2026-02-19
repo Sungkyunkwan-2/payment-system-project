@@ -22,12 +22,10 @@ public class ApiResponse<T> {
         this.data = data;
     }
 
-    // 성공
     public static <T> ApiResponse<T> success(HttpStatus code, String message, T data) {
         return new ApiResponse<>(true, code, message, data);
     }
 
-    // 실패
     public static <T> ApiResponse<T> error(HttpStatus code, String message, T data) {
         return new ApiResponse<>(false, code, message, data);
     }
