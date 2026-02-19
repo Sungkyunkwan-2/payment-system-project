@@ -33,7 +33,6 @@ public class PortOneWebhookVerifier {
             String webhookTimestamp,
             String webhookSignature
     ) {
-        // 1) 필수 값 누락 방어
         if (rawBody == null ||
                 webhookId == null ||
                 webhookTimestamp == null ||
