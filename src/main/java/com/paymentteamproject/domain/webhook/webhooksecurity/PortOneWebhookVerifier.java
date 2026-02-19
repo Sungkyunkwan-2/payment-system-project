@@ -102,10 +102,10 @@ public class PortOneWebhookVerifier {
 
     private static boolean isTimestampValid(String webhookTimestamp) {
         try {
-            long ts = Long.parseLong(webhookTimestamp);
+            Instant ts = Instant.parse(webhookTimestamp);
             long now = Instant.now().getEpochSecond();
-            return Math.abs(now - ts) <= ALLOWED_TIMESTAMP_SKEW_SECONDS;
-        } catch (NumberFormatException e) {
+            return Math.abs(now - ts.getEpochSecond()) <= ALLOWED_TIMESTAMP_SKEW_SECONDS;
+        } catch (Exception e) {
             return false;
         }
     }
