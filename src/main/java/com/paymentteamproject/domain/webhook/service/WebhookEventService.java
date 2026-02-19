@@ -47,7 +47,7 @@ public class WebhookEventService {
         Orders order = payment.getOrder();
 
         BigDecimal portOneAmount = new BigDecimal(portOnePayment.getAmount().getTotal());
-        BigDecimal orderAmount = order.getTotalPrice();
+        BigDecimal orderAmount = order.getTotalPrice().subtract(order.getUsedPoint());
 
         if (portOneAmount.compareTo(orderAmount) != 0) {
             throw new PaymentAmountMismatchException("결제 금액 불일치");
