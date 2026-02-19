@@ -131,7 +131,7 @@ class PaymentServiceTest {
 
         // then
         assertNotNull(response);
-        assertThat(response.getPaymentId()).startsWith("PAY1");
+        assertThat(response.getPaymentId()).startsWith("PAY_");
         assertThat(response.getStatus()).isEqualTo(PaymentStatus.PENDING);
         assertNotNull(response.getCreatedAt());
 
