@@ -7,6 +7,9 @@ import com.paymentteamproject.domain.membershipTransaction.repository.Membership
 import com.paymentteamproject.domain.order.entity.Orders;
 import com.paymentteamproject.domain.pointTransaction.entity.PointTransaction;
 import com.paymentteamproject.domain.pointTransaction.entity.PointTransactionType;
+import com.paymentteamproject.domain.pointTransaction.exception.InsufficientPointException;
+import com.paymentteamproject.domain.pointTransaction.exception.InvalidPointAmountException;
+import com.paymentteamproject.domain.pointTransaction.exception.InvalidRefundPointAmountException;
 import com.paymentteamproject.domain.pointTransaction.repository.PointTransactionRepository;
 import com.paymentteamproject.domain.user.entity.User;
 import com.paymentteamproject.domain.user.repository.UserRepository;
@@ -181,31 +184,31 @@ class PointServiceTest {
     // ==================== usePoints ====================
 
     @Test
-    void 포인트사용시_사용포인트가_null이면_IllegalArgumentException_발생() {
+    void 포인트사용시_사용포인트가_null이면_InvalidPointAmountException_발생() {
         // given
         User mockUser = mock(User.class);
         Orders mockOrder = mock(Orders.class);
 
         // when & then
         assertThatThrownBy(() -> pointService.usePoints(mockUser, mockOrder, null))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidPointAmountException.class)
                 .hasMessage("사용 포인트는 0보다 커야 합니다.");
     }
 
     @Test
-    void 포인트사용시_사용포인트가_0이하이면_IllegalArgumentException_발생() {
+    void 포인트사용시_사용포인트가_0이하이면_InvalidPointAmountException_발생() {
         // given
         User mockUser = mock(User.class);
         Orders mockOrder = mock(Orders.class);
 
         // when & then
         assertThatThrownBy(() -> pointService.usePoints(mockUser, mockOrder, BigDecimal.ZERO))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidPointAmountException.class)
                 .hasMessage("사용 포인트는 0보다 커야 합니다.");
     }
 
     @Test
-    void 포인트사용시_잔액이_부족하면_IllegalStateException_발생() {
+    void 포인트사용시_잔액이_부족하면_InsufficientPointException_발생() {
         // given
         User mockUser = mock(User.class);
         Orders mockOrder = mock(Orders.class);
@@ -214,7 +217,7 @@ class PointServiceTest {
 
         // when & then
         assertThatThrownBy(() -> pointService.usePoints(mockUser, mockOrder, BigDecimal.valueOf(500)))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(InsufficientPointException.class)
                 .hasMessage("보유 포인트가 부족합니다.");
     }
 
@@ -244,26 +247,26 @@ class PointServiceTest {
     // ==================== refundPoints ====================
 
     @Test
-    void 포인트환불시_환불포인트가_null이면_IllegalArgumentException_발생() {
+    void 포인트환불시_환불포인트가_null이면_InvalidRefundPointAmountException_발생() {
         // given
         User mockUser = mock(User.class);
         Orders mockOrder = mock(Orders.class);
 
         // when & then
         assertThatThrownBy(() -> pointService.refundPoints(mockUser, mockOrder, null))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidRefundPointAmountException.class)
                 .hasMessage("환불 포인트는 0보다 커야 합니다.");
     }
 
     @Test
-    void 포인트환불시_환불포인트가_0이하이면_IllegalArgumentException_발생() {
+    void 포인트환불시_환불포인트가_0이하이면_InvalidRefundPointAmountException_발생() {
         // given
         User mockUser = mock(User.class);
         Orders mockOrder = mock(Orders.class);
 
         // when & then
         assertThatThrownBy(() -> pointService.refundPoints(mockUser, mockOrder, BigDecimal.ZERO))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidRefundPointAmountException.class)
                 .hasMessage("환불 포인트는 0보다 커야 합니다.");
     }
 

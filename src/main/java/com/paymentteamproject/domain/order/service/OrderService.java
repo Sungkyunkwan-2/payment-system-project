@@ -121,7 +121,7 @@ public class OrderService {
 
             // Product 조회
             Product product = productRepository.findByIdAndDeletedAtIsNull(productId)
-                    .orElseThrow(() -> new IllegalArgumentException(
+                    .orElseThrow(() -> new ProductNotFoundException(
                             String.format("상품을 찾을 수 없습니다. productId: %d", productId)));
 
             // 재고 복구

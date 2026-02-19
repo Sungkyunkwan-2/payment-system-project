@@ -13,6 +13,7 @@ import com.paymentteamproject.domain.refund.dto.RefundCreateResponse;
 import com.paymentteamproject.domain.refund.entity.Refund;
 import com.paymentteamproject.domain.refund.exception.RefundForbiddenException;
 import com.paymentteamproject.domain.refund.exception.RefundInvalidStateException;
+import com.paymentteamproject.domain.refund.exception.RefundPeriodExpiredException;
 import com.paymentteamproject.domain.refund.repository.RefundRepository;
 import com.paymentteamproject.domain.user.entity.User;
 import com.paymentteamproject.domain.user.exception.UserNotFoundException;
@@ -69,7 +70,7 @@ public class RefundService {
         long daysSincePayment = ChronoUnit.DAYS.between(paymentTime, LocalDateTime.now());
 
         if (daysSincePayment > 1) {
-            throw new IllegalStateException("환불 기간(1일)이 지났습니다.");
+            throw new RefundPeriodExpiredException("환불 기간(1일)이 지났습니다.");
         }
 
 

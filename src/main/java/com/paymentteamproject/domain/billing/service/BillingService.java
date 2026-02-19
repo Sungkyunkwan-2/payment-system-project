@@ -6,12 +6,14 @@ import com.paymentteamproject.domain.billing.dto.CreateBillingRequest;
 import com.paymentteamproject.domain.billing.dto.CreateBillingResponse;
 import com.paymentteamproject.domain.billing.dto.GetBillingResponse;
 import com.paymentteamproject.domain.billing.entity.Billing;
+import com.paymentteamproject.domain.subscription.exception.InactiveSubscriptionException;
 import com.paymentteamproject.domain.billing.repository.BillingRepository;
 import com.paymentteamproject.domain.paymentMethod.consts.PaymentMethodStatus;
 import com.paymentteamproject.domain.paymentMethod.entity.PaymentMethod;
 import com.paymentteamproject.domain.plan.entity.Plan;
 import com.paymentteamproject.domain.subscription.consts.SubscriptionStatus;
 import com.paymentteamproject.domain.subscription.entity.Subscription;
+import com.paymentteamproject.domain.subscription.exception.SubscriptionAlreadyBilledException;
 import com.paymentteamproject.domain.subscription.exception.SubscriptionNotFoundException;
 import com.paymentteamproject.domain.subscription.repository.SubscriptionRepository;
 import com.paymentteamproject.domain.webhook.dto.BillingKeyPaymentRequest;
@@ -40,13 +42,13 @@ public class BillingService {
                 () -> new SubscriptionNotFoundException("구독 ID와 일치하는 구독이 없습니다."));
 
         if (subscription.getStatus() != SubscriptionStatus.ACTIVE) {
-            throw new IllegalStateException("활성된 구독만 결제할 수 있습니다.");
+            throw new InactiveSubscriptionException("활성된 구독만 결제할 수 있습니다.");
         }
 
         boolean alreadyBilled = billingRepository.existsBySubscriptionIdAndPeriodStartAndPeriodEnd(
                 subscription.getId(), subscription.getCurrentPeriodStart(), subscription.getCurrentPeriodEnd());
         if(alreadyBilled) {
-            throw new IllegalStateException(
+            throw new SubscriptionAlreadyBilledException(
                     subscription.getCurrentPeriodStart() + " ~ " + subscription.getCurrentPeriodEnd() + " 기간 내 청구된 구독입니다.");
         }
 
