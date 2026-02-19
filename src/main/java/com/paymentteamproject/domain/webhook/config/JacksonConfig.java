@@ -10,4 +10,3 @@ public class JacksonConfig {
         return new ObjectMapper();
     }
 }
-
