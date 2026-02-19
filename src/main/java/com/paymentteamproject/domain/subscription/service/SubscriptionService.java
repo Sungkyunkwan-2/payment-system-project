@@ -145,22 +145,19 @@ public class SubscriptionService {
     public boolean processSubscriptionPayment(Subscription subscription) {
         Long subscriptionId = subscription.getId();
 
+        LocalDateTime periodStart = subscription.getCurrentPeriodStart();
+        LocalDateTime periodEnd = subscription.getCurrentPeriodEnd();
+
         try {
-            // 중복 결제 방지 확인
-            LocalDateTime periodStart = subscription.getCurrentPeriodStart();
-            LocalDateTime periodEnd = subscription.getCurrentPeriodEnd();
+            // 중복 결제 방지
+            if (billingRepository.existsBySubscriptionIdAndPeriodStartAndPeriodEnd(
+                    subscriptionId, periodStart, periodEnd)) {
 
-            boolean alreadyBilled = billingRepository.existsBySubscriptionIdAndPeriodStartAndPeriodEnd(
-                    subscriptionId, periodStart, periodEnd
-            );
-
-            if (alreadyBilled) {
                 log.warn("이미 청구된 기간입니다 - subscriptionId: {}, period: {} ~ {}",
                         subscriptionId, periodStart, periodEnd);
                 return false;
             }
 
-            // 결제 수단(빌링키) 확인
             PaymentMethod paymentMethod = subscription.getPaymentMethod();
             String billingKey = paymentMethod.getBillingKey();
 
@@ -173,7 +170,7 @@ public class SubscriptionService {
             if (paymentMethod.getStatus() != PaymentMethodStatus.ACTIVE) {
                 log.error("결제 수단이 활성화 상태가 아닙니다 - subscriptionId: {}, status: {}",
                         subscriptionId, paymentMethod.getStatus());
-                createFailedBilling(subscription, periodStart, periodEnd, "빌링키가 없습니다");
+                createFailedBilling(subscription, periodStart, periodEnd, "결제 수단 비활성");
                 return false;
             }
 
@@ -190,62 +187,55 @@ public class SubscriptionService {
                     portOneProperties.getChannel().get("toss")
             );
 
-            String paymentId = "PAY_" + System.currentTimeMillis() + UUID.randomUUID().toString().substring(0, 8);
+            String paymentId =
+                    "PAY_" + System.currentTimeMillis() + UUID.randomUUID().toString().substring(0, 8);
 
-            BillingKeyPaymentResponse paymentResponse = portOneClient.payWithBillingKey(paymentRequest, paymentId);
+            BillingKeyPaymentResponse paymentResponse =
+                    portOneClient.payWithBillingKey(paymentRequest, paymentId);
 
-            if (paymentResponse.getPayment().getPaidAt() != null) {
-
-                // 청구 내역 저장 (성공)
-                Billing billing = new Billing(
-                        subscription,
-                        amount,
-                        BillingStatus.COMPLETE,
-                        paymentId,
-                        periodStart,
-                        periodEnd,
-                        null
-                );
-                billingRepository.save(billing);
-
-                // 구독 기간 갱신
-                subscription.renewPeriod();
-
-                return true;
-            } else {
-                createFailedBilling(subscription, periodStart, periodEnd, "알 수 없는 오류");
-
-                // 구독 상태를 미납으로 변경
+            // 실패처리
+            if (paymentResponse.getPayment().getPaidAt() == null) {
                 subscription.markAsPastDue();
-
                 return false;
             }
 
-        } catch(Exception e){
-            log.error("구독 결제 실패 - subscriptionId: {}", subscriptionId, e);
-            LocalDateTime periodStart = subscription.getCurrentPeriodStart();
-            LocalDateTime periodEnd = subscription.getCurrentPeriodEnd();
-            createFailedBilling(subscription, periodStart, periodEnd,
-                    "시스템 오류: " + e.getMessage());
-            subscription.markAsPastDue();
-
-            return false;
-        }
-
-    }
-
-        private void createFailedBilling(Subscription subscription,
-                                      LocalDateTime periodStart, LocalDateTime periodEnd, String failureMessage) {
-            Billing billing = new Billing(
+            // 성공 처리
+            billingRepository.save(new Billing(
                     subscription,
-                    subscription.getPlan().getPrice(),
-                    BillingStatus.FAILED,
-                    "FAILED_" + UUID.randomUUID(),
+                    amount,
+                    BillingStatus.COMPLETE,
+                    paymentId,
                     periodStart,
                     periodEnd,
-                    failureMessage
-            );
-            billingRepository.save(billing);
+                    null
+            ));
+
+            subscription.renewPeriod();
+            return true;
+
+        } catch (Exception e) {
+            log.error("구독 결제 실패 - subscriptionId: {}", subscriptionId, e);
+
+            createFailedBilling(subscription, periodStart, periodEnd,
+                    "시스템 오류: " + e.getMessage());
+
+            subscription.markAsPastDue();
+            return false;
+        }
     }
 
+
+    private void createFailedBilling(Subscription subscription,
+                                     LocalDateTime periodStart, LocalDateTime periodEnd, String failureMessage) {
+        Billing billing = new Billing(
+                subscription,
+                subscription.getPlan().getPrice(),
+                BillingStatus.FAILED,
+                "FAILED_" + UUID.randomUUID(),
+                periodStart,
+                periodEnd,
+                failureMessage
+        );
+        billingRepository.save(billing);
+    }
 }

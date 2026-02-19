@@ -20,11 +20,7 @@ public class PointExpirationService {
     private final PointTransactionRepository pointTransactionRepository;
     private final UserRepository userRepository;
 
-    //만료된 포인트 일괄 처리
-    //매일 자정에 실행 (cron = "0 0 0 * * *")
-    //TODO: 테스트용: 1분마다 실행 (fixedRate = 60000) 추후 운영 단계에서 아래 매일 자정 실행으로 수정
-    //@Scheduled(fixedRate = 60000) // 1분마다 실행 (테스트용)
-    @Scheduled(cron = "0 0 0 * * *") // 매일 자정 실행 (운영용)
+    @Scheduled(cron = "0 0 0 * * *")
     @Transactional
     public void expirePoints() {
         log.info("포인트 만료 처리 시작");

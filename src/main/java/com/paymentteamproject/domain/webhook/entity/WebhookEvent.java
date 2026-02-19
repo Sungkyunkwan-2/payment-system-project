@@ -4,11 +4,10 @@ import com.paymentteamproject.common.entity.BaseEntity;
 import com.paymentteamproject.domain.webhook.consts.PaymentWebhookPaymentStatus;
 import com.paymentteamproject.domain.webhook.consts.WebhookStatus;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.time.LocalDateTime;
 
 @Slf4j
 @Getter
@@ -19,7 +18,7 @@ public class WebhookEvent extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    //portone에서 전달값
+
     @Column(nullable = false, unique = true)
     private String webhookId;
 
@@ -30,7 +29,6 @@ public class WebhookEvent extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private PaymentWebhookPaymentStatus eventStatus;
 
-    //webhook 시스템
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private WebhookStatus status;

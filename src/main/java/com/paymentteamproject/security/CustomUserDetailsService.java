@@ -17,11 +17,9 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
-        // DB에서 사용자 조회
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalStateException("사용자를 찾을 수 없습니다."));
 
-        // Spring Security에서 사용하는 UserDetails 객체로 변환
         return new CustomUserDetails(user);
     }
 }

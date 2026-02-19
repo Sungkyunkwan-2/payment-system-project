@@ -15,13 +15,12 @@ import com.paymentteamproject.domain.webhook.exception.PaymentAmountMismatchExce
 import com.paymentteamproject.domain.webhook.exception.PaymentStatusNotAllowedException;
 import com.paymentteamproject.domain.webhook.repository.WebhookEventRepository;
 import jakarta.validation.Valid;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Slf4j
 @Service
@@ -35,17 +34,15 @@ public class WebhookEventService {
     @Transactional
     public void processWebhook(String webhookId, @Valid WebHookRequest request) {
 
-        //멱등성 체크
         if (webhookEventRepository.existsByWebhookId(webhookId)) {
             log.info("이미 처리 되었습니다. webhookId: {}", webhookId);
             return;
         }
 
-        //portone 결제조회
         String paymentId = request.getData().getPaymentId();
         GetPaymentResponse portOnePayment = portOneClient.getPayment(paymentId);
 
-        Payment payment = paymentRepository.findByPaymentId(paymentId)
+        Payment payment = paymentRepository.findFirstByPaymentIdOrderByIdDesc(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException("결제 정보를 찾을 수 없습니다."));
 
         Orders order = payment.getOrder();
@@ -57,7 +54,6 @@ public class WebhookEventService {
             throw  new PaymentAmountMismatchException("결제 금액 불일치");
         }
 
-        //이벤트 기록
         WebhookEvent webhookEvent = new WebhookEvent(
                 webhookId,
                 request.getData().getPaymentId(),
@@ -110,7 +106,6 @@ public class WebhookEventService {
                 log.info("[WEBHOOK] 환불 처리 완료 - paymentId: {}, orderId: {}, refundType: {}",
                         payment.getPaymentId(), order.getId(), webhookStatus);
             }
-
             case READY, VIRTUAL_ACCOUNT_ISSUED, PAY_PENDING -> {
                 payment.updateStatus(PaymentStatus.PENDING);
                 order.updateStatus(OrderStatus.PAYMENT_PENDING);
@@ -118,7 +113,6 @@ public class WebhookEventService {
                 log.info("[WEBHOOK] 결제 대기 상태 업데이트 - paymentId: {}, orderId: {}, status: {}",
                         payment.getPaymentId(), order.getId(), webhookStatus);
             }
-
             default -> {
                 log.warn("[WEBHOOK] 처리되지 않은 결제 상태 - status: {}", webhookStatus);
                 throw new PaymentStatusNotAllowedException("지원하지 않는 결제 상태입니다: " + webhookStatus);

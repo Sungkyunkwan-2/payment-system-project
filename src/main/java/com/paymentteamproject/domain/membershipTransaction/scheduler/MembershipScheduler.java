@@ -17,7 +17,6 @@ public class MembershipScheduler {
     private final UserRepository userRepository;
     private final MembershipService membershipService;
 
-    // 매일 새벽 00:00
     @Scheduled(cron = "0 0 0 * * *")
     public void refreshAllMembership() {
         List<Long> userIds = userRepository.findAllActiveUserIds();

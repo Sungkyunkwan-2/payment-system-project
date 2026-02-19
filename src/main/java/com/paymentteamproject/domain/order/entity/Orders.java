@@ -107,7 +107,6 @@ public class Orders extends BaseEntity {
         this.usedPoint = usedPoint;
     }
 
-
     //실제 결제해야 할 금액 계산 (총 금액 - 사용 포인트)
     public BigDecimal getActualPaymentAmount() {
         BigDecimal used = this.usedPoint != null ? this.usedPoint : BigDecimal.ZERO;

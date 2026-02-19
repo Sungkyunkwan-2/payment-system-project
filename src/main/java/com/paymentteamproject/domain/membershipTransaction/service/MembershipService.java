@@ -19,9 +19,6 @@ public class MembershipService {
     private final UserRepository userRepository;
     private final MembershipHistoryRepository membershipHistoryRepository;
 
-    /**
-     * 유저 1명의 멤버십 등급을 User.totalSpend 기준으로 갱신
-     */
     @Transactional
     public void refreshMembership(Long userId) {
         User user = userRepository.findById(userId)
