@@ -18,8 +18,8 @@ public class UserEventListener {
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleTotalSpendChangedEvent(TotalSpendChangedEvent event){
+    public void handleTotalSpendChangedEvent(TotalSpendChangedEvent event) {
         log.info("이벤트 수신(AFTER_COMMIT): userId={}, delta={}", event.user().getId(), event.delta());
         paymentService.updateUserSpend(event.user().getId(), event.delta());
-        }
+    }
 }

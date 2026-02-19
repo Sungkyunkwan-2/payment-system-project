@@ -26,22 +26,14 @@ public class UserService {
     private final MembershipHistoryRepository membershipHistoryRepository;
 
     @Transactional
-    public RegisterResponse save(RegisterRequest request){
-        // 이메일 중복 검사
-        boolean duplicate = userRepository.existsByEmail(request.getEmail());
-        if(duplicate) throw new DuplicateEmailException();
+    public RegisterResponse save(RegisterRequest request) {
 
-        // 비밀번호 암호화
+        boolean duplicate = userRepository.existsByEmail(request.getEmail());
+        if (duplicate) throw new DuplicateEmailException();
+
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
-        // db에 저장
-        User user = User.builder()
-                .username(request.getName())
-                .phone(request.getPhone())
-                .email(request.getEmail())
-                .password(encodedPassword)
-                .pointBalance(BigDecimal.ZERO)
-                .build();
+        User user = User.builder().username(request.getName()).phone(request.getPhone()).email(request.getEmail()).password(encodedPassword).pointBalance(BigDecimal.ZERO).build();
 
         User savedUser = userRepository.save(user);
 
@@ -49,25 +41,13 @@ public class UserService {
 
         membershipHistoryRepository.save(membershipHistory);
 
-        // 반환
-        return new RegisterResponse(
-                savedUser.getUsername(),
-                savedUser.getEmail()
-        );
+        return new RegisterResponse(savedUser.getUsername(), savedUser.getEmail());
     }
 
     @Transactional(readOnly = true)
-    public ProfileResponse getCurrentUser(String email){
-        User user = userRepository.findByEmail(email).orElseThrow(
-                UserNotFoundException::new
-        );
-        return ProfileResponse.builder()
-                .email(user.getEmail())
-                .customerUid("CUST_" + Math.abs(email.hashCode()))
-                .name(user.getUsername())
-                .phone(user.getPhone())
-                .pointBalance(user.getPointBalance())
-                .build();
+    public ProfileResponse getCurrentUser(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
+        return ProfileResponse.builder().email(user.getEmail()).customerUid("CUST_" + Math.abs(email.hashCode())).name(user.getUsername()).phone(user.getPhone()).pointBalance(user.getPointBalance()).build();
     }
 
 }
