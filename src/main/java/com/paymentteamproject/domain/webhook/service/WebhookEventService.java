@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Slf4j
 @Service
@@ -34,36 +33,40 @@ public class WebhookEventService {
     @Transactional
     public void processWebhook(String webhookId, @Valid WebHookRequest request) {
 
-        if (webhookEventRepository.existsByWebhookId(webhookId)) {
-            log.info("이미 처리 되었습니다. webhookId: {}", webhookId);
-            return;
-        }
-
         String paymentId = request.getData().getPaymentId();
-        GetPaymentResponse portOnePayment = portOneClient.getPayment(paymentId);
 
-        Payment payment = paymentRepository.findFirstByPaymentIdOrderByIdDesc(paymentId)
-                .orElseThrow(() -> new PaymentNotFoundException("결제 정보를 찾을 수 없습니다."));
+        WebhookEvent webhookEvent = webhookEventRepository
+                .findByWebhookId(webhookId)
+                .orElseGet(() ->
+                        webhookEventRepository.save(
+                                new WebhookEvent(webhookId, paymentId)
+                        )
+                );
 
-        Orders order = payment.getOrder();
+        if (webhookEvent.isProcessed()) return;
 
-        BigDecimal portOneAmount = new BigDecimal(portOnePayment.getAmount().getTotal());
-        BigDecimal orderAmount = order.getTotalPrice().subtract(order.getUsedPoint());
+        try {
+            GetPaymentResponse portOnePayment = portOneClient.getPayment(paymentId);
 
-        if (portOneAmount.compareTo(orderAmount) != 0) {
-            throw new PaymentAmountMismatchException("결제 금액 불일치");
+            Payment payment = paymentRepository.findFirstByPaymentIdOrderByIdDesc(paymentId)
+                    .orElseThrow(() -> new PaymentNotFoundException("결제 정보를 찾을 수 없습니다."));
+
+            Orders order = payment.getOrder();
+
+            BigDecimal portOneAmount = new BigDecimal(portOnePayment.getAmount().getTotal());
+            BigDecimal orderAmount = order.getTotalPrice().subtract(order.getUsedPoint());
+
+            if (portOneAmount.compareTo(orderAmount) != 0) {
+                throw new PaymentAmountMismatchException("결제 금액 불일치");
+            }
+
+            processPaymentStatus(portOnePayment.getStatus(), payment, order);
+            webhookEvent.completeProcess();
+
+        } catch (Exception e) {
+            webhookEvent.failProcess();
+            throw e;
         }
-
-        WebhookEvent webhookEvent = new WebhookEvent(
-                webhookId,
-                request.getData().getPaymentId(),
-                portOnePayment.getStatus()
-        );
-
-        webhookEventRepository.save(webhookEvent);
-
-        processPaymentStatus(portOnePayment.getStatus(), payment, order);
-        webhookEvent.completeProcess();
     }
 
     private void processPaymentStatus(
@@ -85,13 +88,11 @@ public class WebhookEventService {
                 log.info("[WEBHOOK] 환불 처리 완료 - paymentId: {}, orderId: {}, refundType: {}",
                         payment.getPaymentId(), order.getId(), webhookStatus);
             }
-
             case READY, VIRTUAL_ACCOUNT_ISSUED, PAY_PENDING -> {
                 order.updateStatus(OrderStatus.PAYMENT_PENDING);
                 log.info("[WEBHOOK] 결제 대기 상태 업데이트 - paymentId: {}, orderId: {}, status: {}",
                         payment.getPaymentId(), order.getId(), webhookStatus);
             }
-
             default -> {
                 log.warn("[WEBHOOK] 처리되지 않은 결제 상태 - status: {}", webhookStatus);
                 throw new PaymentStatusNotAllowedException("지원하지 않는 결제 상태입니다: " + webhookStatus);

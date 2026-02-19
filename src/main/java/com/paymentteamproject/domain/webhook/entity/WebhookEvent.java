@@ -27,10 +27,6 @@ public class WebhookEvent extends BaseEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private PaymentWebhookPaymentStatus eventStatus;
-
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
     private WebhookStatus status;
 
     @Column(nullable = false)
@@ -42,10 +38,9 @@ public class WebhookEvent extends BaseEntity {
     @Column
     private LocalDateTime deletedAt;
 
-    public WebhookEvent(String webhookId, String paymentId, PaymentWebhookPaymentStatus eventStatus) {
+    public WebhookEvent(String webhookId, String paymentId) {
         this.webhookId = webhookId;
         this.paymentId = paymentId;
-        this.eventStatus = eventStatus;
         this.status = WebhookStatus.RECEIVED;
         this.receivedAt = LocalDateTime.now();
 
@@ -57,6 +52,15 @@ public class WebhookEvent extends BaseEntity {
         this.processedAt = LocalDateTime.now();
 
         log.info("처리완료 시각: {}, 상태: {}", processedAt, status);
+    }
+
+    public boolean isProcessed() {
+        return this.status == WebhookStatus.PROCESSED;
+    }
+
+    public void failProcess() {
+        this.status = WebhookStatus.FAILED;
+        this.processedAt = LocalDateTime.now();
     }
 
     public void softDelete() {
