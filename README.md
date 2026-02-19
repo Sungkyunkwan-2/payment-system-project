@@ -609,8 +609,6 @@ Content-Type: application/json
 }
 ```
 
-상세 API 문서: [Swagger UI](http://localhost:8080/swagger-ui.html)
-
 <br/>
 
 ## 🏃 실행 방법
@@ -638,7 +636,7 @@ cp .env.example .env
 `.env` 파일 예시:
 ```properties
 # Database
-SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/payment_db
+SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/paymentSystem?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
 SPRING_DATASOURCE_USERNAME=root
 SPRING_DATASOURCE_PASSWORD=password
 
@@ -663,7 +661,6 @@ docker-compose up -d mysql
 
 #### 5. 접속 확인
 - API: http://localhost:8080
-- Swagger: http://localhost:8080/swagger-ui.html
 - Actuator: http://localhost:8080/actuator/health
 
 ### 프로덕션 배포
