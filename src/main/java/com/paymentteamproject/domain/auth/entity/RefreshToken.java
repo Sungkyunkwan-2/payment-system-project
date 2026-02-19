@@ -9,11 +9,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
-/**
- * Refresh Token 엔티티
- * - 사용자의 Refresh Token을 DB에 저장하여 관리
- * - 로그아웃 시 토큰 무효화, 보안 강화
- */
 @Getter
 @Entity
 @Table(name = "refresh_tokens")
@@ -43,22 +38,16 @@ public class RefreshToken {
     }
 
     @Builder
-    public RefreshToken (String token, User user, Instant expiryDate) {
-                this.token = token;
-                this.user = user;
-                this.expiryDate = expiryDate;
+    public RefreshToken(String token, User user, Instant expiryDate) {
+        this.token = token;
+        this.user = user;
+        this.expiryDate = expiryDate;
     }
 
-    /**
-     * 토큰 만료 여부 확인
-     */
     public boolean isExpired() {
         return Instant.now().isAfter(this.expiryDate);
     }
 
-    /**
-     * 토큰 갱신 (Refresh Token Rotation 시 사용)
-     */
     public void updateToken(String newToken, Instant newExpiryDate) {
         this.token = newToken;
         this.expiryDate = newExpiryDate;

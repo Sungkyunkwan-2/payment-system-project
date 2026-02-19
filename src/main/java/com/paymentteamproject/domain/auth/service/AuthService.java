@@ -28,29 +28,16 @@ public class AuthService {
         log.info("로그인 처리 시작: {}", request.getEmail());
 
         try {
-            // 1. 이메일/비밀번호 검증
             Authentication auth = AuthServiceSupport.validateRequest(authenticationManager, request.getEmail(), request.getPassword());
-
             CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
-
-            // 2. 인증 성공 시 액세스 토큰 생성
-            String accessToken = jwtTokenProvider.createToken(
-                    userDetails.getUsername(), // email
-                    userDetails.getName(), // username
-                    userDetails.getRoleAuthority() // role
-            );
-
-            // 3. Refresh Token 생성 및 DB 저장 (이메일만 사용)
+            String accessToken = jwtTokenProvider.createToken(userDetails.getUsername(), userDetails.getName(), userDetails.getRoleAuthority());
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getUsername());
-
             log.info("로그인 성공: {}", userDetails.getUsername());
-
             return new TokenDto(accessToken, refreshToken.getToken());
         } catch (AuthenticationException e) {
             log.warn("로그인 실패: {} - 사유: {}", request.getEmail(), e.getMessage());
             throw e;
         }
-
     }
 
     @Transactional
@@ -64,22 +51,10 @@ public class AuthService {
 
     @Transactional
     public TokenDto refresh(String refreshToken) {
-        // 1. 리프레시 토큰 검증 (DB 조회 및 만료 확인)
         RefreshToken tokenEntity = refreshTokenService.verifyRefreshToken(refreshToken);
-
-        // 2. 유저 정보 추출
         User user = tokenEntity.getUser();
-
-        // 3. 새로운 Access Token 생성
-        String newAccessToken = jwtTokenProvider.createToken(
-                user.getEmail(),
-                user.getUsername(),
-                user.getRole().getAuthority()
-        );
-
-        // 4. Refresh Token Rotation: 리프레시 토큰도 새로 발급하여 보안 강화
+        String newAccessToken = jwtTokenProvider.createToken(user.getEmail(), user.getUsername(), user.getRole().getAuthority());
         RefreshToken rotatedToken = refreshTokenService.rotateRefreshToken(refreshToken);
-
         return new TokenDto(newAccessToken, rotatedToken.getToken());
     }
 }

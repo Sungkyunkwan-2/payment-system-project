@@ -27,7 +27,7 @@ public class RegisterRequest {
     private String phone;
 
     @Builder
-    private RegisterRequest(String name, String email, String password, String phone){
+    private RegisterRequest(String name, String email, String password, String phone) {
         this.name = name;
         this.email = email;
         this.password = password;

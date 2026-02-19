@@ -69,30 +69,18 @@ public class WebhookEventService {
             PaymentWebhookPaymentStatus webhookStatus, Payment payment, Orders order) {
         switch (webhookStatus) {
             case PAID -> {
-                Payment savedPayment = paymentRepository.save(payment.success());
-                savedPayment.updatePaidAt(LocalDateTime.now());
-
-                order.updateStatus(OrderStatus.ORDER_COMPLETED);
-
-                log.info("[WEBHOOK] 결제 완료 처리 성공 - paymentId: {}, orderId: {}",
+               log.info("[WEBHOOK] 결제 완료 처리 성공 - paymentId: {}, orderId: {}",
                         payment.getPaymentId(), order.getId());
             }
 
             case FAILED -> {
                 paymentRepository.save(payment.fail());
-                order.updateStatus(OrderStatus.ORDER_CANCELED);
                 log.info("[WEBHOOK] 결제 실패 처리 완료 - paymentId: {}, orderId: {}",
                         payment.getPaymentId(), order.getId());
             }
 
             case CANCELLED, PARTIAL_CANCELLED -> {
-                Payment refundedPayment = paymentRepository.save(payment.refund());
-                refundedPayment.updateRefundedAt(LocalDateTime.now());
-
-                order.updateStatus(OrderStatus.ORDER_CANCELED);
-
                 orderService.processOrderCancellation(order);
-
                 log.info("[WEBHOOK] 환불 처리 완료 - paymentId: {}, orderId: {}, refundType: {}",
                         payment.getPaymentId(), order.getId(), webhookStatus);
             }

@@ -6,4 +6,3 @@ public class TokenException extends RuntimeException {
         super(message);
     }
 }
-
