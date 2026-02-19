@@ -1,116 +1,138 @@
 package com.paymentteamproject.security;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
- * JWT 토큰 인증 필터
- * 모든 요청에서 JWT 토큰을 검증하고 SecurityContext에 인증 정보 설정
- *
- * TODO: 개선 사항
- * - 역할(Role) 정보를 토큰에서 추출
- * - 예외 처리 개선
+ * JWT 토큰 인증 필터 (Stateless)
+ * DB 조회 없이 토큰 클레임만으로 인증 객체를 구성합니다.
+ * 토큰 파싱 예외는 케이스별로 처리하여 명확한 에러 응답을 반환합니다.
  */
 @Component
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final CustomUserDetailsService userDetailsService;
 
-    public JwtAuthenticationFilter (
-            JwtTokenProvider jwtTokenProvider,
-            CustomUserDetailsService userDetailsService
-    ) {
+    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
         this.jwtTokenProvider = jwtTokenProvider;
-        this.userDetailsService = userDetailsService;
     }
 
     @Override
     protected void doFilterInternal(
-        HttpServletRequest request,
-        HttpServletResponse response,
-        FilterChain filterChain
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
     ) throws ServletException, IOException {
 
         try {
-            // 1. Request Header에서 JWT 토큰 추출
             String token = getJwtFromRequest(request);
 
-            // 2. 토큰 유효성 검증
-            if (token != null && jwtTokenProvider.validateToken(token)) {
-                // 3. 토큰에서 사용자 정보 추출
-                String email = jwtTokenProvider.getEmail(token);
+            if (token != null) {
+                // parseClaims()는 예외를 전파하므로 아래 catch 블록에서 처리됩니다.
+                Claims claims = jwtTokenProvider.parseClaims(token);
 
-                //4. UserDetails 조회 추가
-                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                String email = claims.getSubject();
+                String role  = claims.get("role", String.class);
 
-                // 5. 인증 객체 생성
+                if (role == null || role.isBlank()) {
+                    setErrorResponse(response, "INVALID_TOKEN", "토큰에 권한 정보가 없습니다.");
+                    return;
+                }
+
+                // DB 조회 없이 클레임 정보만으로 UserDetails 구성
+                UserDetails principal = User.withUsername(email)
+                        .password("")
+                        .authorities(new SimpleGrantedAuthority(role))
+                        .build();
+
                 UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                        null,
-                            userDetails.getAuthorities() //권한도 UserDetails에서 가져옴
-                    );
-
+                        new UsernamePasswordAuthenticationToken(
+                                principal,
+                                null,
+                                principal.getAuthorities()
+                        );
                 authentication.setDetails(
                         new WebAuthenticationDetailsSource().buildDetails(request)
                 );
 
-                // 6. SecurityContext에 인증 정보 설정
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
+
         } catch (ExpiredJwtException e) {
-            log.error("토큰이 만료되었습니다. {}", e.getMessage());
+            log.warn("[JWT] 만료된 토큰 - uri: {}, message: {}", request.getRequestURI(), e.getMessage());
             setErrorResponse(response, "TOKEN_EXPIRED", "토큰이 만료되었습니다. 갱신이 필요합니다.");
             return;
-        } catch (JwtException | IllegalArgumentException e) {
-            log.error("유효하지 않은 토큰입니다: {}", e.getMessage());
-            setErrorResponse(response, "INVALID_TOKEN", "유효하지 않은 토큰입니다.");
+
+        } catch (MalformedJwtException e) {
+            log.warn("[JWT] 잘못된 토큰 형식 - uri: {}, message: {}", request.getRequestURI(), e.getMessage());
+            setErrorResponse(response, "MALFORMED_TOKEN", "토큰 형식이 올바르지 않습니다.");
             return;
+
+        } catch (SignatureException e) {
+            log.warn("[JWT] 토큰 서명 불일치 - uri: {}, message: {}", request.getRequestURI(), e.getMessage());
+            setErrorResponse(response, "INVALID_SIGNATURE", "토큰 서명이 유효하지 않습니다.");
+            return;
+
+        } catch (UnsupportedJwtException e) {
+            log.warn("[JWT] 지원하지 않는 토큰 형식 - uri: {}, message: {}", request.getRequestURI(), e.getMessage());
+            setErrorResponse(response, "UNSUPPORTED_TOKEN", "지원하지 않는 토큰 형식입니다.");
+            return;
+
+        } catch (IllegalArgumentException e) {
+            log.warn("[JWT] 빈 토큰 또는 잘못된 인자 - uri: {}, message: {}", request.getRequestURI(), e.getMessage());
+            setErrorResponse(response, "EMPTY_TOKEN", "토큰이 비어있거나 잘못된 형식입니다.");
+            return;
+
         } catch (Exception e) {
-            log.error("JWT 인증 실패", e);
-            // TODO: 구현 - 적절한 에러 응답
+            log.error("[JWT] 인증 처리 중 예상치 못한 오류 - uri: {}", request.getRequestURI(), e);
+            setErrorResponse(response, "AUTHENTICATION_ERROR", "인증 처리 중 오류가 발생했습니다.");
+            return;
         }
 
         filterChain.doFilter(request, response);
     }
 
     /**
-     * Request Header에서 JWT 토큰 추출
-     * Authorization: Bearer {token}
+     * Authorization 헤더에서 Bearer 토큰 추출
      */
-    // resolveToken과 동일
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
-
         return null;
     }
 
-    // 응답을 JSON 형태로 만드는 편의 메서드
+    /**
+     * 401 JSON 에러 응답 전송
+     */
     private void setErrorResponse(HttpServletResponse response, String errorCode, String message) throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 세팅
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json;charset=UTF-8");
-
-        // 프론트엔드와 약속한 에러 포맷으로 전송
-        String json = String.format("{\"success\":false, \"errorCode\":\"%s\", \"message\":\"%s\"}", errorCode, message);
+        String json = String.format(
+                "{\"success\":false,\"errorCode\":\"%s\",\"message\":\"%s\"}",
+                errorCode, message
+        );
         response.getWriter().write(json);
     }
 }

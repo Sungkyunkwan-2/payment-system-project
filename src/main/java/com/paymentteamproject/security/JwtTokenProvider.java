@@ -13,8 +13,9 @@ import java.util.Date;
 import java.util.UUID;
 
 /**
- * JWT 토큰 생성 및 검증 유틸리티
- * 개선할 부분: Refresh Token, Token Expiry 관리, Claims 커스터마이징 등
+ * JWT 토큰 생성 및 파싱 유틸리티
+ * parseClaims()는 JWT 예외를 호출부로 그대로 전파합니다.
+ * 예외 처리는 JwtAuthenticationFilter에서 케이스별로 수행합니다.
  */
 @Component
 public class JwtTokenProvider {
@@ -75,40 +76,34 @@ public class JwtTokenProvider {
     }
 
     /**
-     * JWT 토큰에서 사용자 이메일 추출
+     * JWT 클레임 파싱
+     * 예외를 잡지 않고 호출부(JwtAuthenticationFilter)로 전파합니다.
+     * - ExpiredJwtException     : 토큰 만료
+     * - MalformedJwtException   : 잘못된 토큰 형식
+     * - SignatureException      : 서명 불일치
+     * - UnsupportedJwtException : 지원하지 않는 토큰 형식
+     * - IllegalArgumentException: 빈 토큰 또는 null
      */
-    public String getEmail(String token) {
-        Claims claims = Jwts.parser()
+    public Claims parseClaims(String token) {
+        return Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-
-        return claims.getSubject();
     }
 
     /**
-     * JWT 토큰 유효성 검증
-     * <p>
-     * TODO: 개선 사항
-     * - 토큰 블랙리스트 체크 (로그아웃된 토큰)
-     * - 토큰 갱신 로직
-     * - 상세한 예외 처리
+     * JWT 토큰에서 사용자 이메일 추출
      */
-    public boolean validateToken(String token) {
-        try {
-            Jwts.parser()
-                    .verifyWith(secretKey)
-                    .build()
-                    .parseSignedClaims(token);
-            return true;
-        } catch (Exception e) {
-            // TODO: 구체적인 예외 처리 구현
-            // - ExpiredJwtException: 만료된 토큰
-            // - MalformedJwtException: 잘못된 형식
-            // - SignatureException: 서명 오류
-            return false;
-        }
+    public String getEmail(String token) {
+        return parseClaims(token).getSubject();
+    }
+
+    /**
+     * JWT 토큰에서 사용자 역할 추출
+     */
+    public String getRole(String token) {
+        return parseClaims(token).get("role", String.class);
     }
 
     /**
