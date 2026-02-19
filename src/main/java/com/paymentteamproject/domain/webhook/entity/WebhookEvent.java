@@ -27,10 +27,6 @@ public class WebhookEvent extends BaseEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private PaymentWebhookPaymentStatus eventStatus;
-
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
     private WebhookStatus status;
 
     @Column(nullable = false)
