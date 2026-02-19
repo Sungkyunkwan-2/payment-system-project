@@ -3,7 +3,6 @@ package com.paymentteamproject.domain.webhook.service;
 import com.paymentteamproject.domain.order.consts.OrderStatus;
 import com.paymentteamproject.domain.order.entity.Orders;
 import com.paymentteamproject.domain.order.service.OrderService;
-import com.paymentteamproject.domain.payment.consts.PaymentStatus;
 import com.paymentteamproject.domain.payment.entity.Payment;
 import com.paymentteamproject.domain.payment.exception.PaymentNotFoundException;
 import com.paymentteamproject.domain.payment.repository.PaymentRepository;
@@ -50,8 +49,8 @@ public class WebhookEventService {
         BigDecimal portOneAmount = new BigDecimal(portOnePayment.getAmount().getTotal());
         BigDecimal orderAmount = order.getTotalPrice();
 
-        if (portOneAmount.compareTo(orderAmount) != 0){
-            throw  new PaymentAmountMismatchException("결제 금액 불일치");
+        if (portOneAmount.compareTo(orderAmount) != 0) {
+            throw new PaymentAmountMismatchException("결제 금액 불일치");
         }
 
         WebhookEvent webhookEvent = new WebhookEvent(
@@ -70,11 +69,9 @@ public class WebhookEventService {
             PaymentWebhookPaymentStatus webhookStatus, Payment payment, Orders order) {
         switch (webhookStatus) {
             case PAID -> {
-                // 결제 완료 처리
-                payment.updateStatus(PaymentStatus.SUCCESS);
-                payment.updatePaidAt(LocalDateTime.now());
+                Payment savedPayment = paymentRepository.save(payment.success());
+                savedPayment.updatePaidAt(LocalDateTime.now());
 
-                // 주문 완료 처리
                 order.updateStatus(OrderStatus.ORDER_COMPLETED);
 
                 log.info("[WEBHOOK] 결제 완료 처리 성공 - paymentId: {}, orderId: {}",
@@ -82,34 +79,25 @@ public class WebhookEventService {
             }
 
             case FAILED -> {
-                // 결제 실패 처리
-                payment.updateStatus(PaymentStatus.FAILURE);
-
-                // 주문 취소 처리
+                paymentRepository.save(payment.fail());
                 order.updateStatus(OrderStatus.ORDER_CANCELED);
-
                 log.info("[WEBHOOK] 결제 실패 처리 완료 - paymentId: {}, orderId: {}",
                         payment.getPaymentId(), order.getId());
             }
 
             case CANCELLED, PARTIAL_CANCELLED -> {
-                // 환불 처리
-                payment.updateStatus(PaymentStatus.REFUND);
-                payment.updateRefundedAt(LocalDateTime.now());
+                Payment refundedPayment = paymentRepository.save(payment.refund());
+                refundedPayment.updateRefundedAt(LocalDateTime.now());
 
-                // 주문 취소 처리
                 order.updateStatus(OrderStatus.ORDER_CANCELED);
 
-                // 재고 복구
                 orderService.processOrderCancellation(order);
 
                 log.info("[WEBHOOK] 환불 처리 완료 - paymentId: {}, orderId: {}, refundType: {}",
                         payment.getPaymentId(), order.getId(), webhookStatus);
             }
             case READY, VIRTUAL_ACCOUNT_ISSUED, PAY_PENDING -> {
-                payment.updateStatus(PaymentStatus.PENDING);
                 order.updateStatus(OrderStatus.PAYMENT_PENDING);
-
                 log.info("[WEBHOOK] 결제 대기 상태 업데이트 - paymentId: {}, orderId: {}, status: {}",
                         payment.getPaymentId(), order.getId(), webhookStatus);
             }

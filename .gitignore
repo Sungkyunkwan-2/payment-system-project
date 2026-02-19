@@ -7,6 +7,7 @@ build/
 application-local.yml
 application.yml
 .DS_Store
+.claude
 
 ### STS ###
 .apt_generated
