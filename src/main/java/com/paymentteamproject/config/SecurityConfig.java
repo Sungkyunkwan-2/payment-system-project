@@ -25,14 +25,6 @@ import java.util.Arrays;
 
 import static org.springframework.boot.security.autoconfigure.web.servlet.PathRequest.toStaticResources;
 
-/**
- * Spring Security 설정 - JWT 기반 인증
- *
- * TODO: 개선 사항
- * - CORS 설정 추가
- * - 역할 기반 접근 제어 (ROLE_ADMIN, ROLE_USER)
- * - API 엔드포인트별 세밀한 권한 설정
- */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -44,12 +36,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // 2. CORS 설정 연결 (이걸 안 하면 아래 작성한 corsConfigurationSource가 작동 안 함)
+                // 2. CORS 설정 연결
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 // CSRF 비활성화 (JWT 사용 시 불필요)
                 .csrf(AbstractHttpConfigurer::disable)
 
-                // ✅ 3. 예외 처리 핸들러 등록 (403 대신 401을 뱉게 하는 핵심)
+                // 예외 처리 핸들러 등록
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 )
@@ -63,44 +55,32 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         // 1) 정적 리소스
                         .requestMatchers(toStaticResources().atCommonLocations()).permitAll()
-
                         // 2) 헬스 체크 API
                         .requestMatchers("/actuator/**").permitAll()
-
                         // 3) 템플릿 페이지 렌더링
                         .requestMatchers(HttpMethod.GET, "/").permitAll()
                         .requestMatchers(HttpMethod.GET, "/pages/**").permitAll()
-
                         // 4) 공개 API
                         .requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()
-
                         // 5) 인증 API
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register", "/api/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.POST, "/portone-webhook").permitAll()
                         // 6) 그 외 API는 인증 필요
                         .requestMatchers("/api/**").authenticated()
-
                         // 7) 나머지 전부 인증 필요
                         .anyRequest().authenticated()
                 )
-
                 // JWT 필터 추가
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    //JWT필터 webhook 제외
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring().requestMatchers("/portone-webhook");
     }
 
-    /**
-     * CORS 설정
-     * - 프론트엔드가 다른 도메인에서 실행될 경우 필요
-     * - 쿠키 전송을 위해 allowCredentials(true) 필수
-     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();

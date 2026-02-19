@@ -7,10 +7,6 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 
-/**
- * 클라이언트 API 계약 설정
- * client-api-config.yml 파일의 내용을 바인딩합니다.
- */
 @Data
 @Component
 @ConfigurationProperties(prefix = "api")
