@@ -19,7 +19,7 @@ public class WebhookEvent extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    //portone에서 전달값
+
     @Column(nullable = false, unique = true)
     private String webhookId;
 
@@ -30,7 +30,6 @@ public class WebhookEvent extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private PaymentWebhookPaymentStatus eventStatus;
 
-    //webhook 시스템
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private WebhookStatus status;

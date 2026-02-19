@@ -18,6 +18,7 @@ public class PortOneClient {
     private final PortOneProperties portOneProperties;
 
     public GetPaymentResponse getPayment(String paymentId) {
+
         log.info("결제 조회 요청 - paymentId: {}", paymentId);
 
         return portOneRestClient.get()
@@ -38,7 +39,6 @@ public class PortOneClient {
                     .body(request)
                     .retrieve()
                     .body(BillingKeyPaymentResponse.class);
-
         } catch (Exception e) {
             log.error("빌링키 결제 실패 - billingKey: {}, error: {}",
                     request.getBillingKey(), e.getMessage(), e);

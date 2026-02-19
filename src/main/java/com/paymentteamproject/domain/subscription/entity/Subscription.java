@@ -25,7 +25,7 @@ public class Subscription extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id",  nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -53,8 +53,7 @@ public class Subscription extends BaseEntity {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime currentPeriodEnd;
 
-    public Subscription(User user, Plan plan, PaymentMethod paymentMethod, SubscriptionStatus status)
-    {
+    public Subscription(User user, Plan plan, PaymentMethod paymentMethod, SubscriptionStatus status) {
         this.user = user;
         this.plan = plan;
         this.paymentMethod = paymentMethod;
@@ -85,7 +84,6 @@ public class Subscription extends BaseEntity {
 
     public void renewPeriod() {
         this.currentPeriodStart = LocalDateTime.now();
-        this.currentPeriodEnd = this.plan.getBillingCycle()
-                .calculatePeriodEnd(this.currentPeriodStart);
+        this.currentPeriodEnd = this.plan.getBillingCycle().calculatePeriodEnd(this.currentPeriodStart);
     }
 }

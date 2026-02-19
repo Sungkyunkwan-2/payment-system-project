@@ -1,16 +1,14 @@
 package com.paymentteamproject.domain.webhook.webhooksecurity;
 
 import jakarta.annotation.PostConstruct;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.Base64;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.time.Instant;
-import java.util.Base64;
 
 @Slf4j
 @Component
@@ -69,7 +67,6 @@ public class PortOneWebhookVerifier {
 
     private static byte[] buildToSign(String webhookId, String timestamp, byte[] body) {
         byte[] prefix = (webhookId + "." + timestamp + ".").getBytes(StandardCharsets.UTF_8);
-
         byte[] result = new byte[prefix.length + body.length];
         System.arraycopy(prefix, 0, result, 0, prefix.length);
         System.arraycopy(body, 0, result, prefix.length, body.length);

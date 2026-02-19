@@ -78,5 +78,4 @@ public class Product extends BaseEntity {
             this.status = ProductStatus.ONSALE;
         }
     }
-
 }
