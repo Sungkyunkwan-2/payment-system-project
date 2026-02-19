@@ -64,7 +64,7 @@ public class AuthController {
 
         // 응답 메시지 구성 (Access Token은 헤더에 담아 응답)
 
-        // 4. Access Token을 헤더에 담아 응답
+        // Access Token을 헤더에 담아 응답
         return ResponseEntity.ok()
                 .header("Authorization", "Bearer " + tokens.accessToken())
                 // CORS 환경에서 프론트엔드가 Authorization 헤더에 접근할 수 있도록 노출

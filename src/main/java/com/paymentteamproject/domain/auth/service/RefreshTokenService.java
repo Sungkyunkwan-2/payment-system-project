@@ -87,10 +87,6 @@ public class RefreshTokenService {
     }
 
     /**
-     * Refresh Token Rotation (선택적 보안 강화)
-     * - 토큰 재발급 시 새 Refresh Token도 함께 발급
-     */
-    /**
      * Refresh Token Rotation (보안 강화)
      * - 액세스 토큰 재발급 시 리프레시 토큰도 새 값으로 교체
      */

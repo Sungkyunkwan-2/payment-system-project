@@ -91,6 +91,7 @@ public class User extends BaseEntity {
 
 
     public void updateTotalSpend(BigDecimal amount){
+        if (amount == null) return;
         this.totalSpend = this.totalSpend.add(amount);
     }
 
