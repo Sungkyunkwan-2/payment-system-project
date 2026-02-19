@@ -1034,9 +1034,9 @@ SpringDoc OpenAPI 3.0으로 전환하여 API 문서를 자동화할 예정입니
 
 **이름**: 김대훈 <br>
 **직책**: 팀원 <br>
-**담당 파트**: <br>
-**Github**: <br>
-**Email**: <br>
+**담당 파트**: 주문 생성, 주문 목록 조회, 포인트 관련 로직과 연계된 메서드 작성, 발표<br>
+**Github**: https://github.com/BigMacHun-del](https://github.com/BigMacHun-del<br>
+**Email**: eogns12312@naver.com<br>
 
 **이름**: 이현석 <br>
 **직책**: 팀원 <br>
