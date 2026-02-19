@@ -1,10 +1,8 @@
 package com.paymentteamproject.domain.webhook.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
+import lombok.Getter;
 
 @Getter
 public class BillingKeyPaymentRequest {

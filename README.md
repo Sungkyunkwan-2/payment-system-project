@@ -902,19 +902,11 @@ spring:
 
 ## 📈 향후 개선 계획
 
-### 단기 (1-2개월)
-- [ ] Redis 캐싱 도입 (상품 목록, 멤버십 등급)
-- [ ] Swagger/OpenAPI 3.0 문서 자동화
-- [ ] 결제 실패 재시도 로직 (Retry Policy)
-
-### 중기 (3-6개월)
-- [ ] Spring Batch를 활용한 포인트 만료 배치 처리
-- [ ] 결제 통계 대시보드 (관리자 기능)
-- [ ] 다중 PG사 지원 (KG이니시스, 토스페이먼츠 선택 결제)
-
-### 장기 (6개월 이상)
-- [ ] MSA 전환 (결제 서비스 분리)
-- [ ] 이벤트 소싱 패턴 완전 적용
+### Service 책임 분산을 위한 이벤트 기반 구조 도입
+### Refresh Token 해시 저장
+### 외부API 호출 트랜잭션 분리
+### 웹훅 & 외부 API 처리 멱등성 보장 강화
+### 동시성 체크 강화
 
 <br/>
 
@@ -1012,9 +1004,9 @@ SpringDoc OpenAPI 3.0으로 전환하여 API 문서를 자동화할 예정입니
 
 **이름**: 유지현 <br>
 **직책**: 팀원 <br>
-**담당 파트**: <br>
-**Github**: <br>
-**Email**: <br>
+**담당 파트**: <br> webhook, subscription
+**Github**: <br> https://github.com/jihyeon1346
+**Email**: <br> yio1346@gmail.com
 
 
 <br/>
