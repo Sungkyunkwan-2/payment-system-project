@@ -1,7 +1,7 @@
 package com.paymentteamproject.domain.pointTransaction.service;
 
-import com.paymentteamproject.domain.membershipTransaction.exception.MembershipNotFoundException;
 import com.paymentteamproject.domain.membershipTransaction.entity.MembershipHistory;
+import com.paymentteamproject.domain.membershipTransaction.exception.MembershipNotFoundException;
 import com.paymentteamproject.domain.membershipTransaction.repository.MembershipHistoryRepository;
 import com.paymentteamproject.domain.order.entity.Orders;
 import com.paymentteamproject.domain.pointTransaction.entity.PointTransaction;
@@ -21,7 +21,6 @@ public class PointService {
     private final PointTransactionRepository pointTransactionRepository;
     private final MembershipHistoryRepository membershipHistoryRepository;
     private final UserRepository userRepository;
-
 
     // 주문 생성 시: 포인트 트랜잭션만 생성 (잔액 업데이트 X)
     @Transactional
@@ -55,8 +54,6 @@ public class PointService {
         return null;
     }
 
-
-    //결제 완료 시: 사용자 포인트 잔액 업데이트
     @Transactional
     public void applyEarnedPoints(User user, Orders order) {
         // 해당 주문의 ADDED 타입 포인트 트랜잭션 조회
@@ -159,7 +156,6 @@ public class PointService {
 
                     pointTransactionRepository.save(revokeTransaction);
                 });
-
         userRepository.save(user);
     }
 
@@ -189,7 +185,6 @@ public class PointService {
                         user.subPoints(recoverablePoint);
                     }
 
-
                     // 유저 포인트 차감
                     user.subPoints(earnedPoint);
 
@@ -206,8 +201,6 @@ public class PointService {
 
                     pointTransactionRepository.save(revokeTransaction);
                 });
-
         userRepository.save(user);
     }
-
 }

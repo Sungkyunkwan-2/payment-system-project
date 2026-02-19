@@ -36,7 +36,6 @@ public class OrderProductService {
         List<OrderProduct> orderProducts =
                 orderProductRepository.findAllByOrderUser(user);
 
-
         return orderProducts.stream()
                 .map(orderProduct -> {
                     Orders order = orderProduct.getOrder();

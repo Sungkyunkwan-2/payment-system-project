@@ -28,7 +28,6 @@ public class MembershipHistory extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private MembershipStatus membershipStatus;
 
-
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 

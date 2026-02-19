@@ -138,7 +138,6 @@ public class PaymentService {
         }
     }
 
-
     //포인트를 사용한 통합 결제 처리
     private StartPaymentResponse processPaymentWithPoints(
             Orders order, User user, BigDecimal totalAmount, BigDecimal pointsToUse) {
