@@ -1,5 +1,8 @@
 # application.yml 파일
 spring:
+  jackson:
+    time-zone: Asia/Seoul
+
   jpa:
     open-in-view: false
     hibernate:
