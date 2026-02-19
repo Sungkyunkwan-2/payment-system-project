@@ -9,6 +9,7 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
+
     Optional<User> findByEmail(String email);
 
     @Query("select u.id from User u where u.deletedAt is null")
