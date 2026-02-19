@@ -320,45 +320,11 @@ CREATE TABLE refunds (
 
 ### 전체 결제 프로세스
 
-```
-[Client]           [Server]              [PortOne]
-   │                  │                      │
-   │── POST /orders ─▶│                      │
-   │                  │ (재고 차감, 주문 생성) │
-   │◀── orderID ──────│                      │
-   │                  │                      │
-   │── POST /payments ▶│                     │
-   │   (orderId,       │ (Payment PENDING 저장)│
-   │    pointsToUse)  │                      │
-   │◀── paymentId ────│                      │
-   │                  │                      │
-   │──────────── PortOne 결제창 호출 ─────────▶│
-   │                  │                      │ (사용자 결제)
-   │◀──────────────── 결제 완료 콜백 ──────────│
-   │                  │                      │
-   │── GET /payments/{paymentId} ──▶│         │
-   │                  │── GET /payments/{id} ─▶│
-   │                  │◀── 결제 정보 ──────────│
-   │                  │ (금액 검증 → SUCCESS)  │
-   │◀── 결제 결과 ─────│                      │
-```
+![성균관_결제 시스템](https://github.com/user-attachments/assets/eb017005-3e36-4922-8507-473fe6d251c2)
 
-### 상세 Sequence Diagram
+### 환불 프로세스
 
-```
-[PortOne] ──── POST /portone-webhook ────▶ [WebhookEventController]
-                                                    │
-                                           서명 검증 (HMAC)
-                                                    │
-                                        ┌── 검증 실패 → 401 반환
-                                        └── 검증 성공
-                                                    │
-                                           WebhookEventService
-                                                    │
-                                           멱등성 확인 (webhookId)
-                                                    │
-                                           결제 상태 업데이트
-```
+![성균관_환불 시스템](https://github.com/user-attachments/assets/a7f263b7-5de3-4d66-812d-360a25c78377)
 
 ### 주요 구현 사항
 
@@ -1021,10 +987,10 @@ SpringDoc OpenAPI 3.0으로 전환하여 API 문서를 자동화할 예정입니
 **GitHub**: [https://github.com/Sungkyunkwan-2/payment-system-project](https://github.com/Sungkyunkwan-2/payment-system-project)
 
 **이름**: 곽현민 <br>
-**직책**: 팀장<br>
-**담당 파트**: <br>
-**Github**: <br>
-**Email**: <br>
+**직책**: 팀장 <br>
+**담당 파트**: 결제, 구독 <br>
+**Github**: https://github.com/prAha1030 <br>
+**Email**: hunmin111@gmail.com <br>
 
 **이름**: 김세현 <br>
 **직책**: 팀원 <br>
