@@ -17,14 +17,19 @@ import com.paymentteamproject.domain.pointTransaction.service.PointService;
 import com.paymentteamproject.domain.refund.dto.RefundCreateRequest;
 import com.paymentteamproject.domain.refund.service.RefundService;
 import com.paymentteamproject.domain.user.entity.User;
+import com.paymentteamproject.domain.user.exception.UserNotFoundException;
+import com.paymentteamproject.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 
 import java.math.BigDecimal;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
@@ -34,6 +39,7 @@ public class PaymentService {
     private final RefundService refundService;
     private final PointService pointService;
     private final ApplicationEventPublisher eventPublisher;
+    private final UserRepository userRepository;
 
     // 결제 시작
     @Transactional
@@ -201,5 +207,13 @@ public class PaymentService {
         } catch (Exception e) {
             throw new PaymentCompensationException("결제 시작 처리 중 내부 오류가 발생했습니다.");
         }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateUserSpend(Long userId, BigDecimal delta) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+        user.updateTotalSpend(delta);
+        log.info("업데이트 완료: userId={}, totalSpend={}", userId, user.getTotalSpend());
     }
 }
