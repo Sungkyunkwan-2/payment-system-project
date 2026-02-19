@@ -37,7 +37,7 @@ public class PointTransaction extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private PointTransactionType type; //enum 구현 전
 
-    @Column(nullable = false)
+//    @Column(nullable = false)
     private LocalDateTime expiresAt;
 
     @Column(nullable = false)
