@@ -49,7 +49,4 @@ public class UserService {
         User user = userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
         return ProfileResponse.builder().email(user.getEmail()).customerUid("CUST_" + Math.abs(email.hashCode())).name(user.getUsername()).phone(user.getPhone()).pointBalance(user.getPointBalance()).build();
     }
-
 }
-
-

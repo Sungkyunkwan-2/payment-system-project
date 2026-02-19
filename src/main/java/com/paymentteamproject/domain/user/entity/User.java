@@ -47,19 +47,12 @@ public class User extends BaseEntity {
 
     @Builder
     public User(String username, String phone, String email, String password, BigDecimal pointBalance) {
-
         this.username = username;
-
         this.phone = phone;
-
         this.email = email;
-
         this.password = password;
-
         this.pointBalance = pointBalance;
-
         this.role = UserRole.USER;
-
         this.totalSpend = BigDecimal.ZERO;
     }
 
@@ -85,7 +78,9 @@ public class User extends BaseEntity {
 
 
     public void updateTotalSpend(BigDecimal amount) {
-        if (amount == null) return;
+        if (amount == null) {
+            return;
+        }
         this.totalSpend = this.totalSpend.add(amount);
     }
 }
