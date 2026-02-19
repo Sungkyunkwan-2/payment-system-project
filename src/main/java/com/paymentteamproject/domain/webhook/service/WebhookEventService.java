@@ -70,7 +70,6 @@ public class WebhookEventService {
             PaymentWebhookPaymentStatus webhookStatus, Payment payment, Orders order) {
         switch (webhookStatus) {
             case PAID -> {
-               paymentRepository.save(payment.success());
                log.info("[WEBHOOK] 결제 완료 처리 성공 - paymentId: {}, orderId: {}",
                         payment.getPaymentId(), order.getId());
             }
@@ -82,8 +81,6 @@ public class WebhookEventService {
             }
 
             case CANCELLED, PARTIAL_CANCELLED -> {
-                paymentRepository.save(payment.refund());
-                order.updateStatus(OrderStatus.ORDER_CANCELED);
                 orderService.processOrderCancellation(order);
                 log.info("[WEBHOOK] 환불 처리 완료 - paymentId: {}, orderId: {}, refundType: {}",
                         payment.getPaymentId(), order.getId(), webhookStatus);
