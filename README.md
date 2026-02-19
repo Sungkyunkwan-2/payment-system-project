@@ -212,7 +212,7 @@ PortOne 웹훅 수신 시 `PortOneWebhookVerifier`로 HMAC 서명을 검증하�
 
 ### 전체 ERD
 
-[ERD 이미지 최종본 추가 필요]
+![ERD.png](img/ERD.png)
 
 ### 주요 테이블 설명
 
@@ -994,7 +994,7 @@ SpringDoc OpenAPI 3.0으로 전환하여 API 문서를 자동화할 예정입니
 
 **이름**: 김세현 <br>
 **직책**: 팀원 <br>
-**담당 파트**: <br>
+**담당 파트**: jwt 기반 stateless 인증, refresh token, erd 작성, 이벤트리스너 구현<br>
 **Github**: https://github.com/ginsengcandy <br>
 **Email**: kimsparadise0202@gmail.com <br>
 
