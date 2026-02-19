@@ -21,7 +21,7 @@ public class PointScheduler {
     private final UserRepository userRepository;
 
     // 매시간 정각에 실행
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "0 */1 * * * *")
     @Transactional
     public void processScheduledPoints() {
         LocalDateTime now = LocalDateTime.now();
