@@ -44,7 +44,7 @@ JWT 기반 인증, 포인트 시스템, 멤버십 등급, 웹훅 서명 검증 �
 
 ### 개발 인원
 
-팀 프로젝트 (payment-team-project)
+5명(곽현민, 김대훈, 김세현, 이현석, 유지현)
 
 ### 프로젝트 목표
 - ✅ PortOne V2 API를 활용한 실결제 환경 구현
@@ -679,75 +679,51 @@ java -jar build/libs/payment-team-project-*.jar --spring.profiles.active=prod
 
 ```
 src
-├── main
-│   ├── java
-│   │   └── com
-│   │       └── paymentteamproject
-│   │           ├── PaymentTeamProjectApplication.java
-│   │           ├── common
-│   │           │   ├── controller          ← HomeController, PageController, ConfigController
-│   │           │   ├── dto                 ← ApiResponse, PublicConfigResponse
-│   │           │   └── entity              ← BaseEntity (createdAt, updatedAt)
-│   │           ├── config
-│   │           │   ├── SecurityConfig.java
-│   │           │   ├── RestClientConfig.java
-│   │           │   ├── PortOneProperties.java
-│   │           │   ├── AppProperties.java
-│   │           │   ├── ClientApiProperties.java
-│   │           │   └── GlobalExceptionHandler.java
-│   │           ├── security
-│   │           │   ├── JwtTokenProvider.java
-│   │           │   ├── JwtAuthenticationFilter.java
-│   │           │   ├── JwtAuthenticationEntryPoint.java
-│   │           │   ├── CustomUserDetails.java
-│   │           │   └── CustomUserDetailsService.java
-│   │           └── domain
-│   │               ├── auth                ← 인증 (JWT, Refresh Token)
-│   │               │   ├── controller
-│   │               │   ├── service
-│   │               │   ├── entity
-│   │               │   ├── repository
-│   │               │   ├── dto
-│   │               │   ├── util
-│   │               │   └── exception
-│   │               ├── user                ← 사용자 (포인트, 총 거래액)
-│   │               │   ├── controller
-│   │               │   ├── service
-│   │               │   ├── entity
-│   │               │   ├── repository
-│   │               │   ├── consts
-│   │               │   └── exception
-│   │               ├── product             ← 상품 (재고 관리)
-│   │               ├── order               ← 주문 (주문번호 자동생성)
-│   │               ├── orderProduct        ← 주문-상품 매핑
-│   │               ├── payment             ← 결제 (Append-Only, 이벤트 발행)
-│   │               ├── refund              ← 환불 (Append-Only)
-│   │               ├── subscription        ← 구독 신청/조회/해지
-│   │               ├── billing             ← 빌링키 결제/청구 내역
-│   │               ├── plan                ← 구독 플랜
-│   │               ├── paymentMethod       ← 결제 수단
-│   │               ├── pointTransaction    ← 포인트 적립/사용/만료
-│   │               ├── membershipTransaction ← 멤버십 등급 이력 + 스케줄러
-│   │               └── webhook             ← PortOne 웹훅 수신 및 검증
-│   │
-│   └── resources
-│       ├── application.yml
-│       ├── application-local.yml
-│       ├── application-prod.yml
-│       ├── client-api-config.yml
-│       └── templates                       ← Thymeleaf 템플릿
-│
-└── test
-    └── java
-        └── com
-            └── paymentteamproject
-                └── domain
-                    ├── order
-                    │   └── service
-                    │       └── OrderServiceTest.java
-                    └── orderProduct
-                        └── service
-                            └── OrderProductServiceTest.java
+└── main
+   ├── java
+   │   └── com
+   │       └── paymentteamproject
+   │           ├── PaymentTeamProjectApplication.java
+   │           ├── common
+   │           │   ├── controller          ← HomeController, PageController, ConfigController
+   │           │   ├── dto                 ← ApiResponse, PublicConfigResponse
+   │           │   └── entity              ← BaseEntity (createdAt, updatedAt)
+   │           ├── config
+   │           │   ├── SecurityConfig.java
+   │           │   ├── RestClientConfig.java
+   │           │   ├── PortOneProperties.java
+   │           │   ├── AppProperties.java
+   │           │   ├── ClientApiProperties.java
+   │           │   └── GlobalExceptionHandler.java
+   │           ├── security
+   │           │   ├── JwtTokenProvider.java
+   │           │   ├── JwtAuthenticationFilter.java
+   │           │   ├── JwtAuthenticationEntryPoint.java
+   │           │   ├── CustomUserDetails.java
+   │           │   └── CustomUserDetailsService.java
+   │           └── domain
+   │               ├── auth                ← 인증 (JWT, Refresh Token) 
+   │               ├── user                ← 사용자 (포인트, 총 거래액)
+   │               ├── product             ← 상품 (재고 관리)
+   │               ├── order               ← 주문 (주문번호 자동생성)
+   │               ├── orderProduct        ← 주문-상품 매핑
+   │               ├── payment             ← 결제 (Append-Only, 이벤트 발행)
+   │               ├── refund              ← 환불 (Append-Only)
+   │               ├── subscription        ← 구독 신청/조회/해지
+   │               ├── billing             ← 빌링키 결제/청구 내역
+   │               ├── plan                ← 구독 플랜
+   │               ├── paymentMethod       ← 결제 수단
+   │               ├── pointTransaction    ← 포인트 적립/사용/만료
+   │               ├── membershipTransaction ← 멤버십 등급 이력 + 스케줄러
+   │               └── webhook             ← PortOne 웹훅 수신 및 검증
+   │
+   └── resources
+       ├── application.yml
+       ├── application-local.yml
+       ├── application-prod.yml
+       ├── client-api-config.yml
+       └── templates                       ← Thymeleaf 템플릿
+
 ```
 
 ### 패키지 구조 설명
@@ -993,7 +969,7 @@ SpringDoc OpenAPI 3.0으로 전환하여 API 문서를 자동화할 예정입니
 **이름**: 김대훈 <br>
 **직책**: 팀원 <br>
 **담당 파트**: 주문 생성, 주문 목록 조회, 포인트 관련 로직과 연계된 메서드 작성, 발표<br>
-**Github**: https://github.com/BigMacHun-del](https://github.com/BigMacHun-del<br>
+**Github**: https://github.com/BigMacHun-del<br>
 **Email**: eogns12312@naver.com<br>
 
 **이름**: 이현석 <br>
@@ -1004,9 +980,9 @@ SpringDoc OpenAPI 3.0으로 전환하여 API 문서를 자동화할 예정입니
 
 **이름**: 유지현 <br>
 **직책**: 팀원 <br>
-**담당 파트**: <br> webhook, subscription
-**Github**: <br> https://github.com/jihyeon1346
-**Email**: <br> yio1346@gmail.com
+**담당 파트**: webhook, subscription <br> 
+**Github**: https://github.com/jihyeon1346 <br> 
+**Email**: yio1346@gmail.com <br> 
 
 
 <br/>
