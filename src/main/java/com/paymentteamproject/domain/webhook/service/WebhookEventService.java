@@ -3,7 +3,6 @@ package com.paymentteamproject.domain.webhook.service;
 import com.paymentteamproject.domain.order.consts.OrderStatus;
 import com.paymentteamproject.domain.order.entity.Orders;
 import com.paymentteamproject.domain.order.service.OrderService;
-import com.paymentteamproject.domain.payment.consts.PaymentStatus;
 import com.paymentteamproject.domain.payment.entity.Payment;
 import com.paymentteamproject.domain.payment.exception.PaymentNotFoundException;
 import com.paymentteamproject.domain.payment.repository.PaymentRepository;
@@ -21,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Slf4j
 @Service
@@ -45,7 +43,8 @@ public class WebhookEventService {
         String paymentId = request.getData().getPaymentId();
         GetPaymentResponse portOnePayment = portOneClient.getPayment(paymentId);
 
-        Payment payment = paymentRepository.findByPaymentId(paymentId)
+        // 동일 paymentId의 최신 이력을 기준으로 다음 상태를 INSERT합니다.
+        Payment payment = paymentRepository.findFirstByPaymentIdOrderByIdDesc(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException("결제 정보를 찾을 수 없습니다."));
 
         Orders order = payment.getOrder();
@@ -74,47 +73,30 @@ public class WebhookEventService {
             PaymentWebhookPaymentStatus webhookStatus, Payment payment, Orders order) {
         switch (webhookStatus) {
             case PAID -> {
-                // 결제 완료 처리
-                payment.updateStatus(PaymentStatus.SUCCESS);
-                payment.updatePaidAt(LocalDateTime.now());
-
-                // 주문 완료 처리
-                order.updateStatus(OrderStatus.ORDER_COMPLETED);
-
+                // success()가 새 엔티티 생성 + order.completedOrder() 내부 호출
+                paymentRepository.save(payment.success());
                 log.info("[WEBHOOK] 결제 완료 처리 성공 - paymentId: {}, orderId: {}",
                         payment.getPaymentId(), order.getId());
             }
 
             case FAILED -> {
-                // 결제 실패 처리
-                payment.updateStatus(PaymentStatus.FAILURE);
-
-                // 주문 취소 처리
+                paymentRepository.save(payment.fail());
                 order.updateStatus(OrderStatus.ORDER_CANCELED);
-
                 log.info("[WEBHOOK] 결제 실패 처리 완료 - paymentId: {}, orderId: {}",
                         payment.getPaymentId(), order.getId());
             }
 
             case CANCELLED, PARTIAL_CANCELLED -> {
-                // 환불 처리
-                payment.updateStatus(PaymentStatus.REFUND);
-                payment.updateRefundedAt(LocalDateTime.now());
-
-                // 주문 취소 처리
+                paymentRepository.save(payment.refund());
                 order.updateStatus(OrderStatus.ORDER_CANCELED);
-
-                // 재고 복구
                 orderService.processOrderCancellation(order);
-
                 log.info("[WEBHOOK] 환불 처리 완료 - paymentId: {}, orderId: {}, refundType: {}",
                         payment.getPaymentId(), order.getId(), webhookStatus);
             }
 
             case READY, VIRTUAL_ACCOUNT_ISSUED, PAY_PENDING -> {
-                payment.updateStatus(PaymentStatus.PENDING);
+                // 최초 생성 시 이미 PENDING — 새 이력 불필요, 주문 상태만 동기화
                 order.updateStatus(OrderStatus.PAYMENT_PENDING);
-
                 log.info("[WEBHOOK] 결제 대기 상태 업데이트 - paymentId: {}, orderId: {}, status: {}",
                         payment.getPaymentId(), order.getId(), webhookStatus);
             }
