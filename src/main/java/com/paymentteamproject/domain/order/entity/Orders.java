@@ -2,6 +2,8 @@ package com.paymentteamproject.domain.order.entity;
 
 import com.paymentteamproject.common.entity.BaseEntity;
 import com.paymentteamproject.domain.order.consts.OrderStatus;
+import com.paymentteamproject.domain.order.exception.InvalidPointException;
+import com.paymentteamproject.domain.order.exception.NotRefundableException;
 import com.paymentteamproject.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -62,10 +64,11 @@ public class Orders extends BaseEntity {
     public void completedOrder() {
         this.status = OrderStatus.ORDER_COMPLETED;
     }
+
     public void markRefunded() {
         // 환불 가능한 주문 상태만 허용하고 싶으면 체크
         if (this.status != OrderStatus.ORDER_COMPLETED) {
-            throw new IllegalStateException("주문 완료 상태만 환불할 수 있습니다.");
+            throw new NotRefundableException("주문 완료 상태만 환불할 수 있습니다.");
         }
         this.status = OrderStatus.ORDER_CANCELED;
     }
@@ -82,7 +85,7 @@ public class Orders extends BaseEntity {
     private void validateStatusTransition(OrderStatus newStatus) {
         // 이미 취소된 주문은 완료로 변경 불가
         if (this.status == OrderStatus.ORDER_CANCELED && newStatus == OrderStatus.ORDER_COMPLETED) {
-            throw new IllegalStateException(
+            throw new NotRefundableException(
                     String.format("취소된 주문은 완료로 변경할 수 없습니다. (현재: %s, 변경 시도: %s)",
                             this.status, newStatus)
             );
@@ -97,11 +100,11 @@ public class Orders extends BaseEntity {
         }
 
         if (usedPoint.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("사용 포인트는 음수일 수 없습니다.");
+            throw new InvalidPointException("사용 포인트는 음수일 수 없습니다.");
         }
 
         if (usedPoint.compareTo(this.totalPrice) > 0) {
-            throw new IllegalArgumentException("사용 포인트가 주문 금액을 초과할 수 없습니다.");
+            throw new InvalidPointException("사용 포인트가 주문 금액을 초과할 수 없습니다.");
         }
 
         this.usedPoint = usedPoint;

@@ -240,7 +240,7 @@ class OrderServiceTest {
 
             assertThatThrownBy(() ->
                     orderService.processOrderCancellation(testOrder))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(ProductNotFoundException.class);
         }
 
         @Test

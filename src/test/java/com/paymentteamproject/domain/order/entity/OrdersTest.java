@@ -1,6 +1,8 @@
 package com.paymentteamproject.domain.order.entity;
 
 import com.paymentteamproject.domain.order.consts.OrderStatus;
+import com.paymentteamproject.domain.order.exception.InvalidPointException;
+import com.paymentteamproject.domain.order.exception.NotRefundableException;
 import com.paymentteamproject.domain.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -71,7 +73,7 @@ class OrdersTest {
 
             // when, then
             assertThatThrownBy(order::markRefunded)
-                    .isInstanceOf(IllegalStateException.class)
+                    .isInstanceOf(NotRefundableException.class)
                     .hasMessage("주문 완료 상태만 환불할 수 있습니다.");
         }
     }
@@ -150,7 +152,7 @@ class OrdersTest {
 
             // when, then
             assertThatThrownBy(() -> order.setUsedPoint(BigDecimal.valueOf(-1000)))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(InvalidPointException.class)
                     .hasMessage("사용 포인트는 음수일 수 없습니다.");
         }
 
@@ -165,7 +167,7 @@ class OrdersTest {
 
             // when, then
             assertThatThrownBy(() -> order.setUsedPoint(BigDecimal.valueOf(15000)))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(InvalidPointException.class)
                     .hasMessage("사용 포인트가 주문 금액을 초과할 수 없습니다.");
         }
     }
