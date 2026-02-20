@@ -569,14 +569,23 @@ Authorization: Bearer {accessToken}
 Content-Type: application/json
 
 {
-  "reason": "단순 변심"
+  "reason": "환불 사유"
 }
 
 Response 200 OK
 {
+  "timestamp": "2026-01-19T15:43:34.7480226",
+  "success": true,
   "status": 200,
   "message": "요청 접수",
-  "data": { "refundId": 1, "status": "REQUEST" }
+  "data": {
+    "refundId": "1",
+    "paymentId": "1",
+    "amount": 10000,
+    "status": "SUCCESS",
+    "reason": "환불 사유",
+    "refundAt": "2026-01-19T15:43:34.7480226"
+  }
 }
 ```
 
