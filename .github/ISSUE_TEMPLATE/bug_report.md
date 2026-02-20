@@ -1,9 +1,10 @@
 ---
-name: 🐞 버그 제보 (Bug Report)
+name: "\U0001F41E 버그 제보 (Bug Report)"
 about: 발생한 버그를 제보해주세요.
 title: "[BUG] "
 labels: bug
 assignees: ''
+
 ---
 
 ## 🐞 버그 설명
