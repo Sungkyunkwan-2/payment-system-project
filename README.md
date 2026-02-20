@@ -49,7 +49,7 @@ JWT 기반 인증, 포인트 시스템, 멤버십 등급, 웹훅 서명 검증 �
 ### 프로젝트 목표
 - ✅ PortOne V2 API를 활용한 실결제 환경 구현
 - ✅ JWT 기반 Stateless 인증 및 Refresh Token 로테이션
-- ✅ 포인트 전액/부분 결제, 적립, 만료 시스템 구현
+- ✅ 포인트 사용 결제, 적립, 만료 시스템 구현
 - ✅ 웹훅 서명 검증을 통한 안전한 결제 이벤트 처리
 - ✅ 구독 정기 결제 및 멤버십 등급 자동 갱신
 
@@ -73,7 +73,6 @@ JWT Access Token + Refresh Token 이중 인증 방식을 사용합니다.
 ### 3. 일반 결제 (Payment) ⭐
 
 - PortOne V2 API를 연동한 결제 시작 및 확인
-- 포인트 전액 결제 (PG 호출 없이 즉시 SUCCESS)
 - 포인트 부분 결제 (잔여 금액만 PG 결제)
 - 결제 실패 시 보상 트랜잭션(환불) 자동 수행
 - 중복 결제 확인 방지 (`DuplicatePaymentConfirmException`)
@@ -99,7 +98,7 @@ JWT Access Token + Refresh Token 이중 인증 방식을 사용합니다.
 ### 7. 포인트 시스템 (Point)
 
 - 결제 완료 시 포인트 자동 적립
-- 결제 시 포인트 사용 (전액 / 부분)
+- 결제 시 포인트 사용 (부분)
 - 포인트 만료 처리
 
 ### 8. 멤버십 등급 (Membership)
@@ -136,8 +135,8 @@ JWT Access Token + Refresh Token 이중 인증 방식을 사용합니다.
 ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
 ![AWS](https://img.shields.io/badge/AWS-232F3E?logo=amazonaws&logoColor=white)
 
-- **Container**: Docker, Docker Compose
-- **Cloud**: AWS (EC2, Parameter Store)
+- **Container**: Docker
+- **Cloud**: AWS (EC2, RDS, ALB, ASG)
 - **CI/CD**: GitHub Actions
 - **Config**: AWS Parameter Store (환경 변수 중앙 관리)
 
@@ -229,7 +228,6 @@ CREATE TABLE users (
     total_spend    DECIMAL(19,2)  NOT NULL DEFAULT 0,
     deleted_at     DATETIME,
     created_at     DATETIME       NOT NULL,
-    updated_at     DATETIME       NOT NULL
 );
 ```
 
@@ -244,7 +242,6 @@ CREATE TABLE orders (
     status       VARCHAR(30)    NOT NULL,  -- PAYMENT_PENDING, ORDER_COMPLETED, ORDER_CANCELED
     deleted_at   DATETIME,
     created_at   DATETIME       NOT NULL,
-    updated_at   DATETIME       NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 ```
@@ -261,7 +258,6 @@ CREATE TABLE order_products (
     quantity     BIGINT         NOT NULL,
     deleted_at   DATETIME,
     created_at   DATETIME       NOT NULL,
-    updated_at   DATETIME       NOT NULL,
     FOREIGN KEY (order_id) REFERENCES orders(id)
 );
 ```
@@ -278,7 +274,6 @@ CREATE TABLE payments (
     refunded_at DATETIME,
     deleted_at  DATETIME,
     created_at  DATETIME       NOT NULL,
-    updated_at  DATETIME       NOT NULL,
     FOREIGN KEY (order_id) REFERENCES orders(id)
 );
 ```
@@ -294,7 +289,6 @@ CREATE TABLE refunds (
     refunded_at DATETIME,
     deleted_at  DATETIME,
     created_at  DATETIME       NOT NULL,
-    updated_at  DATETIME       NOT NULL,
     FOREIGN KEY (payment_id) REFERENCES payments(id)
 );
 ```
@@ -302,7 +296,8 @@ CREATE TABLE refunds (
 ### ERD 설계 포인트
 
 #### 정규화
-- 주문(orders)과 주문상품(order_products)을 분리하여 다대다 관계를 정규화
+- 주문(orders)과 주문상품(order_products)을 1:N 관계로 연결
+- 상품은 주문 당시 정보를 보존하기 위해 다른 도메인과 연관짓지 않음.
 - 결제(payments)와 환불(refunds)을 별도 테이블로 관리하여 이력 추적
 
 #### 인덱스 전략
@@ -441,7 +436,6 @@ jobs:
 ### 배포 환경
 
 #### 개발 환경 (dev branch)
-- 로컬 Docker Compose 기반 개발 환경
 - `application-local.yml` 프로파일 사용
 
 #### 운영 환경 (main branch)
@@ -541,9 +535,11 @@ Content-Type: application/json
   "pointsToUse": 1000
 }
 
-Response 201 Created
+Response 200 Ok
 {
-  "status": 201,
+  "timestamp": "2025-01-01T00:00:00",
+  "success": true,
+  "status": 200,
   "message": "결제가 시작되었습니다",
   "data": {
     "paymentId": "PAY_17xxxxxxxx",
@@ -559,6 +555,8 @@ GET /payments/{paymentId}
 
 Response 200 OK
 {
+  "timestamp": "2025-01-01T00:00:00",
+  "success": true,
   "status": 200,
   "message": "성공적으로 결제되었습니다",
   "data": {
@@ -593,8 +591,24 @@ Authorization: Bearer {accessToken}
 Content-Type: application/json
 
 {
+  "userId": "...",
   "planId": "...",
   "paymentMethodId": "..."
+}
+
+Response 200 OK
+{
+  "timestamp": "2025-01-01T00:00:00",
+  "success": true,
+  "status": 200,
+  "message": "성공적으로 구독을 생성했습니다.",
+  "data": {
+    "id": 1,
+    "customerUid": "CUST_17xxxxxxxx",
+    "planId": "PLAN_PRO",
+    "billingKey": "BILL_17xxxxxxxx",
+    "price": 20000,
+  }
 }
 ```
 
@@ -649,17 +663,12 @@ WEBHOOK_SECRET=whsec_xxxxxxxxxxxxxxxxxxxxxxxxxxxx
 JWT_SECRET=your-very-long-jwt-secret-key-here
 ```
 
-#### 3. Docker Compose 실행 (MySQL)
-```bash
-docker-compose up -d mysql
-```
-
-#### 4. 애플리케이션 실행
+#### 3. 애플리케이션 실행
 ```bash
 ./gradlew bootRun --args='--spring.profiles.active=local'
 ```
 
-#### 5. 접속 확인
+#### 4. 접속 확인
 - API: http://localhost:8080
 - Actuator: http://localhost:8080/actuator/health
 
@@ -735,7 +744,7 @@ src
 
 ## 🔧 트러블슈팅
 
-### 1. 웹훅 서명 검증 실패
+### 1. 음수 포인트 문제
 
 **문제 상황**
 ```
@@ -774,7 +783,7 @@ public ResponseEntity<Void> handleWebhookEvent(
 
 ---
 
-### 2. 포인트 결제 시 중복 결제 문제
+### 2. 순환 참조로 인한 StackOverFlow 에러 발생
 
 **문제 상황**
 ```
@@ -800,26 +809,6 @@ if (payment.getStatus().equals(PaymentStatus.SUCCESS)) {
 
 ---
 
-### 3. DDL Auto 운영 환경 설정 이슈
-
-**문제 상황**
-```
-운영 환경 배포 시 ddl-auto: create-drop 설정으로 인해
-기존 데이터가 애플리케이션 재시작 시 삭제되는 문제
-```
-
-**해결 방법**
-```yaml
-# application-prod.yml
-spring:
-  jpa:
-    hibernate:
-      ddl-auto: validate  # 운영 환경에서는 validate 사용
-```
-
-**결과**
-
-운영 데이터 보호, 스키마 변경은 별도 마이그레이션 스크립트로 관리
 
 <br/>
 
@@ -827,7 +816,7 @@ spring:
 
 ### 1. 지연 로딩 최적화
 
-#### FetchType.LAZY 적용
+#### 타 엔티티 참조 시 FetchType.LAZY 적용
 ```java
 // Payment Entity
 @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -835,10 +824,7 @@ spring:
 private Orders order;
 ```
 
-**적용 대상**
-- Payment → Orders 연관관계
-- Orders → User 연관관계
-- Refund → Payment 연관관계
+
 
 **효과**
 
@@ -859,15 +845,7 @@ Payment findFirstByPaymentIdOrderByIdDesc(String paymentId);
 
 결제 확인 API 응답 속도 개선
 
-#### 커넥션 풀 최적화
-```yaml
-spring:
-  datasource:
-    hikari:
-      maximum-pool-size: 10
-      minimum-idle: 5
-      connection-timeout: 30000
-```
+
 
 ---
 
@@ -875,11 +853,11 @@ spring:
 
 ## 📈 향후 개선 계획
 
-### Service 책임 분산을 위한 이벤트 기반 구조 도입
-### Refresh Token 해시 저장
-### 외부API 호출 트랜잭션 분리
-### 웹훅 & 외부 API 처리 멱등성 보장 강화
-### 동시성 체크 강화
+- ### Service 책임 분산을 위한 이벤트 기반 구조 도입
+- ### Refresh Token 해시 저장
+- ### 외부API 호출 트랜잭션 분리
+- ### 웹훅 & 외부 API 처리 멱등성 보장 강화
+- ### 동시성 체크 강화
 
 <br/>
 
@@ -930,7 +908,7 @@ AWS Parameter Store를 통한 민감 정보 관리로 보안을 강화했습니�
 
 #### 1. 테스트 커버리지 부족
 
-핵심 비즈니스 로직(PaymentService, RefundService)에 대한 단위 테스트를 충분히 작성하지 못했습니다.
+핵심 비즈니스 로직(WebhookService, BillingService)에 대한 단위 테스트를 충분히 작성하지 못했습니다.
 향후 TDD 방식으로 결제 플로우 전체 테스트를 작성할 예정입니다.
 
 #### 2. Redis 미도입
@@ -938,10 +916,22 @@ AWS Parameter Store를 통한 민감 정보 관리로 보안을 강화했습니�
 현재 Refresh Token을 RDB에 저장하고 있어 성능 병목이 우려됩니다.
 Redis를 도입하여 Refresh Token 관리 및 상품 목록 캐싱에 활용할 계획입니다.
 
-#### 3. API 문서 자동화 미비
+#### 3. . 동시성 제어 미흡
 
-현재 Swagger UI 설정은 있으나 어노테이션 기반 문서화가 부족합니다.
-SpringDoc OpenAPI 3.0으로 전환하여 API 문서를 자동화할 예정입니다.
+결제 과정에서 락(Lock)을 통한 동시성 제어 대신 주문 상품에 담는 순간 재고가 차감되도록 하여 
+악의적인 재고 점유의 여지가 있어 향후 이를 개선할 계획입니다. 
+
+#### 4. 로그아웃 api FE와 미연결
+
+로그아웃 시 Refresh Token을 삭제하는 api를 구현하긴 했으나, 시간 부족으로 실제 FE 상의 
+로그아웃 버튼과 연결하지 못해 아쉬움이 남습니다. 향후 프로젝트에서는 리프레시 토큰 기반 
+인증 방식에 대한 이해를 심화하여 FE와의 연계까지 완벽하게 구현해볼 계획입니다.
+
+#### 5. 웹훅의 역할과 책임 부족
+단순히 이벤트를 수신하는 데 그쳐 결제 상태 전이를 최종적으로 반영하지 못했습니다.
+실제로는 웹훅이 결제 확정의 핵심 트리거 역할을 하기 때문에, 이를 통해
+결제 성공·실패·취소 상태를 시스템에 반영했어야 했습니다.
+이 부분을 놓쳐 결제 프로세스 자동화가 완전하지 못했던 점이 아쉬웠습니다.
 
 <br/>
 
@@ -953,31 +943,31 @@ SpringDoc OpenAPI 3.0으로 전환하여 API 문서를 자동화할 예정입니
 
 **이름**: 곽현민 <br>
 **직책**: 팀장 <br>
-**담당 파트**: 결제, 구독 <br>
+**책임**: 결제, 구독 <br>
 **Github**: https://github.com/prAha1030 <br>
 **Email**: hunmin111@gmail.com <br>
 
 **이름**: 김세현 <br>
 **직책**: 팀원 <br>
-**담당 파트**: jwt 기반 stateless 인증, refresh token, erd 작성, 이벤트리스너 구현<br>
+**책임**: jwt 기반 stateless 인증, refresh token, erd 작성, 이벤트리스너 구현<br>
 **Github**: https://github.com/ginsengcandy <br>
 **Email**: kimsparadise0202@gmail.com <br>
 
 **이름**: 김대훈 <br>
 **직책**: 팀원 <br>
-**담당 파트**: 주문 생성, 주문 목록 조회, 포인트 관련 로직과 연계된 메서드 작성, 발표<br>
+**책임**: 주문 생성, 주문 목록 조회, 포인트 관련 로직과 연계된 메서드 작성, 발표<br>
 **Github**: https://github.com/BigMacHun-del<br>
 **Email**: eogns12312@naver.com<br>
 
 **이름**: 이현석 <br>
 **직책**: 팀원 <br>
-**담당 파트**: 환불, 멤버십, 발표 자료 준비<br>
+**책임**: 환불, 멤버십, 발표 자료 준비<br>
 **Github**: https://github.com/royhslee0120<br>
 **Email**: royhslee0120@gmail.com<br>
 
 **이름**: 유지현 <br>
 **직책**: 팀원 <br>
-**담당 파트**: webhook, subscription <br> 
+**책임**: webhook, subscription <br> 
 **Github**: https://github.com/jihyeon1346 <br> 
 **Email**: yio1346@gmail.com <br> 
 
