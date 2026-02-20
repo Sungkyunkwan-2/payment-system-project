@@ -475,17 +475,22 @@ POST /api/auth/register
 Content-Type: application/json
 
 {
+  "name": "홍길동",
   "email": "user@example.com",
   "password": "password123",
-  "username": "홍길동",
   "phone": "010-1234-5678"
 }
 
-Response 200 OK
+Response 201 CREATED
 {
+  "timestamp": "2026-01-19T15:43:34.7480226",
+  "success": true,
   "status": 201,
   "message": "회원가입에 성공했습니다.",
-  "data": { "id": 1, "email": "user@example.com" }
+  "data": { 
+            "username": "John Doe",
+            "email": "user@example.com"
+            }
 }
 ```
 
@@ -502,6 +507,13 @@ Content-Type: application/json
 Response 200 OK
 Header: Authorization: Bearer {accessToken}
 Set-Cookie: refreshToken={refreshToken}; HttpOnly; Path=/
+{
+    "timestamp": "2026-01-19T15:43:34.7480226",
+    "success": true,
+    "code": 200,
+    "message": "로그인에 성공했습니다.",
+    "email": "user@example.com"
+}
 ```
 
 #### 3. 주문 생성
@@ -625,10 +637,9 @@ Response 200 OK
 ```json
 {
   "timestamp": "2025-01-01T00:00:00",
-  "status": "400",
-  "error": "BAD_REQUEST",
-  "message": "사용 포인트가 주문 금액을 초과할 수 없습니다.",
-  "path": "/payments"
+  "success": false,
+  "code": 400,
+  "message": "사용 포인트가 주문 금액을 초과할 수 없습니다."
 }
 ```
 
