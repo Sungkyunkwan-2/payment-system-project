@@ -535,9 +535,11 @@ Content-Type: application/json
   "pointsToUse": 1000
 }
 
-Response 201 Created
+Response 200 Ok
 {
-  "status": 201,
+  "timestamp": "2025-01-01T00:00:00",
+  "success": true,
+  "status": 200,
   "message": "결제가 시작되었습니다",
   "data": {
     "paymentId": "PAY_17xxxxxxxx",
@@ -553,6 +555,8 @@ GET /payments/{paymentId}
 
 Response 200 OK
 {
+  "timestamp": "2025-01-01T00:00:00",
+  "success": true,
   "status": 200,
   "message": "성공적으로 결제되었습니다",
   "data": {
@@ -587,8 +591,24 @@ Authorization: Bearer {accessToken}
 Content-Type: application/json
 
 {
+  "userId": "...",
   "planId": "...",
   "paymentMethodId": "..."
+}
+
+Response 200 OK
+{
+  "timestamp": "2025-01-01T00:00:00",
+  "success": true,
+  "status": 200,
+  "message": "성공적으로 구독을 생성했습니다.",
+  "data": {
+    "id": 1,
+    "customerUid": "CUST_17xxxxxxxx",
+    "planId": "PLAN_PRO",
+    "billingKey": "BILL_17xxxxxxxx",
+    "price": 20000,
+  }
 }
 ```
 
