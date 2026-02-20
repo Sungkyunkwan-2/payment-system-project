@@ -6,6 +6,9 @@ import com.paymentteamproject.domain.membershipTransaction.repository.Membership
 import com.paymentteamproject.domain.order.entity.Orders;
 import com.paymentteamproject.domain.pointTransaction.entity.PointTransaction;
 import com.paymentteamproject.domain.pointTransaction.entity.PointTransactionType;
+import com.paymentteamproject.domain.pointTransaction.exception.InsufficientPointException;
+import com.paymentteamproject.domain.pointTransaction.exception.InvalidPointAmountException;
+import com.paymentteamproject.domain.pointTransaction.exception.InvalidRefundPointAmountException;
 import com.paymentteamproject.domain.pointTransaction.repository.PointTransactionRepository;
 import com.paymentteamproject.domain.user.entity.User;
 import com.paymentteamproject.domain.user.repository.UserRepository;
@@ -72,7 +75,7 @@ public class PointService {
 
         // 1. null / 0 이하 방어
         if (pointsToUse == null || pointsToUse.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("사용 포인트는 0보다 커야 합니다.");
+            throw new InvalidPointAmountException("사용 포인트는 0보다 커야 합니다.");
         }
 
         // 2. 사용자 현재 포인트 조회
@@ -84,7 +87,7 @@ public class PointService {
 
         // 3. 잔액 부족 검증
         if (currentPoints.compareTo(pointsToUse) < 0) {
-            throw new IllegalStateException("보유 포인트가 부족합니다.");
+            throw new InsufficientPointException("보유 포인트가 부족합니다.");
         }
 
         // 4. 포인트 차감
@@ -107,7 +110,7 @@ public class PointService {
     @Transactional
     public void refundPoints(User user, Orders order, BigDecimal pointsToRefund) {
         if (pointsToRefund == null || pointsToRefund.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("환불 포인트는 0보다 커야 합니다.");
+            throw new InvalidRefundPointAmountException("환불 포인트는 0보다 커야 합니다.");
         }
 
         // 2. 사용자 포인트 증가
