@@ -541,9 +541,11 @@ Content-Type: application/json
   "pointsToUse": 1000
 }
 
-Response 201 Created
+Response 200 Ok
 {
-  "status": 201,
+  "timestamp": "2025-01-01T00:00:00",
+  "success": true,
+  "status": 200,
   "message": "결제가 시작되었습니다",
   "data": {
     "paymentId": "PAY_17xxxxxxxx",
@@ -559,6 +561,8 @@ GET /payments/{paymentId}
 
 Response 200 OK
 {
+  "timestamp": "2025-01-01T00:00:00",
+  "success": true,
   "status": 200,
   "message": "성공적으로 결제되었습니다",
   "data": {
@@ -593,8 +597,24 @@ Authorization: Bearer {accessToken}
 Content-Type: application/json
 
 {
+  "userId": "...",
   "planId": "...",
   "paymentMethodId": "..."
+}
+
+Response 200 OK
+{
+  "timestamp": "2025-01-01T00:00:00",
+  "success": true,
+  "status": 200,
+  "message": "성공적으로 구독을 생성했습니다.",
+  "data": {
+    "id": 1,
+    "customerUid": "CUST_17xxxxxxxx",
+    "planId": "PLAN_PRO",
+    "billingKey": "BILL_17xxxxxxxx",
+    "price": 20000,
+  }
 }
 ```
 
@@ -925,6 +945,12 @@ Redis를 도입하여 Refresh Token 관리 및 상품 목록 캐싱에 활용할
 로그아웃 시 Refresh Token을 삭제하는 api를 구현하긴 했으나, 시간 부족으로 실제 FE 상의 
 로그아웃 버튼과 연결하지 못해 아쉬움이 남습니다. 향후 프로젝트에서는 리프레시 토큰 기반 
 인증 방식에 대한 이해를 심화하여 FE와의 연계까지 완벽하게 구현해볼 계획입니다.
+
+#### 5. 웹훅의 역할과 책임 부족
+단순히 이벤트를 수신하는 데 그쳐 결제 상태 전이를 최종적으로 반영하지 못했습니다.
+실제로는 웹훅이 결제 확정의 핵심 트리거 역할을 하기 때문에, 이를 통해
+결제 성공·실패·취소 상태를 시스템에 반영했어야 했습니다.
+이 부분을 놓쳐 결제 프로세스 자동화가 완전하지 못했던 점이 아쉬웠습니다.
 
 <br/>
 
