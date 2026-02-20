@@ -524,9 +524,15 @@ Content-Type: application/json
 
 Response 200 OK
 {
-  "status": 201,
-  "message": "주문 생성에 성공했습니다.",
-  "data": { "orderId": "...", "totalPrice": 20000 }
+  "timestamp": "2026-01-19T15:43:34.7480226",
+	"success: true,
+	"status": 201,
+	"message":"주문 생성이 완료되었습니다.",
+	"data": {
+	  "orderId": "1",
+	  "totalAmount": "2000",
+	  "orderNumber": "난수값 or 문자열 패턴"
+	}
 }
 ```
 
@@ -735,36 +741,37 @@ src
 
 ## 🔧 트러블슈팅
 
-### 1. 웹훅 서명 검증 실패
+### 1. 음수 포인트 문제
 
 **문제 상황**
 ```
-PortOne 웹훅 요청이 Security Filter Chain을 통과하면서 request body가 소비되어
-서명 검증 시 빈 body가 전달되는 문제 발생
+A 결제를 통해 포인트를 적립하고 난 뒤, B 결제에서 A 결제로 적립된 포인트를 사용하고, A 결제를 환불해버리면
+B 결제에 사용한 포인트는 이미 사용되었고, 환불은 해야 하니 음수 포인트가 발생하는 문제
 ```
 
 **원인 분석**
 
-Spring의 `HttpServletRequest`는 body를 한 번만 읽을 수 있어, Filter에서 body를 먼저 읽으면
-Controller에서 body를 읽을 수 없게 됩니다.
-또한 JWT 필터가 웹훅 엔드포인트에도 적용되어 불필요한 인증 시도가 발생했습니다.
+포인트
 
 **해결 방법**
+환불 기간과 포인트 적립 기간을 설정하여, 환불 기간 1일 이내, 포인트 적립 기간 1일 이후로 두어 환불이 더이상 되어지지 않을 때부터
+포인트 적립하여 해당 문제 사전 차단
 ```java
-// SecurityConfig - 웹훅 엔드포인트 JWT 필터 제외
-@Bean
-public WebSecurityCustomizer webSecurityCustomizer() {
-    return (web) -> web.ignoring().requestMatchers("/portone-webhook");
-}
-
-// WebhookEventController - raw body를 byte[]로 직접 수신
-@PostMapping("/portone-webhook")
-public ResponseEntity<Void> handleWebhookEvent(
-        @RequestBody byte[] rawBody,
-        @RequestHeader("webhook-id") String webhookId,
-        @RequestHeader("webhook-timestamp") String webhookTimestamp,
-        @RequestHeader("webhook-signature") String webhookSignature) {
-    ...
+@Builder
+public PointTransaction(User user, Orders order, BigDecimal points, PointTransactionType type, LocalDateTime expiresAt){
+    this.user = user;
+    this.order = order;
+    this.points = points;
+    this.type = type;
+    //ADDED와 PENDING 타입만 만료 시간 설정
+    if (type == PointTransactionType.ADDED ) {
+        this.expiresAt = (expiresAt != null) ? expiresAt : LocalDateTime.now().plusMinutes(3);
+    } else if (type == PointTransactionType.PENDING) {
+        this.expiresAt = (expiresAt != null) ? expiresAt : LocalDateTime.now().plusDays(1);
+    } else {
+        this.expiresAt = null;
+    }
+    this.validity = true;
 }
 ```
 
